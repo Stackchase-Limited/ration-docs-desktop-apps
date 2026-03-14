@@ -37,6 +37,7 @@
 #include "windows/ceditorwindow_p.h"
 #include "iconfactory.h"
 #include "defines.h"
+#include "utils.h"
 #include <QApplication>
 #include <clangater.h>
 
@@ -141,6 +142,7 @@ int CEditorWindow::closeWindow()
         default:
             panel->data()->close();
             panel->cef()->Apply(new CAscMenuEvent(ASC_MENU_EVENT_TYPE_CEF_SAVE));
+            Utils::processMoreEvents(100);
 
             _reply = MODAL_RESULT_NO;
             break;
