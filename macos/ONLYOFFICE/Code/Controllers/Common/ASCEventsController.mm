@@ -972,6 +972,11 @@ public:
     {
         fullscreen_view_id = -1;
     }
+    
+    bool hasFullscreenState()
+    {
+        return (fullscreen_view_id >= 0);
+    }
 };
 
 
@@ -1021,6 +1026,14 @@ public:
     if (ec && ec->_listener) {
         ec->_listener->resetFullscreenState();
     }
+}
+
++ (BOOL)hasFullscreenState {
+    ASCEventsController *ec = [ASCEventsController sharedInstance];
+    if (ec && ec->_listener) {
+        return ec->_listener->hasFullscreenState();
+    }
+    return NO;
 }
 
 @end
