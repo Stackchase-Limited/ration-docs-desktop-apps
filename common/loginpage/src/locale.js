@@ -53,6 +53,8 @@ l10n.en = {
     textNoFiles: 'There are no files',
     listRecoveryTitle:'Recover files',
     listRecentFileTitle:'Recent files',
+    recentSearch: 'Search recent files',
+    recentNoResultsText: 'No recent files match your search',
     listRecentDirTitle:'Recent folders',
     menuFileOpen: 'Open',
     menuFileExplore: 'Show in folder',

@@ -96,6 +96,14 @@
                         <div id="box-recent">
                             <div class="file-list-title">
                                 <h3 l10n>${_lang.listRecentFileTitle}</h3>
+                                <div class="search-container recent-search">
+                                    <svg class="icon search-icon" data-iconname="search" data-precls="tool-icon">
+                                        <use href="#search"></use>
+                                    </svg>
+                                    <input type="text" id="idx-recent-filter" autocomplete="off"
+                                           spellcheck="false" placeholder="${_lang.recentSearch}">
+                                    <span class="tool close" id="idx-recent-filter-clear" style="display: none;"></span>
+                                </div>
                             </div>
                             <div class="file-list-head text-normal">
                                 <div class="col-name" l10n>${_lang.colFileName}</div>
@@ -103,6 +111,16 @@
                                 <div class="col-date" l10n>${_lang.colLastOpened}</div>
                             </div>
                             <div class="file-list-body scrollable"></div>
+                            <div id="idx-recent-no-results" class="search-no-results" style="display: none;">
+                                <div class="icon-box">
+                                    <svg class="icon nothing-found-light-icon" data-iconname="nothing-found-light" data-precls="tool-icon">
+                                        <use id="idx-recent-nothing-light" href="#nothing-found-light"></use>
+                                        <use id="idx-recent-nothing-dark" href="#nothing-found-dark"></use>
+                                    </svg>
+                                </div>
+                                <p class="no-results-title" l10n>${_lang.tplNoResultsTitle}</p>
+                                <p class="no-results-text" l10n>${_lang.recentNoResultsText}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -609,29 +627,78 @@
         };
 
         // note: search function
-        function _on_filter_recents(e) {
-            console.log('on recents filter', e.target.value)
+        //
+        // Matching is deliberately literal. The previous implementation compiled the
+        // raw query with `new RegExp(value, "gi")`, so a query containing "(", "[" or
+        // "*" threw SyntaxError, and it reused one /g/ regex across every model --
+        // RegExp.prototype.test advances lastIndex on a match, so alternate items
+        // were skipped. Both bugs are avoided by folding to plain strings and using
+        // indexOf.
 
-            const _filter = e.target.value;
-            if (!_filter.length) {
-                $('.table-files tr.hidden', this.view.$panel).removeClass('hidden')
+        // Characters that carry no Unicode decomposition and so survive NFD.
+        const _foldPairs = {
+            'ɓ': 'b', 'ɗ': 'd', 'ƙ': 'k', 'ƴ': 'y',   // Hausa hooked b d k y
+            'ŋ': 'n', 'đ': 'd', 'ø': 'o', 'ł': 'l',
+            'ß': 'ss', 'æ': 'ae', 'œ': 'oe'
+        };
 
-                collectionRecents.items.forEach(model => model.set('hidden', false));
-            } else {
-                const re = new RegExp(_filter, "gi");
-                collectionRecents.items.forEach(model => {
-                    const _path = model.get('path');
-                    if (!re.test(_path)) {
-                        $('#' + model.uid, this.view.$panel).addClass('hidden');
-                        model.set('hidden', true);
-                    } else if (model.get('hidden')) {
-                        $('#' + model.uid, this.view.$panel).removeClass('hidden');
-                        model.set('hidden', false);
-                    }
-                });
-            }
+        // Fold to a comparable form: lowercase, hooked letters mapped to their base,
+        // then combining marks stripped. Lets "eko" reach "Ẹ̀kọ́" and "sanyi" reach
+        // "sanyi" written with hooked consonants -- relevant for Yoruba, Igbo and
+        // Hausa file names, and harmless for Latin-1.
+        function _fold(value) {
+            if (value === undefined || value === null) return '';
+            let out = String(value).toLowerCase();
+            out = out.replace(/[ɓɗƙƴŋđøłßæœ]/g,
+                              ch => _foldPairs[ch]);
+            return out.normalize ? out.normalize('NFD').replace(/[̀-ͯ]/g, '') : out;
         }
 
+        function _debounce(fn, wait) {
+            let timer = null;
+            return function () {
+                const ctx = this, args = arguments;
+                timer && clearTimeout(timer);
+                timer = setTimeout(function () { timer = null; fn.apply(ctx, args); }, wait);
+            };
+        }
+
+        // Last query applied, so a recents refresh can re-apply it to newly added rows.
+        let _activeFilter = '';
+
+        function _model_matches(model, terms) {
+            const haystack = _fold(model.get('name')) + ' ' +
+                             _fold(model.get('descr')) + ' ' +
+                             _fold(model.get('path'));
+            return terms.every(term => haystack.indexOf(term) !== -1);
+        }
+
+        // Every whitespace-separated term must match, so "report 2025" narrows rather
+        // than widening -- order-independent, unlike a single substring match.
+        function _apply_filter(value) {
+            const $panel = this.view.$panel;
+            _activeFilter = value || '';
+
+            const terms = _fold(_activeFilter).split(/\s+/).filter(Boolean);
+            const searching = terms.length > 0;
+            let matched = 0;
+
+            collectionRecents.items.forEach(model => {
+                const hidden = searching && !_model_matches(model, terms);
+                if (!hidden) matched++;
+                if (model.get('hidden') !== hidden) model.set('hidden', hidden);
+                $('#' + model.uid, $panel).toggleClass('hidden', hidden);
+            });
+
+            const empty = searching && matched === 0;
+            $('#idx-recent-filter-clear', $panel).toggle(searching);
+            $('#idx-recent-no-results', $panel).toggle(empty);
+            $('#box-recent .file-list-head', $panel).toggle(!empty);
+        }
+
+        function _reapply_filter() {
+            if (_activeFilter) _apply_filter.call(this, _activeFilter);
+        }
 
         return {
             init: function () {
@@ -643,7 +710,11 @@
                 _init_collections.call(this);
                 _init_ppmenu.call(this);
 
-                window.sdk.on('onupdaterecents', _on_recents.bind(this));
+                window.sdk.on('onupdaterecents', function () {
+                    _on_recents.apply(this, arguments);
+                    // rows added after a query was typed must honour it too
+                    _reapply_filter.call(this);
+                }.bind(this));
                 window.sdk.on('onupdaterecovers', _on_recovers.bind(this));
                 window.sdk.on('on_native_message', (cmd, param) => {
                     if (/files:checked/.test(cmd)) {
@@ -720,7 +791,33 @@
 
                 docGrid.render(this.view.$panel.find("#area-document-creation-grid"));
 
-                $('#idx-recent-filter', this.view.$panel).on('input', _on_filter_recents.bind(this));
+                const $filter = $('#idx-recent-filter', this.view.$panel);
+
+                // 120ms: below the ~150ms that reads as lag, high enough that a fast
+                // typist filters the collection once per word rather than per keystroke.
+                $filter.on('input', _debounce(function (e) {
+                    _apply_filter.call(this, e.target.value);
+                }.bind(this), 120));
+
+                $filter.on('keydown', function (e) {
+                    if (e.key === 'Escape' || e.keyCode === 27) {
+                        $filter.val('');
+                        _apply_filter.call(this, '');
+                    }
+                }.bind(this));
+
+                $('#idx-recent-filter-clear', this.view.$panel).on('click', function () {
+                    $filter.val('').focus();
+                    _apply_filter.call(this, '');
+                }.bind(this));
+
+                CommonEvents.on('lang:changed', function () {
+                    $filter.attr('placeholder', utils.Lang.recentSearch);
+                    $('#idx-recent-no-results .no-results-title', this.view.$panel)
+                        .text(utils.Lang.tplNoResultsTitle);
+                    $('#idx-recent-no-results .no-results-text', this.view.$panel)
+                        .text(utils.Lang.recentNoResultsText);
+                }.bind(this));
 
                 return this;
             },
