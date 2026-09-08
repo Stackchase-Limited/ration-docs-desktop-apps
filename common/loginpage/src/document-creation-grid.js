@@ -45,7 +45,6 @@
  * Document Type Object:
  * - id: unique identifier
  * - title: display name
- * - formatLabel: { value, gradientColorStart, gradientColorEnd }
  * - icon: icon reference (e.g., '#docx-big')
  *
  * @example
@@ -54,11 +53,6 @@
  *     {
  *       id: 'docx',
  *       title: 'Word Document',
- *       formatLabel: {
- *         value: 'DOCX',
- *         gradientColorStart: '#4298C5',
- *         gradientColorEnd: '#2D84B2'
- *       },
  *       icon: '#docx-big'
  *     }
  *   ],
@@ -107,12 +101,6 @@ window.DocumentCreationGrid = function (config = {}) {
                 <div class="document-creation-grid">
                     ${documentTypes.map(doc => `
                     <div class="document-creation-item" data-id="${doc.id}" onclick="window.DocumentCreationGrid.handleDocumentSelect('${doc.id}', this)">
-
-                        <div class="format-label" style="--format-bg-start: ${doc.formatLabel.gradientColorStart};
-														--format-bg-end: ${doc.formatLabel.gradientColorEnd};
-														--format-bg-winxp: ${doc.formatLabel.bgColorWinXP}">
-                            <span>${doc.formatLabel.value}</span>
-                        </div>
 
 						${doc.icon.startsWith('#') ? `<svg class="icon"><use xlink:href="${doc.icon}"></use></svg>` : `<i class="icon ${doc.icon}"></i>`}
 

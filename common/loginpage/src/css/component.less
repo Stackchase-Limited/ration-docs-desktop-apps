@@ -615,29 +615,6 @@ input[type="radio"] {
         background: @highlight-button-pressed;
     }
 
-    .format-label {
-        position: absolute;
-        top: 14px;
-        left: 10px;
-        display: flex;
-        height: 28px;
-        align-items: center;
-        padding: 0px 6px;
-        border-radius: 6px;
-        background: conic-gradient(from 225deg at 50% 50%, var(--format-bg-start) 0deg, var(--format-bg-end) 360deg);
-
-        span {
-            color: @text-contrast-background;
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .rtl & {
-            left: unset;
-            right: 10px
-        }
-    }
-
     .icon {
         width: 108px;
         height: 100px;
@@ -648,15 +625,6 @@ input[type="radio"] {
     .title {
         .text-normal();
     }
-}
-
-.win_xp {
-    .document-creation-item { 
-        .format-label {
-            background: var(--format-bg-winxp);
-        }
-    }
-    
 }
 
 /**/

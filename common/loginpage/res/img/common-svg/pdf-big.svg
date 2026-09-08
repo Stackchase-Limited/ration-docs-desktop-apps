@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="108" height="100" fill="none" viewBox="0 0 108 100">
-  <path fill="#fff" d="M14 4a4 4 0 0 1 4-4h72a4 4 0 0 1 4 4v92a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V4Z"/>
-  <path fill="#F7CAC4" d="M62 11a1 1 0 0 1 1-1h20a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H63a1 1 0 0 1-1-1v-6Zm0 12a1 1 0 0 1 1-1h20a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H63a1 1 0 0 1-1-1v-6Zm0 12a1 1 0 0 1 1-1h20a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H63a1 1 0 0 1-1-1v-6ZM24 47a1 1 0 0 1 1-1h58a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H25a1 1 0 0 1-1-1v-6Zm0 12a1 1 0 0 1 1-1h58a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H25a1 1 0 0 1-1-1v-6Zm0 12a1 1 0 0 1 1-1h58a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H25a1 1 0 0 1-1-1v-6Zm0 12a1 1 0 0 1 1-1h58a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H25a1 1 0 0 1-1-1v-6Zm1-41a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h30a1 1 0 0 1 1 1v30a1 1 0 0 1-1 1H25Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="43" height="40" viewBox="0 0 43 40">
+  <path d="M9 2H27L35 10V37c0 .6-.4 1-1 1H9c-.6 0-1-.4-1-1V3c0-.6.4-1 1-1Z" fill="#FFFFFF" stroke="#DAE2E8"/>
+  <path d="M27 2 35 10H27Z" fill="#EDF1F4" stroke="#DAE2E8"/>
+  <path d="M13 12h6v6h-6zM21 14h10M21 17h10M13 21.5h16" fill="none" stroke="#DAE2E8" stroke-width="1.2"/>
+  <path d="M0 23h21v12H0z" fill="#E8262A"/>
+  <text x="10.5" y="29.5" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="6.5" font-weight="700" text-anchor="middle" dominant-baseline="middle">PDF</text>
 </svg>
