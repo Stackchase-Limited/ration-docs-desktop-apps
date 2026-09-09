@@ -72,8 +72,22 @@
         args.tplPage = `
             <div class="action-panel ${args.action}">
                 <div class="recent-panel-container">
-                    <div class="search-bar hidden">
-                        <h1 l10n>${_lang.welWelcome}</h1>
+                    <div class="search-bar">
+                        <div class="search-field" role="search">
+                            <div class="search-lead">
+                                <svg class="icon" data-iconname="search" data-precls="tool-icon">
+                                    <use href="#search"></use>
+                                </svg>
+                            </div>
+                            <input type="text" id="idx-recent-filter" autocomplete="off" spellcheck="false"
+                                   placeholder="${_lang.searchPlaceholder}" aria-label="${_lang.searchPlaceholder}">
+                            <div class="search-kbd" id="idx-search-kbd" aria-hidden="true"></div>
+                            <button class="search-go" id="idx-search-go" aria-label="${_lang.searchPlaceholder}">
+                                <svg class="icon" data-iconname="search" data-precls="tool-icon">
+                                    <use href="#search"></use>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     <section id="area-document-creation-grid"></section>
@@ -96,14 +110,7 @@
                         <div id="box-recent">
                             <div class="file-list-title">
                                 <h3 l10n>${_lang.listRecentFileTitle}</h3>
-                                <div class="search-container recent-search">
-                                    <svg class="icon search-icon" data-iconname="search" data-precls="tool-icon">
-                                        <use href="#search"></use>
-                                    </svg>
-                                    <input type="text" id="idx-recent-filter" autocomplete="off"
-                                           spellcheck="false" placeholder="${_lang.recentSearch}">
-                                    <span class="tool close" id="idx-recent-filter-clear" style="display: none;"></span>
-                                </div>
+                                <span class="file-count" id="idx-recent-count"></span>
                             </div>
                             <div class="file-list-head text-normal">
                                 <div class="col-name" l10n>${_lang.colFileName}</div>
@@ -118,8 +125,10 @@
                                         <use id="idx-recent-nothing-dark" href="#nothing-found-dark"></use>
                                     </svg>
                                 </div>
-                                <p class="no-results-title" l10n>${_lang.tplNoResultsTitle}</p>
-                                <p class="no-results-text" l10n>${_lang.recentNoResultsText}</p>
+                                <p class="no-results-title" id="idx-recent-no-results-title"></p>
+                                <p class="no-results-text" l10n>${_lang.searchNoResultsHint}</p>
+                                <button class="btn-clear-search" id="idx-clear-search"
+                                        l10n>${_lang.searchClear}</button>
                             </div>
                         </div>
                     </div>
@@ -635,23 +644,37 @@
         // were skipped. Both bugs are avoided by folding to plain strings and using
         // indexOf.
 
-        // Characters that carry no Unicode decomposition and so survive NFD.
+        // Characters with no Unicode decomposition, so NFD alone will not fold them.
         const _foldPairs = {
             'ɓ': 'b', 'ɗ': 'd', 'ƙ': 'k', 'ƴ': 'y',   // Hausa hooked b d k y
-            'ŋ': 'n', 'đ': 'd', 'ø': 'o', 'ł': 'l',
-            'ß': 'ss', 'æ': 'ae', 'œ': 'oe'
+            'ŋ': 'n', 'đ': 'd', 'ø': 'o', 'ł': 'l'
         };
 
-        // Fold to a comparable form: lowercase, hooked letters mapped to their base,
-        // then combining marks stripped. Lets "eko" reach "Ẹ̀kọ́" and "sanyi" reach
-        // "sanyi" written with hooked consonants -- relevant for Yoruba, Igbo and
-        // Hausa file names, and harmless for Latin-1.
+        // Fold to a comparable form AND return a map from each folded character back
+        // to its index in the source. Folding drops combining marks, so the two
+        // strings differ in length; without this map, highlighting a match found in
+        // the folded text would mark the wrong characters in the original.
+        function _foldIndexed(value) {
+            const src = (value === undefined || value === null) ? '' : String(value);
+            let out = '';
+            const map = [];
+            for (let i = 0; i < src.length; i++) {
+                const ch = src.charAt(i).toLowerCase();
+                const mapped = _foldPairs[ch] !== undefined ? _foldPairs[ch] : ch;
+                const decomposed = mapped.normalize ? mapped.normalize('NFD') : mapped;
+                for (let j = 0; j < decomposed.length; j++) {
+                    const c = decomposed.charAt(j);
+                    if (c >= '̀' && c <= 'ͯ') continue;   // combining mark
+                    out += c;
+                    map.push(i);
+                }
+            }
+            map.push(src.length);           // sentinel, so an end index is addressable
+            return { text: out, map: map };
+        }
+
         function _fold(value) {
-            if (value === undefined || value === null) return '';
-            let out = String(value).toLowerCase();
-            out = out.replace(/[ɓɗƙƴŋđøłßæœ]/g,
-                              ch => _foldPairs[ch]);
-            return out.normalize ? out.normalize('NFD').replace(/[̀-ͯ]/g, '') : out;
+            return _foldIndexed(value).text;
         }
 
         function _debounce(fn, wait) {
@@ -663,8 +686,13 @@
             };
         }
 
-        // Last query applied, so a recents refresh can re-apply it to newly added rows.
         let _activeFilter = '';
+
+        // Every whitespace-separated term must match, so "report 2025" narrows rather
+        // than widening -- order-independent, unlike a single substring match.
+        function _terms(value) {
+            return _fold(value).split(/\s+/).filter(Boolean);
+        }
 
         function _model_matches(model, terms) {
             const haystack = _fold(model.get('name')) + ' ' +
@@ -673,25 +701,97 @@
             return terms.every(term => haystack.indexOf(term) !== -1);
         }
 
-        // Every whitespace-separated term must match, so "report 2025" narrows rather
-        // than widening -- order-independent, unlike a single substring match.
+        // Wrap matches in <mark> inside an element's own text nodes, leaving child
+        // elements (the file-extension span) intact.
+        function _mark(el, terms) {
+            if (!el) return;
+            _unmark(el);
+            if (!terms.length) return;
+            const nodes = [];
+            for (let n = el.firstChild; n; n = n.nextSibling) {
+                if (n.nodeType === 3 && n.nodeValue) nodes.push(n);
+            }
+            nodes.forEach(function (node) {
+                const src = node.nodeValue;
+                const folded = _foldIndexed(src);
+                let ranges = [];
+                terms.forEach(function (t) {
+                    let i = folded.text.indexOf(t);
+                    while (i !== -1) {
+                        ranges.push([folded.map[i], folded.map[i + t.length]]);
+                        i = folded.text.indexOf(t, i + t.length);
+                    }
+                });
+                if (!ranges.length) return;
+                ranges.sort((a, b) => a[0] - b[0]);
+                const merged = [];
+                ranges.forEach(function (r) {
+                    const last = merged[merged.length - 1];
+                    if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1]);
+                    else merged.push([r[0], r[1]]);
+                });
+                const frag = document.createDocumentFragment();
+                let at = 0;
+                merged.forEach(function (r) {
+                    if (r[0] > at) frag.appendChild(document.createTextNode(src.slice(at, r[0])));
+                    const m = document.createElement('mark');
+                    m.className = 'search-hit';
+                    m.textContent = src.slice(r[0], r[1]);
+                    frag.appendChild(m);
+                    at = r[1];
+                });
+                if (at < src.length) frag.appendChild(document.createTextNode(src.slice(at)));
+                el.replaceChild(frag, node);
+            });
+        }
+
+        function _unmark(el) {
+            if (!el) return;
+            const marks = el.querySelectorAll ? el.querySelectorAll('mark.search-hit') : [];
+            for (let i = 0; i < marks.length; i++) {
+                const m = marks[i];
+                m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+            }
+            el.normalize && el.normalize();
+        }
+
+        function _filter_collection(collection, $panel, terms) {
+            let matched = 0;
+            collection.items.forEach(function (model) {
+                const hidden = terms.length > 0 && !_model_matches(model, terms);
+                if (!hidden) matched++;
+                if (model.get('hidden') !== hidden) model.set('hidden', hidden);
+                const $row = $('#' + model.uid, $panel);
+                $row.toggleClass('hidden', hidden);
+                if (hidden) {
+                    _unmark($row.find('.col-name .name')[0]);
+                    _unmark($row.find('.col-location')[0]);
+                } else {
+                    _mark($row.find('.col-name .name')[0], terms);
+                    _mark($row.find('.col-location')[0], terms);
+                }
+            });
+            return matched;
+        }
+
         function _apply_filter(value) {
             const $panel = this.view.$panel;
             _activeFilter = value || '';
-
-            const terms = _fold(_activeFilter).split(/\s+/).filter(Boolean);
+            const terms = _terms(_activeFilter);
             const searching = terms.length > 0;
-            let matched = 0;
 
-            collectionRecents.items.forEach(model => {
-                const hidden = searching && !_model_matches(model, terms);
-                if (!hidden) matched++;
-                if (model.get('hidden') !== hidden) model.set('hidden', hidden);
-                $('#' + model.uid, $panel).toggleClass('hidden', hidden);
-            });
+            const matched = _filter_collection(collectionRecents, $panel, terms);
+            _filter_collection(collectionRecovers, $panel, terms);
+
+            const count = searching
+                ? (matched === 1 ? utils.Lang.searchCountOne : utils.Lang.searchCountMany)
+                    .replace('$1', matched)
+                : '';
+            $('#idx-recent-count', $panel).text(count);
 
             const empty = searching && matched === 0;
-            $('#idx-recent-filter-clear', $panel).toggle(searching);
+            $('#idx-recent-no-results-title', $panel)
+                .text(utils.Lang.searchNoResults.replace('$1', _activeFilter));
             $('#idx-recent-no-results', $panel).toggle(empty);
             $('#box-recent .file-list-head', $panel).toggle(!empty);
         }
@@ -793,6 +893,12 @@
 
                 const $filter = $('#idx-recent-filter', this.view.$panel);
 
+                // The design shows a Cmd-K hint; Cmd is only correct on macOS.
+                const _isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
+                $('#idx-search-kbd', this.view.$panel)
+                    .html(_isMac ? '<span>⌘</span><span>K</span>'
+                                 : '<span>Ctrl</span><span>K</span>');
+
                 // 120ms: below the ~150ms that reads as lag, high enough that a fast
                 // typist filters the collection once per word rather than per keystroke.
                 $filter.on('input', _debounce(function (e) {
@@ -803,20 +909,34 @@
                     if (e.key === 'Escape' || e.keyCode === 27) {
                         $filter.val('');
                         _apply_filter.call(this, '');
+                        $filter.blur();
                     }
                 }.bind(this));
 
-                $('#idx-recent-filter-clear', this.view.$panel).on('click', function () {
+                // Cmd/Ctrl-K focuses and selects, matching the hint shown in the field.
+                $(document).on('keydown.recentsearch', function (e) {
+                    const key = (e.key || '').toLowerCase();
+                    if ((e.metaKey || e.ctrlKey) && key === 'k') {
+                        e.preventDefault();
+                        $filter.focus().select();
+                    }
+                });
+
+                $('#idx-search-go', this.view.$panel).on('click', function () {
+                    $filter.focus().select();
+                });
+
+                $('#idx-clear-search', this.view.$panel).on('click', function () {
                     $filter.val('').focus();
                     _apply_filter.call(this, '');
                 }.bind(this));
 
                 CommonEvents.on('lang:changed', function () {
-                    $filter.attr('placeholder', utils.Lang.recentSearch);
-                    $('#idx-recent-no-results .no-results-title', this.view.$panel)
-                        .text(utils.Lang.tplNoResultsTitle);
+                    $filter.attr('placeholder', utils.Lang.searchPlaceholder);
+                    $('#idx-clear-search', this.view.$panel).text(utils.Lang.searchClear);
                     $('#idx-recent-no-results .no-results-text', this.view.$panel)
-                        .text(utils.Lang.recentNoResultsText);
+                        .text(utils.Lang.searchNoResultsHint);
+                    _reapply_filter.call(this);
                 }.bind(this));
 
                 return this;

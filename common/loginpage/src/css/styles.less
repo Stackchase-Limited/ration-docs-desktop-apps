@@ -384,35 +384,13 @@ li.menu-item {
   }
 }
 
-// Search field in the "Recent files" title row. Mirrors .search-container from the
-// templates panel so both searches read as the same control.
-.recent-search {
-  position: relative;
+// Result count, shown beside the "Recent files" heading while a query is active.
+.file-count {
   flex: 0 0 auto;
-  width: 240px;
-  height: 36px;
-
-  input {
-    width: 100%;
-    height: 100%;
-    padding: 8px 32px 8px 36px;
-    font-size: 14px;
-    font-weight: 400;
-    border-radius: 8px;
-    border: @scaled-one-px solid @border-divider;
-    outline: none;
-    color: @text-normal;
-    background: @background-normal;
-
-    &:focus {
-      border-color: @border-control-focus;
-    }
-  }
-
-  .rtl & input {
-    padding-left: 32px;
-    padding-right: 36px;
-  }
+  font-size: 13.5px;
+  font-weight: 500;
+  color: @text-secondary;
+  font-variant-numeric: tabular-nums;
 }
 
 #idx-recent-no-results {
@@ -434,6 +412,19 @@ li.menu-item {
     margin: 0;
     font-size: 12px;
     color: @text-secondary;
+  }
+
+  .btn-clear-search {
+    margin-top: 16px;
+    border: @scaled-one-px solid @border-divider;
+    background: @background-normal;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: @ration-petrol;
+    cursor: pointer;
+
+    &:hover { background: @background-normal-element; }
   }
 }
 
@@ -986,12 +977,91 @@ li.menu-item {
   overflow-y: auto;
   color: @text-normal;
 
+  // Top search bar, per the Ration Docs home design: a single full-width field
+  // with a leading icon, a keyboard hint and a trailing action, capped at 640px.
   .search-bar {
-    margin-top: 40px;
+    margin-top: 32px;
+    margin-bottom: 8px;
 
-    h1 {
-      margin: 0;
+    .search-field {
+      display: flex;
+      align-items: stretch;
+      height: 50px;
+      max-width: 640px;
+      border: @scaled-one-px solid @border-divider;
+      background: @background-normal;
+
+      &:focus-within {
+        border-color: @ration-petrol;
+        box-shadow: 0 0 0 3px @ration-petrol-ring;
+      }
+
+      .search-lead {
+        width: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: @text-secondary;
+
+        .icon { width: 22px; height: 22px; }
+      }
+
+      input {
+        flex: 1 1 auto;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: @text-normal;
+        background: transparent;
+
+        &::placeholder { color: @text-secondary; font-weight: 400; }
+      }
     }
+
+    .search-kbd {
+      align-self: center;
+      margin-right: 8px;
+      display: flex;
+      gap: 4px;
+
+      span {
+        border: @scaled-one-px solid @border-divider;
+        padding: 3px 7px;
+        font-size: 12px;
+        font-weight: 600;
+        color: @text-secondary;
+        min-width: 22px;
+        text-align: center;
+      }
+    }
+
+    .search-go {
+      width: 50px;
+      flex: 0 0 50px;
+      border: 0;
+      background: @ration-petrol;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .icon { width: 22px; height: 22px; }
+      &:hover { background: @ration-petrol-dark; }
+    }
+
+    .rtl & {
+      .search-kbd { margin-right: 0; margin-left: 8px; }
+    }
+  }
+
+  // Match highlight inside the file list.
+  mark.search-hit {
+    background: @ration-petrol-ring;
+    color: inherit;
+    padding: 0 1px;
   }
 
   .win_xp & {
