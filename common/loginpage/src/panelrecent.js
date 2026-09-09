@@ -118,6 +118,12 @@
                                 <div class="col-date" l10n>${_lang.colLastOpened}</div>
                             </div>
                             <div class="file-list-body scrollable"></div>
+                            <div id="idx-history-block" style="display: none;">
+                                <div class="file-list-subhead text-normal">
+                                    <span l10n>${_lang.searchFromHistory}</span>
+                                </div>
+                                <div id="idx-history-body" class="file-list-body"></div>
+                            </div>
                             <div id="idx-recent-no-results" class="search-no-results" style="display: none;">
                                 <div class="icon-box">
                                     <svg class="icon nothing-found-light-icon" data-iconname="nothing-found-light" data-precls="tool-icon">
@@ -368,6 +374,13 @@
         var _on_recents = function (params) {
             this.rawRecents = undefined;
 
+            // Index the pushed list. The core caps how many recents it keeps, so
+            // this is a snapshot, not the whole history -- openFile() adds the rest.
+            try {
+                RationFileStore.upsertMany(utils.fn.parseRecent(params), 'recent')
+                    .then(function () { RationFileStore.prune(); });
+            } catch (e) { /* search simply falls back to the in-memory lists */ }
+
             setTimeout(e => {
                 this.rawRecents = params;
                 this.recentIndex = 0;
@@ -387,6 +400,8 @@
                 for (let item of files) {
                     collectionRecovers.add( new FileModel(item) );
                 }
+
+                try { RationFileStore.upsertMany(files, 'recover'); } catch (e) {}
 
                 this.view.$boxRecovery.css('display', collectionRecovers.size() > 0 ? 'flex' : 'none');
                 // requestAnimationFrame(() => this.view.updateListSize());
@@ -644,38 +659,8 @@
         // were skipped. Both bugs are avoided by folding to plain strings and using
         // indexOf.
 
-        // Characters with no Unicode decomposition, so NFD alone will not fold them.
-        const _foldPairs = {
-            'ɓ': 'b', 'ɗ': 'd', 'ƙ': 'k', 'ƴ': 'y',   // Hausa hooked b d k y
-            'ŋ': 'n', 'đ': 'd', 'ø': 'o', 'ł': 'l'
-        };
-
-        // Fold to a comparable form AND return a map from each folded character back
-        // to its index in the source. Folding drops combining marks, so the two
-        // strings differ in length; without this map, highlighting a match found in
-        // the folded text would mark the wrong characters in the original.
-        function _foldIndexed(value) {
-            const src = (value === undefined || value === null) ? '' : String(value);
-            let out = '';
-            const map = [];
-            for (let i = 0; i < src.length; i++) {
-                const ch = src.charAt(i).toLowerCase();
-                const mapped = _foldPairs[ch] !== undefined ? _foldPairs[ch] : ch;
-                const decomposed = mapped.normalize ? mapped.normalize('NFD') : mapped;
-                for (let j = 0; j < decomposed.length; j++) {
-                    const c = decomposed.charAt(j);
-                    if (c >= '̀' && c <= 'ͯ') continue;   // combining mark
-                    out += c;
-                    map.push(i);
-                }
-            }
-            map.push(src.length);           // sentinel, so an end index is addressable
-            return { text: out, map: map };
-        }
-
-        function _fold(value) {
-            return _foldIndexed(value).text;
-        }
+        const _fold = utils.fn.fold;
+        const _foldIndexed = utils.fn.foldIndexed;
 
         function _debounce(fn, wait) {
             let timer = null;
@@ -774,8 +759,58 @@
             return matched;
         }
 
+        // Rows already on screen, keyed the same way the store keys entries, so a
+        // history hit that is already visible is not shown twice.
+        function _visible_keys() {
+            const keys = {};
+            collectionRecents.items.concat(collectionRecovers.items).forEach(function (m) {
+                const p = m.get('path') || m.get('name');
+                if (p) keys[String(p).toLowerCase()] = true;
+            });
+            return keys;
+        }
+
+        // Async results are raced: a slow query for "rep" must not overwrite the
+        // rendered results of the later "report". Only the newest token may paint.
+        let _searchToken = 0;
+
+        function _render_history(rows, terms) {
+            const $panel = this.view.$panel;
+            const $block = $('#idx-history-block', $panel);
+            const $body = $('#idx-history-body', $panel);
+            $body.empty();
+            if (!rows.length) { $block.hide(); return 0; }
+
+            const view = this.view;
+            rows.forEach(function (row) {
+                const info = {
+                    uid: 'hist-' + utils.fn.uuid(),
+                    name: row.name,
+                    descr: row.descr,
+                    date: row.date || '',
+                    type: row.type,
+                    format: row.format,
+                    crypted: false
+                };
+                const $row = $(view.listitemtemplate(info));
+                $row.addClass('history-item');
+                $row.on('click', function () {
+                    openFile(OPEN_FILE_RECENT, {
+                        fileid: row.fileid, name: row.name, path: row.path,
+                        type: row.type, cloud: row.cloud, hash: row.hash
+                    });
+                });
+                $body.append($row);
+                _mark($row.find('.col-name .name')[0], terms);
+                _mark($row.find('.col-location')[0], terms);
+            });
+            $block.show();
+            return rows.length;
+        }
+
         function _apply_filter(value) {
             const $panel = this.view.$panel;
+            const self = this;
             _activeFilter = value || '';
             const terms = _terms(_activeFilter);
             const searching = terms.length > 0;
@@ -783,17 +818,45 @@
             const matched = _filter_collection(collectionRecents, $panel, terms);
             _filter_collection(collectionRecovers, $panel, terms);
 
-            const count = searching
-                ? (matched === 1 ? utils.Lang.searchCountOne : utils.Lang.searchCountMany)
-                    .replace('$1', matched)
-                : '';
-            $('#idx-recent-count', $panel).text(count);
+            const token = ++_searchToken;
 
-            const empty = searching && matched === 0;
-            $('#idx-recent-no-results-title', $panel)
-                .text(utils.Lang.searchNoResults.replace('$1', _activeFilter));
-            $('#idx-recent-no-results', $panel).toggle(empty);
-            $('#box-recent .file-list-head', $panel).toggle(!empty);
+            function paint(historyCount) {
+                const total = matched + historyCount;
+                $('#idx-recent-count', $panel).text(
+                    searching
+                        ? (total === 1 ? utils.Lang.searchCountOne : utils.Lang.searchCountMany)
+                              .replace('$1', total)
+                        : ''
+                );
+                const empty = searching && total === 0;
+                $('#idx-recent-no-results-title', $panel)
+                    .text(utils.Lang.searchNoResults.replace('$1', _activeFilter));
+                $('#idx-recent-no-results', $panel).toggle(empty);
+                $('#box-recent .file-list-head', $panel).toggle(!empty);
+            }
+
+            if (!searching) {
+                _render_history.call(self, [], terms);
+                paint(0);
+                return;
+            }
+
+            // Paint what is already on screen first so typing stays responsive, then
+            // fold in the store results when they arrive.
+            paint(0);
+
+            let query;
+            try { query = RationFileStore.search(terms, 50); }
+            catch (e) { query = Promise.resolve([]); }
+
+            query.then(function (rows) {
+                if (token !== _searchToken) return;      // a newer query has started
+                const seen = _visible_keys();
+                const extra = rows.filter(function (r) { return !seen[r.key]; });
+                paint(_render_history.call(self, extra, terms));
+            }).catch(function () {
+                if (token === _searchToken) paint(0);
+            });
         }
 
         function _reapply_filter() {

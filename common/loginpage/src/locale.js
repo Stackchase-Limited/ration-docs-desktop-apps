@@ -59,6 +59,7 @@ l10n.en = {
     searchNoResultsHint: 'Try a different term, or clear the search.',
     searchCountOne: '$1 file',
     searchCountMany: '$1 files',
+    searchFromHistory: 'Older files',
     listRecentDirTitle:'Recent folders',
     menuFileOpen: 'Open',
     menuFileExplore: 'Show in folder',

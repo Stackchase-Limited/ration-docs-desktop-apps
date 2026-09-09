@@ -469,6 +469,45 @@ utils.fn.parseRecent = function(arr, out = 'files') {
     return out_dirs_arr;
 }
 
+// Characters with no Unicode decomposition, so NFD alone will not fold them.
+utils.fn.foldPairs = {
+    'ɓ': 'b', 'ɗ': 'd', 'ƙ': 'k', 'ƴ': 'y',   // Hausa hooked b d k y
+    'ŋ': 'n', 'đ': 'd', 'ø': 'o', 'ł': 'l'
+};
+
+// Fold a string to a comparable form AND return a map from each folded character
+// back to its index in the source. Folding drops combining marks, so the folded
+// string is shorter; without this map a match position found in one string does
+// not address the other, and highlighting would mark the wrong characters.
+utils.fn.foldIndexed = function(value) {
+    const src = (value === undefined || value === null) ? '' : String(value);
+    let out = '';
+    const map = [];
+    for (let i = 0; i < src.length; i++) {
+        const ch = src.charAt(i).toLowerCase();
+        const mapped = utils.fn.foldPairs[ch] !== undefined ? utils.fn.foldPairs[ch] : ch;
+        const decomposed = mapped.normalize ? mapped.normalize('NFD') : mapped;
+        for (let j = 0; j < decomposed.length; j++) {
+            const c = decomposed.charAt(j);
+            if (c >= '̀' && c <= 'ͯ') continue;   // combining mark
+            out += c;
+            map.push(i);
+        }
+    }
+    map.push(src.length);           // sentinel, so an end index is addressable
+    return { text: out, map: map };
+};
+
+utils.fn.fold = function(value) {
+    return utils.fn.foldIndexed(value).text;
+};
+
+// Split a query into terms. Every term must match, so "report 2025" narrows
+// rather than widens, and order does not matter.
+utils.fn.searchTerms = function(value) {
+    return utils.fn.fold(value).split(/\s+/).filter(Boolean);
+};
+
 utils.fn.decodeHtml = function(str) {
     return $('<div>').html(str).text();
 }

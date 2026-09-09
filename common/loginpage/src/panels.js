@@ -353,6 +353,23 @@ function openFile(from, model) {
         if (from == OPEN_FILE_FOLDER) {
             window.sdk.command("open:folder", model);
         } else {
+            // Every open passes through here -- from the recents list, the recovery
+            // list, the context menu or a folder. Recording it here is what lets the
+            // search index outlive the core's capped recents list: a file opened once
+            // stays findable after it has fallen off the end of that list.
+            try {
+                RationFileStore.touch({
+                    name:   utils.fn.decodeHtml(model.name),
+                    path:   utils.fn.decodeHtml(model.path),
+                    descr:  model.descr,
+                    type:   model.type,
+                    format: model.format,
+                    fileid: model.fileid,
+                    cloud:  model.cloud,
+                    date:   model.date
+                }, from == OPEN_FILE_RECOVERY ? 'recover' : 'recent');
+            } catch (e) { /* opening the file must never depend on the index */ }
+
             const params = {
                     id: model.fileid,
                     name: utils.fn.decodeHtml(model.name),
