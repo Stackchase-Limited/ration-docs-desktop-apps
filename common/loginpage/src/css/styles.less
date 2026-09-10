@@ -1037,86 +1037,6 @@ li.menu-item {
   overflow-y: auto;
   color: @text-normal;
 
-  // Top search bar, per the Ration Docs home design: a single full-width field
-  // with a leading icon, a keyboard hint and a trailing action, capped at 640px.
-  .search-bar {
-    margin-top: 32px;
-    margin-bottom: 8px;
-
-    .search-field {
-      display: flex;
-      align-items: stretch;
-      height: 50px;
-      max-width: 640px;
-      border: @scaled-one-px solid @border-divider;
-      background: @background-normal;
-
-      &:focus-within {
-        border-color: @ration-petrol;
-        box-shadow: 0 0 0 3px @ration-petrol-ring;
-      }
-
-      .search-lead {
-        width: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: @text-secondary;
-
-        .icon { width: 22px; height: 22px; }
-      }
-
-      input {
-        flex: 1 1 auto;
-        min-width: 0;
-        border: 0;
-        outline: 0;
-        font-size: 16px;
-        font-weight: 500;
-        color: @text-normal;
-        background: transparent;
-
-        &::placeholder { color: @text-secondary; font-weight: 400; }
-      }
-    }
-
-    .search-kbd {
-      align-self: center;
-      margin-right: 8px;
-      display: flex;
-      gap: 4px;
-
-      span {
-        border: @scaled-one-px solid @border-divider;
-        padding: 3px 7px;
-        font-size: 12px;
-        font-weight: 600;
-        color: @text-secondary;
-        min-width: 22px;
-        text-align: center;
-      }
-    }
-
-    .search-go {
-      width: 50px;
-      flex: 0 0 50px;
-      border: 0;
-      background: @ration-petrol;
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      .icon { width: 22px; height: 22px; }
-      &:hover { background: @ration-petrol-dark; }
-    }
-
-    .rtl & {
-      .search-kbd { margin-right: 0; margin-left: 8px; }
-    }
-  }
-
   // Match highlight inside the file list.
   mark.search-hit {
     background: @ration-petrol-ring;
@@ -1159,71 +1079,6 @@ li.menu-item {
         > * {
           min-width: 30px;
         }
-      }
-    }
-  }
-}
-
-.recent-panel-container {
-  .panel-container-base();
-
-  .file-list-body .row {
-    @media (min-width: 860px) {
-      &.pinned .col-pin {
-        opacity: 1;
-
-        .icon {
-          opacity: 1;
-        }
-      }
-    }
-
-    @media (min-width: 1037px) and (max-width: 1068px) {
-      &.pinned .col-pin {
-        opacity: 0;
-
-        .icon {
-          opacity: 0;
-        }
-      }
-    }
-  }
-
-  .win_xp & {
-    display: block;
-    padding-left: 32px;
-    padding-right: 32px;
-    margin-left: auto;
-    margin-right: auto;
-
-    .document-creation-grid {
-      @media (min-width: 1280px) {
-        padding-left: 104px;
-        padding-right: 112px;
-      }
-
-      > * {
-        margin-right: 32px;
-      }
-
-      > *:last-child {
-        margin-right: 0;
-      }
-    }
-
-    > * {
-      margin-bottom: 40px;
-    }
-
-    > *:last-child {
-      margin-bottom: 0;
-    }
-
-    .file-list-body {
-      display: initial;
-
-      .row {
-        display: flex;
       }
     }
   }
@@ -1378,97 +1233,217 @@ li.menu-item {
   }
 }
 
-// Ration Docs start page skin. The functional document, file-type, and sidebar
-// icons intentionally remain the shipped SVG symbols so existing behavior and
-// visual language carry forward with the new home experience.
+// Ration Docs home design.
+//
+// The design is deliberately square: no radius anywhere except the traffic
+// lights the OS draws. Emphasis comes from the petrol accent, a 2px inset
+// underline on the active tab, and solid fills on the active segment -- not
+// from rounding or shadow. Keep it that way when extending this block.
+//
+// Scope note: the window title bar and its tabs are drawn natively by the
+// desktop shell, so this stylesheet covers the rail and the content area only.
+
+// ---- rail ----------------------------------------------------------------
 .ration-sidebar {
-  padding: 18px 12px 12px;
-  gap: 6px;
-  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+  background: @rd-navy;
+  color: @rd-side-ink;
+  border-right: 1px solid @rd-side-edge;
 
   .ration-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 48px;
-    margin: 0 4px 14px;
-    color: #162033;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.2px;
+    padding: 24px 22px 20px;
   }
 
-  .ration-brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
+  .ration-wordmark {
+    display: block;
+    width: auto;
     height: 28px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #2563eb, #1647a5);
-    color: #fff;
-    font-family: Georgia, serif;
-    font-size: 18px;
-    font-weight: 700;
   }
 
-  > li.menu-item:not(.separator):not(.devider) {
+  > li.menu-item:not(.separator):not(.devider):not(.rd-spacer) {
+    margin: 0 14px;
+
     a {
-      height: 42px;
-      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      height: 44px;
+      padding: 0 12px;
+      border: 0;
+      border-left: 2px solid transparent;
+      border-radius: 0;
+      background: none;
+      color: @rd-side-mut;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+
+      .icon-box {
+        width: 21px;
+        height: 21px;
+        padding: 0;
+        border-radius: 0;
+        background: none;
+      }
+
+      svg.icon {
+        width: 21px;
+        height: 21px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.75;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        color: inherit;
+      }
     }
 
-    &.selected {
-      background: #e7efff;
-      outline-color: #cddcff;
+    a:hover {
+      background: @rd-side-hover;
+      color: @rd-side-ink;
+    }
+
+    &.selected a,
+    a.selected {
+      border-left-color: @ration-petrol;
+      background: @rd-side-active;
+      color: #fff;
+      outline: none;
       box-shadow: none;
     }
+
+    // The agent entry is the one violet accent in an otherwise petrol rail.
+    a.rd-ai svg.icon { color: @rd-violet; }
+    a.rd-ai:hover svg.icon { color: #9d86ff; }
+  }
+
+  > li.menu-item.separator,
+  > li.menu-item.devider {
+    margin: 0;
+    border: 0;
+    background: none;
+  }
+
+  // Pushes the agent and settings entries to the foot of the rail.
+  > li.menu-item.rd-spacer {
+    flex: 1 1 auto;
+    min-height: 8px;
+    margin: 0;
+    border: 0;
+    background: none;
+    pointer-events: none;
+  }
+
+  > li.menu-item.rd-foot:first-of-type,
+  > li.menu-item.rd-spacer + li.menu-item.rd-foot {
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 }
 
-.ration-content {
-  background: #fff;
-}
-
-.ration-home-header {
+.rd-grp {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 36px 16px 20px;
+  margin: 20px 14px 4px;
+  color: @rd-side-mut;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 
-  h1 {
-    margin: 0;
-    color: #162033;
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: -0.8px;
-    line-height: 1.2;
+  .rd-grp-add {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: @rd-side-mut;
+    cursor: pointer;
+    place-items: center;
+
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+    }
+
+    &:hover {
+      background: @rd-side-hover;
+      color: #fff;
+    }
   }
 }
 
-.ration-search {
+.rd-cloud-empty {
+  margin: 0;
+  padding: 6px 26px;
+  color: @rd-side-mut;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+// ---- content -------------------------------------------------------------
+.ration-content {
   display: flex;
+  min-width: 0;
+  flex-direction: column;
+  background: @rd-canvas;
+
+  .action-panel.recents {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+  }
+}
+
+.rd-topbar {
+  display: flex;
+  height: 78px;
   align-items: center;
-  gap: 10px;
-  height: 44px;
-  margin: 0 16px 28px;
-  padding: 0 12px;
-  border: 1px solid #d8dee9;
-  border-radius: 9px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(20, 32, 51, 0.04);
+  flex: 0 0 auto;
+  gap: 20px;
+  padding: 0 32px;
+  border-bottom: 1px solid @rd-line;
+  background: @rd-surface;
+}
+
+.rd-search {
+  display: flex;
+  height: 50px;
+  flex: 1;
+  max-width: 640px;
+  border: 1px solid @rd-line;
+  background: @rd-surface;
 
   &:focus-within {
-    border-color: #7da2f5;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    border-color: @ration-petrol;
+    box-shadow: 0 0 0 3px @ration-petrol-ring;
   }
 
-  .icon {
-    width: 18px;
-    height: 18px;
-    fill: @background-icon-normal;
-    stroke: @icon-normal;
+  .rd-search-lead {
+    display: grid;
+    width: 50px;
+    color: @rd-faint;
+    place-items: center;
+
+    svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+    }
   }
 
   input {
@@ -1476,135 +1451,448 @@ li.menu-item {
     flex: 1;
     border: 0;
     outline: 0;
-    color: #162033;
-    font-size: 14px;
+    background: transparent;
+    color: @rd-ink;
+    font-size: 16px;
+    font-weight: 500;
 
-    &::placeholder { color: #8a94a6; }
-  }
-}
-
-.ration-search-shortcut {
-  padding: 3px 6px;
-  border: 1px solid #e2e7ef;
-  border-radius: 4px;
-  color: #778195;
-  font-size: 11px;
-  line-height: 1;
-}
-
-.ration-eyebrow {
-  margin: 0 0 5px;
-  color: #6b7280;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.ration-open-file {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 8px 13px;
-  border: 1px solid #d8dee9;
-  border-radius: 8px;
-  background: #fff;
-  color: #27364b;
-  font-size: 13px;
-  font-weight: 600;
-
-  &:hover { background: #f5f8fc; }
-
-  .icon {
-    width: 18px;
-    height: 18px;
-    fill: @background-icon-normal;
-    stroke: @icon-normal;
-  }
-}
-
-.ration-section-title {
-  margin: 0 16px 4px;
-  color: #162033;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 28px;
-  text-align: left;
-}
-
-.ration-content {
-  .recent-panel-container {
-    max-width: 1440px;
-    padding-inline: 40px;
-  }
-
-  #area-document-creation-grid {
-    min-height: 176px;
-    margin-bottom: 30px;
-    padding: 10px 16px 0;
-  }
-
-  .document-creation-grid {
-    justify-content: flex-start;
-    gap: 16px;
-    padding: 0;
-  }
-
-  .document-creation-item {
-    width: 156px;
-    height: 156px;
-    padding: 20px 12px 14px;
-    border: 1px solid #e6eaf0;
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: 0 1px 2px rgba(20, 32, 51, 0.04);
-
-    &:hover {
-      border-color: #b9caf0;
-      background: #f8faff;
-      box-shadow: 0 5px 16px rgba(36, 78, 151, 0.10);
+    &::placeholder {
+      color: @rd-faint;
+      font-weight: 400;
     }
 
-    .icon { width: 84px; height: 78px; }
-    .title { font-weight: 600; }
-    .format-label { top: 10px; left: 10px; height: 24px; }
-    .format-label span { font-size: 12px; }
+    &:focus-visible { outline: 0; }
   }
 
-  #box-container { gap: 28px; }
+  .rd-search-go {
+    display: grid;
+    width: 50px;
+    height: auto;
+    flex: 0 0 50px;
+    align-self: stretch;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: @ration-petrol;
+    color: #fff;
+    cursor: pointer;
+    place-items: center;
 
-  .file-list-title {
-    padding: 4px 16px 16px;
-    margin: 0;
-    background: #fff;
+    svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+    }
 
-    h3 { color: #162033; font-size: 18px; }
+    &:hover { background: @ration-petrol-dark; }
   }
+}
 
-  .file-list-head { top: 0; background: #fff; }
+.rd-kbd {
+  display: flex;
+  align-self: center;
+  margin-right: 8px;
+  gap: 4px;
 
-  .file-list-head, .file-list-body .row {
-    border-radius: 7px;
-  }
-
-  .file-list-body .row:hover { background: #f6f8fc; }
-
-  .ration-search-empty {
-    margin: 24px 16px;
-    color: #6b7280;
+  span {
+    min-width: 22px;
+    padding: 3px 7px;
+    border: 1px solid @rd-line;
+    color: @rd-muted;
+    font-size: 12px;
+    font-weight: 600;
     text-align: center;
   }
 }
 
-@media (max-width: 860px) {
-  .ration-sidebar { min-width: 64px; max-width: 64px; padding-inline: 8px; }
-  .ration-sidebar .ration-brand-name, .ration-sidebar .text { display: none; }
-  .ration-sidebar .ration-brand { justify-content: center; margin-inline: 0; }
-  .ration-sidebar > li.menu-item:not(.separator):not(.devider) a { justify-content: center; padding: 7px; }
-  .ration-content .recent-panel-container { padding-inline: 20px; }
+.rd-right {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
 }
+
+.rd-avatar {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  background: @ration-petrol;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  place-items: center;
+}
+
+.rd-work {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 30px 32px 44px;
+}
+
+.rd-sec-h {
+  margin: 0 0 14px;
+  color: @rd-muted;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+// ---- create tiles --------------------------------------------------------
+#area-document-creation-grid {
+  min-height: 0;
+  margin: 0 0 34px;
+  padding: 0;
+}
+
+.ration-content .document-creation-grid {
+  display: grid;
+  justify-content: stretch;
+  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 0;
+}
+
+.ration-content .document-creation-item {
+  display: flex;
+  width: auto;
+  height: auto;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid @rd-line;
+  border-radius: 0;
+  background: @rd-surface;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    border-color: @ration-petrol;
+    background: @rd-surface;
+    box-shadow: inset 0 1px 0 @ration-petrol;
+  }
+
+  .rd-glyph {
+    position: relative;
+    width: 44px;
+    height: 54px;
+
+    svg {
+      width: 44px;
+      height: 54px;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+  }
+
+  .rd-chip {
+    position: absolute;
+    bottom: 8px;
+    left: 0;
+    padding: 3px 6px;
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+  }
+
+  .title {
+    padding: 0;
+    color: @rd-ink;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .rd-meta {
+    margin-top: -6px;
+    color: @rd-faint;
+    font-size: 13px;
+  }
+
+  &[data-format="docx"] { .rd-glyph svg { stroke: @rd-blue; }   .rd-chip { background: @rd-blue; } }
+  &[data-format="xlsx"] { .rd-glyph svg { stroke: @rd-green; }  .rd-chip { background: @rd-green; } }
+  &[data-format="pptx"] { .rd-glyph svg { stroke: @rd-orange; } .rd-chip { background: @rd-orange; } }
+  &[data-format="pdf"]  { .rd-glyph svg { stroke: @rd-red; }    .rd-chip { background: @rd-red; } }
+}
+
+// ---- list header controls ------------------------------------------------
+.rd-rf-head {
+  display: flex;
+  align-items: center;
+  margin: 0 0 16px;
+  gap: 16px;
+}
+
+.rd-toggle {
+  display: flex;
+  gap: 26px;
+
+  button {
+    padding: 4px 0 12px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: inset 0 -2px 0 transparent;
+    color: @rd-muted;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: 700;
+
+    &.on {
+      box-shadow: inset 0 -2px 0 @ration-petrol;
+      color: @rd-ink;
+    }
+  }
+}
+
+.rd-count {
+  margin-left: auto;
+  color: @rd-faint;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.rd-seg {
+  display: flex;
+  border: 1px solid @rd-line;
+  background: @rd-surface;
+
+  button {
+    padding: 8px 14px;
+    border: 0;
+    border-right: 1px solid @rd-line;
+    border-radius: 0;
+    background: none;
+    color: @rd-muted;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+
+    &:last-child { border-right: 0; }
+    &:hover { background: @rd-canvas; }
+
+    &.on {
+      background: @ration-petrol;
+      color: #fff;
+    }
+  }
+}
+
+// ---- file list -----------------------------------------------------------
+// Head and rows share one track definition so columns line up. The pin and
+// overflow columns are app functionality the static design omitted.
+#box-container {
+  display: block;
+  gap: 0;
+}
+
+.rd-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid @rd-line;
+  background: @rd-surface;
+
+  // Three tracks, as the design specifies. The pin and overflow buttons are
+  // absolutely-positioned hover overlays in the shipped stylesheet, so they
+  // deliberately take no track of their own.
+  --rd-cols: 1fr 260px 176px;
+  &.recover { --rd-cols: 1fr 210px 176px; }
+
+  .file-list-head,
+  .file-list-body .row {
+    display: grid;
+    align-items: center;
+    border-radius: 0;
+    grid-template-columns: var(--rd-cols);
+
+    > .col-name     { grid-column: 1; }
+    > .col-location { grid-column: 2; }
+    > .col-date     { grid-column: 3; }
+  }
+
+  .file-list-head {
+    top: 0;
+    padding: 11px 20px;
+    border-bottom: 1px solid @rd-line;
+    background: @rd-surface;
+    color: @rd-faint;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+
+    .col-date { text-align: right; }
+  }
+
+  .file-list-body {
+    overflow: auto;
+
+    .row {
+      height: 56px;
+      padding: 0 20px;
+      border-bottom: 1px solid @rd-line-2;
+      background: transparent;
+      cursor: pointer;
+
+      &:last-child { border-bottom: 0; }
+
+      // The design separates rows with a hairline, not with banding.
+      &:nth-child(even) { background: transparent; }
+      &:hover { background: @rd-canvas; }
+    }
+
+    .row.hidden { display: none; }
+  }
+
+  .col-name {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 14px;
+
+    > .icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      background: @rd-canvas;
+      place-items: center;
+
+      svg.icon {
+        width: 19px;
+        height: 19px;
+      }
+    }
+
+    .name {
+      overflow: hidden;
+      margin: 0;
+      color: @rd-ink;
+      font-size: 15px;
+      font-weight: 500;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .col-location {
+    overflow: hidden;
+    color: @rd-muted;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .col-date {
+    color: @rd-muted;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+
+    p { margin: 0; }
+  }
+}
+
+.file-list-subhead {
+  padding: 11px 20px;
+  border-top: 1px solid @rd-line;
+  border-bottom: 1px solid @rd-line;
+  background: @rd-canvas;
+  color: @rd-faint;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+mark.search-hit {
+  padding: 0 1px;
+  background: @ration-petrol-ring;
+  color: inherit;
+}
+
+.rd-empty {
+  padding: 52px 20px;
+  color: @rd-muted;
+  text-align: center;
+
+  b {
+    display: block;
+    margin-bottom: 6px;
+    color: @rd-ink;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .rd-empty-btn {
+    margin-top: 16px;
+    padding: 9px 16px;
+    border: 1px solid @rd-line;
+    border-radius: 0;
+    background: @rd-surface;
+    color: @ration-petrol;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+
+    &:hover { background: @rd-canvas; }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ration-sidebar > li.menu-item a,
+  .document-creation-item,
+  .rd-list .file-list-body .row,
+  .rd-seg button,
+  .rd-toggle button,
+  .rd-search,
+  .rd-search-go {
+    transition: 0.14s ease;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid @ration-petrol;
+  outline-offset: 2px;
+}
+
+// Narrow window: the rail collapses to icons and the list sheds its middle
+// columns, matching the design's own breakpoint.
+@media (max-width: 980px) {
+  .ration-sidebar {
+    min-width: 74px;
+    max-width: 74px;
+
+    .ration-brand { padding: 20px 0; text-align: center; }
+    .ration-wordmark { height: 24px; margin: 0 auto; }
+
+    > li.menu-item:not(.separator):not(.devider):not(.rd-spacer) {
+      margin: 0 8px;
+      a { justify-content: center; padding: 0; gap: 0; border-left: 0; }
+    }
+
+    .text, .rd-cloud-empty, .rd-grp span { display: none; }
+    .rd-grp { justify-content: center; }
+  }
+
+  .rd-topbar { padding: 0 20px; }
+  .rd-work { padding: 24px 20px 36px; }
+  .ration-content .document-creation-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .rd-list {
+    --rd-cols: 1fr 0 150px;
+    &.recover { --rd-cols: 1fr 0 150px; }
+
+    .col-location { display: none; }
+  }
+}
+
 
 .btn-quick {
   width: 24px;

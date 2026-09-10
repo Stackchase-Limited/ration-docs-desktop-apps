@@ -96,17 +96,35 @@ window.DocumentCreationGrid = function (config = {}) {
 				throw new Error('Parent element is required for rendering');
 			}
 
+			// The Ration Docs design draws each tile as a stroked page outline with a
+			// folded corner, a solid format chip and a two-line label. `glyph` picks
+			// the extra strokes inside the page; `chip`/`meta` are optional so a
+			// caller that supplies neither still gets the plain sprite icon.
+			const _glyphs = {
+				cell:  '<path d="M13 30h20M13 38h20M21 24v20"/>',
+				slide: '<rect x="13" y="26" width="20" height="13"/>',
+			};
+
 			//language=HTML
 			const _template = `
                 <div class="document-creation-grid">
                     ${documentTypes.map(doc => `
-                    <div class="document-creation-item" data-id="${doc.id}" onclick="window.DocumentCreationGrid.handleDocumentSelect('${doc.id}', this)">
-
-						${doc.icon.startsWith('#') ? `<svg class="icon"><use xlink:href="${doc.icon}"></use></svg>` : `<i class="icon ${doc.icon}"></i>`}
+                    <div class="document-creation-item" data-id="${doc.id}" data-format="${doc.chip ? doc.chip.toLowerCase() : ''}" onclick="window.DocumentCreationGrid.handleDocumentSelect('${doc.id}', this)">
+                        ${doc.chip ? `
+                        <div class="rd-glyph">
+                            <svg viewBox="0 0 46 56" aria-hidden="true">
+                                <path d="M6 2h24l10 10v42H6z"/>
+                                <path d="M30 2v10h10"/>
+                                ${_glyphs[doc.id] || ''}
+                            </svg>
+                            <span class="rd-chip">${doc.chip}</span>
+                        </div>` :
+						(doc.icon.startsWith('#') ? `<svg class="icon"><use xlink:href="${doc.icon}"></use></svg>` : `<i class="icon ${doc.icon}"></i>`)}
 
                         <div class="title" l10n="${doc.langKey}">
                             ${doc.title}
                         </div>
+                        ${doc.meta ? `<div class="rd-meta">${doc.meta}</div>` : ''}
                     </div>
                 `).join('')}
                 </div>`;

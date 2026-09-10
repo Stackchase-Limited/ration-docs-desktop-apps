@@ -69,105 +69,94 @@
             </div>` : '';
 
         //language=HTML
+        // Ration Docs home page. Structure follows the product design: a fixed
+        // topbar carrying search and the account monogram, over a scrolling work
+        // area of Create tiles, a Recent/Recover toggle with a type filter, and a
+        // single column-aligned file list that both modes share.
+        //
+        // The list keeps five columns because the app has pin and overflow-menu
+        // actions the static mockup omitted; head and rows share one grid track
+        // definition so they stay aligned.
+        //language=HTML
         args.tplPage = `
             <div class="action-panel ${args.action}">
-                <div class="recent-panel-container">
-                    <div class="search-bar">
-                        <div class="search-field" role="search">
-                            <div class="search-lead">
-                                <svg class="icon" data-iconname="search" data-precls="tool-icon">
-                                    <use href="#search"></use>
-                                </svg>
-                            </div>
-                            <input type="text" id="idx-recent-filter" autocomplete="off" spellcheck="false"
-                                   placeholder="${_lang.searchPlaceholder}" aria-label="${_lang.searchPlaceholder}">
-                            <div class="search-kbd" id="idx-search-kbd" aria-hidden="true"></div>
-                            <button class="search-go" id="idx-search-go" aria-label="${_lang.searchPlaceholder}">
-                                <svg class="icon" data-iconname="search" data-precls="tool-icon">
-                                    <use href="#search"></use>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <header class="ration-home-header">
-                        <div>
-                            <p class="ration-eyebrow">Ration Docs</p>
-                            <h1 l10n>${_lang.actHome}</h1>
-                        </div>
-                        <button class="ration-open-file" type="button" action="open">
-                            <svg class="icon" data-iconname="folder" data-precls="tool-icon">
-                                <use href="#folder"></use>
-                            </svg>
-                            <span l10n>${_lang.actOpenLocal}</span>
-                        </button>
-                    </header>
-
-                    <label class="ration-search" for="ration-recent-filter">
-                        <svg class="icon" data-iconname="search" data-precls="tool-icon">
-                            <use href="#search"></use>
-                        </svg>
-                        <input id="ration-recent-filter" type="search"
-                               placeholder="Search recent files"
-                               autocomplete="off" />
-                        <span class="ration-search-shortcut">⌘ K</span>
-                    </label>
-
-                    <h2 class="ration-section-title">Create</h2>
-                    <section id="area-document-creation-grid"></section>
-                    ${welcomeBannerTemplate}
-                    <section id="area-dnd-file"></section>
-
-                    <div id="box-container">
-                        <div id="box-recovery">
-                            <div class="file-list-title">
-                                <p class="ration-eyebrow">Workspace</p>
-                                <h3 l10n>${_lang.listRecoveryTitle}</h3>
-                            </div>
-                            <div class="file-list-head text-normal">
-                                <div class="col-name" l10n>${_lang.colFileName}</div>
-                                <div class="col-location" l10n>${_lang.colLocation}</div>
-                                <div class="col-date" l10n>${_lang.colLastOpened}</div>
-                            </div>
-                            <div class="file-list-body scrollable"></div>
-                        </div>
-
-                        <div id="box-recent">
-                            <div class="file-list-title">
-                                <p class="ration-eyebrow">Workspace</p>
-                                <h3 l10n>${_lang.listRecentFileTitle}</h3>
-                                <span class="file-count" id="idx-recent-count"></span>
-                            </div>
-                            <div class="file-list-head text-normal">
-                                <div class="col-name" l10n>${_lang.colFileName}</div>
-                                <div class="col-location" l10n>${_lang.colLocation}</div>
-                                <div class="col-date" l10n>${_lang.colLastOpened}</div>
-                            </div>
-                            <div class="file-list-body scrollable"></div>
-                            <div id="idx-history-block" style="display: none;">
-                                <div class="file-list-subhead text-normal">
-                                    <span l10n>${_lang.searchFromHistory}</span>
-                                </div>
-                                <div id="idx-history-body" class="file-list-body"></div>
-                            </div>
-                            <div id="idx-recent-no-results" class="search-no-results" style="display: none;">
-                                <div class="icon-box">
-                                    <svg class="icon nothing-found-light-icon" data-iconname="nothing-found-light" data-precls="tool-icon">
-                                        <use id="idx-recent-nothing-light" href="#nothing-found-light"></use>
-                                        <use id="idx-recent-nothing-dark" href="#nothing-found-dark"></use>
-                                    </svg>
-                                </div>
-                                <p class="no-results-title" id="idx-recent-no-results-title"></p>
-                                <p class="no-results-text" l10n>${_lang.searchNoResultsHint}</p>
-                                <button class="btn-clear-search" id="idx-clear-search"
-                                        l10n>${_lang.searchClear}</button>
-                            </div>
-                            <p id="ration-search-empty" class="ration-search-empty" hidden>
-                                No recent files match your search.
-                            </p>
-                        </div>
-                    </div>
+              <header class="rd-topbar">
+                <div class="rd-search" role="search">
+                  <div class="rd-search-lead">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+                    </svg>
+                  </div>
+                  <input type="text" id="idx-recent-filter" autocomplete="off" spellcheck="false"
+                         placeholder="${_lang.searchPlaceholder}" aria-label="${_lang.searchPlaceholder}">
+                  <div class="rd-kbd" id="idx-search-kbd" aria-hidden="true"></div>
+                  <button class="rd-search-go" id="idx-search-go" aria-label="${_lang.searchPlaceholder}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+                    </svg>
+                  </button>
                 </div>
+                <div class="rd-right">
+                  <div class="rd-avatar" id="idx-avatar"></div>
+                </div>
+              </header>
+
+              <div class="rd-work">
+                <h1 class="rd-sec-h" l10n>${_lang.searchCreate}</h1>
+                <section id="area-document-creation-grid"></section>
+                ${welcomeBannerTemplate}
+                <section id="area-dnd-file"></section>
+
+                <div class="rd-rf-head">
+                  <div class="rd-toggle" id="idx-list-toggle" role="tablist">
+                    <button type="button" class="on" data-m="recent" role="tab" l10n>${_lang.listRecentFileTitle}</button>
+                    <button type="button" data-m="recover" role="tab" l10n>${_lang.listRecoveryTitle}</button>
+                  </div>
+                  <span class="rd-count" id="idx-recent-count"></span>
+                  <div class="rd-seg" id="idx-type-seg">
+                    <button type="button" class="on" data-t="all" l10n>${_lang.segAll}</button>
+                    <button type="button" data-t="docx" l10n>${_lang.segDocs}</button>
+                    <button type="button" data-t="xlsx" l10n>${_lang.segSheets}</button>
+                    <button type="button" data-t="pptx" l10n>${_lang.segSlides}</button>
+                    <button type="button" data-t="pdf" l10n>${_lang.segPdf}</button>
+                  </div>
+                </div>
+
+                <div id="box-container">
+                  <div id="box-recent" class="rd-list">
+                    <div class="file-list-head text-normal">
+                      <div class="col-name" l10n>${_lang.colFileName}</div>
+                      <div class="col-location" l10n>${_lang.colLocation}</div>
+                      <div class="col-date" l10n>${_lang.colLastOpened}</div>
+                    </div>
+                    <div class="file-list-body scrollable"></div>
+                    <div id="idx-history-block" style="display: none;">
+                      <div class="file-list-subhead text-normal">
+                        <span l10n>${_lang.searchFromHistory}</span>
+                      </div>
+                      <div id="idx-history-body" class="file-list-body"></div>
+                    </div>
+                    <div id="idx-recent-no-results" class="rd-empty" style="display: none;">
+                      <b class="no-results-title" id="idx-recent-no-results-title"></b>
+                      <span class="no-results-text" l10n>${_lang.searchNoResultsHint}</span>
+                      <button class="rd-empty-btn" id="idx-clear-search" l10n>${_lang.searchClear}</button>
+                    </div>
+                  </div>
+
+                  <div id="box-recovery" class="rd-list recover" style="display: none;">
+                    <div class="file-list-head text-normal">
+                      <div class="col-name" l10n>${_lang.colFileName}</div>
+                      <div class="col-location" l10n>${_lang.colStatus}</div>
+                      <div class="col-date" l10n>${_lang.colAutosaved}</div>
+                    </div>
+                    <div class="file-list-body scrollable"></div>
+                    <div id="idx-recover-empty" class="rd-empty" style="display: none;">
+                      <b l10n>${_lang.recoverNothingTitle}</b>
+                      <span l10n>${_lang.recoverNothingHint}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>`;
         args.menu = '.main-column.tool-menu';
         args.field = '.main-column.col-center';
@@ -190,11 +179,7 @@
 
             this.$boxRecovery = this.$panel.find('#box-recovery');
             this.$boxRecent = this.$panel.find('#box-recent');
-            this.$panelContainer = this.$panel.find('.recent-panel-container');
-
-            this.$panel.on('click', '.ration-open-file', function () {
-                openFile(OPEN_FILE_FOLDER, '');
-            });
+            this.$panelContainer = this.$panel.find('.rd-work');
         },
         listitemtemplate: function (info) {
             let id = !!info.uid ? (` id="${info.uid}"`) : '';
@@ -436,7 +421,9 @@
 
                 try { RationFileStore.upsertMany(files, 'recover'); } catch (e) {}
 
-                this.view.$boxRecovery.css('display', collectionRecovers.size() > 0 ? 'flex' : 'none');
+                // Visibility belongs to the Recent/Recover toggle, so this only
+                // refreshes counts; it must not force the recover list on screen.
+                _reapply_filter.call(this);
                 // requestAnimationFrame(() => this.view.updateListSize());
 
                 if (collectionRecents.size() > 0 || collectionRecovers.size() > 0) {
@@ -705,6 +692,36 @@
         }
 
         let _activeFilter = '';
+        let _activeMode = 'recent';   // which list the toggle is showing
+        let _activeType = 'all';      // which segment of the type filter is on
+
+        // The segments are document *kinds*, not single extensions: picking
+        // "Documents" must keep .odt and .rtf, which the user thinks of as
+        // documents even though the format id differs.
+        const _typeGroups = {
+            docx: ['docx', 'doc', 'odt', 'rtf', 'txt', 'docm', 'dotx', 'fodt', 'ott', 'docxf', 'oform'],
+            xlsx: ['xlsx', 'xls', 'ods', 'csv', 'xlsm', 'xltx', 'fods', 'ots'],
+            pptx: ['pptx', 'ppt', 'odp', 'ppsx', 'pptm', 'potx', 'fodp', 'otp'],
+            pdf:  ['pdf', 'djvu', 'xps', 'oxps']
+        };
+
+        // Prefer the model's own format id, and fall back to the extension so a
+        // history row that never went through the core still classifies.
+        function _type_of(model) {
+            let fmt = (model.get ? model.get('format') : model.format) || '';
+            if (!fmt) {
+                const name = (model.get ? model.get('name') : model.name) || '';
+                const dot = name.lastIndexOf('.');
+                if (dot !== -1) fmt = name.substring(dot + 1);
+            }
+            return String(fmt).toLowerCase();
+        }
+
+        function _type_matches(model) {
+            if (_activeType === 'all') return true;
+            const group = _typeGroups[_activeType];
+            return !!group && group.indexOf(_type_of(model)) !== -1;
+        }
 
         // Every whitespace-separated term must match, so "report 2025" narrows rather
         // than widening -- order-independent, unlike a single substring match.
@@ -776,7 +793,8 @@
         function _filter_collection(collection, $panel, terms) {
             let matched = 0;
             collection.items.forEach(function (model) {
-                const hidden = terms.length > 0 && !_model_matches(model, terms);
+                const hidden = !_type_matches(model) ||
+                               (terms.length > 0 && !_model_matches(model, terms));
                 if (!hidden) matched++;
                 if (model.get('hidden') !== hidden) model.set('hidden', hidden);
                 const $row = $('#' + model.uid, $panel);
@@ -848,27 +866,41 @@
             const terms = _terms(_activeFilter);
             const searching = terms.length > 0;
 
-            const matched = _filter_collection(collectionRecents, $panel, terms);
-            _filter_collection(collectionRecovers, $panel, terms);
+            const matchedRecent  = _filter_collection(collectionRecents, $panel, terms);
+            const matchedRecover = _filter_collection(collectionRecovers, $panel, terms);
+            const matched = _activeMode === 'recover' ? matchedRecover : matchedRecent;
 
             const token = ++_searchToken;
 
             function paint(historyCount) {
                 const total = matched + historyCount;
+
+                // The design shows the count at all times, not only while searching.
                 $('#idx-recent-count', $panel).text(
-                    searching
-                        ? (total === 1 ? utils.Lang.searchCountOne : utils.Lang.searchCountMany)
-                              .replace('$1', total)
-                        : ''
+                    (total === 1 ? utils.Lang.searchCountOne : utils.Lang.searchCountMany)
+                        .replace('$1', total)
                 );
+
+                if (_activeMode === 'recover') {
+                    $('#idx-recent-no-results', $panel).hide();
+                    $('#idx-recover-empty', $panel).toggle(total === 0);
+                    $('#box-recovery .file-list-head', $panel).toggle(total !== 0);
+                    return;
+                }
+
+                // With no query and no rows the drag-and-drop zone already explains
+                // the empty page, so the search-specific block stays hidden.
                 const empty = searching && total === 0;
+                $('#idx-recover-empty', $panel).hide();
                 $('#idx-recent-no-results-title', $panel)
                     .text(utils.Lang.searchNoResults.replace('$1', _activeFilter));
                 $('#idx-recent-no-results', $panel).toggle(empty);
-                $('#box-recent .file-list-head', $panel).toggle(!empty);
+                $('#box-recent .file-list-head', $panel).toggle(!empty && matched > 0);
             }
 
-            if (!searching) {
+            // History is a recent-files concept; the recover list is whatever the
+            // core currently holds, so there is nothing older to fold in.
+            if (!searching || _activeMode === 'recover') {
                 _render_history.call(self, [], terms);
                 paint(0);
                 return;
@@ -885,15 +917,39 @@
             query.then(function (rows) {
                 if (token !== _searchToken) return;      // a newer query has started
                 const seen = _visible_keys();
-                const extra = rows.filter(function (r) { return !seen[r.key]; });
+                const extra = rows.filter(function (r) {
+                    return !seen[r.key] && _type_matches(r);
+                });
                 paint(_render_history.call(self, extra, terms));
             }).catch(function () {
                 if (token === _searchToken) paint(0);
             });
         }
 
+        // Show one list at a time and re-run the filter so the count, empty state
+        // and history block all describe the list the user is now looking at.
+        function _set_mode(mode) {
+            _activeMode = mode === 'recover' ? 'recover' : 'recent';
+            const $panel = this.view.$panel;
+            $('#idx-list-toggle button', $panel).each(function () {
+                $(this).toggleClass('on', this.getAttribute('data-m') === _activeMode);
+            });
+            this.view.$boxRecent.css('display', _activeMode === 'recent' ? 'flex' : 'none');
+            this.view.$boxRecovery.css('display', _activeMode === 'recover' ? 'flex' : 'none');
+            _apply_filter.call(this, _activeFilter);
+        }
+
+        function _set_type(type) {
+            _activeType = type || 'all';
+            const $panel = this.view.$panel;
+            $('#idx-type-seg button', $panel).each(function () {
+                $(this).toggleClass('on', this.getAttribute('data-t') === _activeType);
+            });
+            _apply_filter.call(this, _activeFilter);
+        }
+
         function _reapply_filter() {
-            if (_activeFilter) _apply_filter.call(this, _activeFilter);
+            _apply_filter.call(this, _activeFilter);
         }
 
         return {
@@ -958,24 +1014,32 @@
                             title: utils.Lang.newDoc,
                             langKey: 'newDoc',
                             icon: '#docx-big',
+                            chip: 'DOCX',
+                            meta: utils.Lang.metaBlankDoc,
                         },
                         {
                             id: 'cell',
                             title: utils.Lang.newXlsx,
                             langKey: 'newXlsx',
                             icon: '#xlsx-big',
+                            chip: 'XLSX',
+                            meta: utils.Lang.metaBlankSheet,
                         },
                         {
                             id: 'slide',
                             title: utils.Lang.newPptx,
                             langKey: 'newPptx',
                             icon: '#pptx-big',
+                            chip: 'PPTX',
+                            meta: utils.Lang.metaBlankSlides,
                         },
                         {
                             id: 'form',
                             title: utils.Lang.newForm,
                             langKey: 'newForm',
                             icon: '#pdf-big',
+                            chip: 'PDF',
+                            meta: utils.Lang.metaBlankPdf,
                         }
                     ],
                     onDocumentSelect: (docType) => {
@@ -1021,6 +1085,39 @@
                 $('#idx-search-go', this.view.$panel).on('click', function () {
                     $filter.focus().select();
                 });
+
+                $('#idx-list-toggle', this.view.$panel).on('click', 'button', function (e) {
+                    _set_mode.call(this, e.currentTarget.getAttribute('data-m'));
+                }.bind(this));
+
+                $('#idx-type-seg', this.view.$panel).on('click', 'button', function (e) {
+                    _set_type.call(this, e.currentTarget.getAttribute('data-t'));
+                }.bind(this));
+
+                // Initials come from the signed-in cloud account when there is one.
+                // With no account there is no person to name, so the tile falls back
+                // to the product monogram rather than inventing a user.
+                (function ($avatar) {
+                    let name = '';
+                    try {
+                        const u = (window.AscDesktopEditor && window.AscDesktopEditor.currentUserName) ||
+                                  (window.app && window.app.currentUser && window.app.currentUser.name) || '';
+                        name = String(u || '').trim();
+                    } catch (e) { name = ''; }
+
+                    if (name) {
+                        const parts = name.split(/\s+/).filter(Boolean);
+                        const initials = (parts.length > 1
+                            ? parts[0][0] + parts[parts.length - 1][0]
+                            : parts[0].substring(0, 2)).toUpperCase();
+                        $avatar.text(initials).attr('title', name);
+                    } else {
+                        $avatar.text('RD').attr('title', 'Ration Docs');
+                    }
+                })($('#idx-avatar', this.view.$panel));
+
+                // Paint the initial count and empty state before any interaction.
+                _set_mode.call(this, 'recent');
 
                 $('#idx-clear-search', this.view.$panel).on('click', function () {
                     $filter.val('').focus();

@@ -38,8 +38,7 @@ $(document).ready(function() {
     const _toolmenu_tpl = `
             <div class="main-column col-left tool-menu ration-sidebar">
               <div class="ration-brand" aria-label="Ration Docs">
-                <span class="ration-brand-mark">R</span>
-                <span class="ration-brand-name">Ration Docs</span>
+                <img class="ration-wordmark" src="../res/img/ration-wordmark.png" alt="Ration Docs">
               </div>
               <li class="menu-item">
                 <a action="recents">
@@ -72,10 +71,28 @@ $(document).ready(function() {
                 </a>
               </li>
               <li class="menu-item separator"></li>
+              <div class="rd-grp">
+                <span l10n>${utils.Lang.actClouds || 'Clouds'}</span>
+                <button class="rd-grp-add" action="connect" aria-label="${utils.Lang.actConnectCloud || 'Connect a cloud'}">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+              <p class="rd-cloud-empty" l10n>${utils.Lang.actNoClouds || 'No cloud connected yet.'}</p>
               <section id="idx-sidebar-portals" class="connect">
               </section>
-              <li class="menu-item devider"></li>
-              <li class="menu-item">
+              <li class="menu-item rd-spacer"></li>
+              <li class="menu-item rd-foot">
+                  <a action="agent" class="rd-ai">
+                    <div class="icon-box">
+                      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M12 3l1.7 4.5L18 9l-4.3 1.5L12 15l-1.7-4.5L6 9l4.3-1.5z"/>
+                          <path d="M18 15l.7 1.8L20.5 17l-1.8.7L18 19.5l-.7-1.8L15.5 17z"/>
+                      </svg>
+                    </div>
+                    <span class="text" l10n>${utils.Lang.actAiAgent || 'AI agent'}</span>
+                  </a>
+              </li>
+              <li class="menu-item rd-foot">
                   <a action="settings">
                     <div class="icon-box">
                       <svg class="icon" data-iconname="settings" data-precls="tool-icon">
