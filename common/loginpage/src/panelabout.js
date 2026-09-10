@@ -114,6 +114,35 @@
                                 <a class="ver-site link about-field" target="popup" href="${_opts.link}">${_opts.site}</a>
                                 <div class="ver-copyright about-field">${_opts.rights}</div> 
                             </div>                    
+
+                              <!-- Open Source Notices.
+                                   Required, not decorative. The additional terms oblige a modified
+                                   version to let users identify ONLYOFFICE as the original developer
+                                   (s.3 i), see that this build is modified (s.2, s.3 ii) and reach the
+                                   licence (s.3 iii); AGPL s.6 requires directions to the Corresponding
+                                   Source; s.1 requires upstream copyright retained; s.4 grants no
+                                   trademark rights, hence the attribution line. -->
+                              <div class="box-oss-notices">
+                                  <h4 class="oss-title" l10n>${_lang.ossTitle}</h4>
+                                  <p class="oss-line" l10n>${_lang.ossBasedOn}</p>
+                                  <p class="oss-line" l10n>${_lang.ossOriginal}</p>
+                                  <p class="oss-line" l10n>${_lang.ossPortions}</p>
+                                  <p class="oss-line" l10n>${_lang.ossModified}</p>
+                                  <p class="oss-line" l10n>${_lang.ossLicence}</p>
+                                  <p class="oss-line oss-muted" l10n>${_lang.ossWarranty}</p>
+                                  <p class="oss-links">
+                                      <a class="link" draggable="false" target="popup"
+                                         href="https://www.gnu.org/licenses/agpl-3.0.html" l10n>${_lang.ossViewLicence}</a>
+                                      <a class="link" draggable="false" target="popup"
+                                         href="https://lab02.ration.works/ration/ration-docs-desktop-apps" l10n>${_lang.ossViewSource}</a>
+                                  </p>
+                                  <p class="oss-line oss-muted" l10n>${_lang.ossTrademark}</p>
+                                  <h4 class="oss-title" l10n>${_lang.ossTechnical}</h4>
+                                  <dl class="oss-tech">
+                                      <dt l10n>${_lang.ossBaseline}</dt><dd id="idx-oss-baseline">ONLYOFFICE 9.4.0</dd>
+                                      <dt l10n>${_lang.ossBuild}</dt><dd id="idx-oss-build">${_opts.version || ''}</dd>
+                                  </dl>
+                              </div>
                         </div>`+
                         // '<div class="box-license flex-fill">'+
                         //   '<iframe id="framelicense" src="license.htm"></iframe>'+
