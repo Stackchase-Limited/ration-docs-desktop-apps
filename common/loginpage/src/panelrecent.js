@@ -90,6 +90,30 @@
                         </div>
                     </div>
 
+                    <header class="ration-home-header">
+                        <div>
+                            <p class="ration-eyebrow">Ration Docs</p>
+                            <h1 l10n>${_lang.actHome}</h1>
+                        </div>
+                        <button class="ration-open-file" type="button" action="open">
+                            <svg class="icon" data-iconname="folder" data-precls="tool-icon">
+                                <use href="#folder"></use>
+                            </svg>
+                            <span l10n>${_lang.actOpenLocal}</span>
+                        </button>
+                    </header>
+
+                    <label class="ration-search" for="ration-recent-filter">
+                        <svg class="icon" data-iconname="search" data-precls="tool-icon">
+                            <use href="#search"></use>
+                        </svg>
+                        <input id="ration-recent-filter" type="search"
+                               placeholder="Search recent files"
+                               autocomplete="off" />
+                        <span class="ration-search-shortcut">⌘ K</span>
+                    </label>
+
+                    <h2 class="ration-section-title">Create</h2>
                     <section id="area-document-creation-grid"></section>
                     ${welcomeBannerTemplate}
                     <section id="area-dnd-file"></section>
@@ -97,6 +121,7 @@
                     <div id="box-container">
                         <div id="box-recovery">
                             <div class="file-list-title">
+                                <p class="ration-eyebrow">Workspace</p>
                                 <h3 l10n>${_lang.listRecoveryTitle}</h3>
                             </div>
                             <div class="file-list-head text-normal">
@@ -109,6 +134,7 @@
 
                         <div id="box-recent">
                             <div class="file-list-title">
+                                <p class="ration-eyebrow">Workspace</p>
                                 <h3 l10n>${_lang.listRecentFileTitle}</h3>
                                 <span class="file-count" id="idx-recent-count"></span>
                             </div>
@@ -136,6 +162,9 @@
                                 <button class="btn-clear-search" id="idx-clear-search"
                                         l10n>${_lang.searchClear}</button>
                             </div>
+                            <p id="ration-search-empty" class="ration-search-empty" hidden>
+                                No recent files match your search.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -162,6 +191,10 @@
             this.$boxRecovery = this.$panel.find('#box-recovery');
             this.$boxRecent = this.$panel.find('#box-recent');
             this.$panelContainer = this.$panel.find('.recent-panel-container');
+
+            this.$panel.on('click', '.ration-open-file', function () {
+                openFile(OPEN_FILE_FOLDER, '');
+            });
         },
         listitemtemplate: function (info) {
             let id = !!info.uid ? (` id="${info.uid}"`) : '';
@@ -954,7 +987,7 @@
 
                 docGrid.render(this.view.$panel.find("#area-document-creation-grid"));
 
-                const $filter = $('#idx-recent-filter', this.view.$panel);
+                const $filter = $('#idx-recent-filter, #ration-recent-filter', this.view.$panel);
 
                 // The design shows a Cmd-K hint; Cmd is only correct on macOS.
                 const _isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');

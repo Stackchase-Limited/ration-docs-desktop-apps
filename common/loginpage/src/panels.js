@@ -36,7 +36,11 @@
 'use strict';
 $(document).ready(function() {
     const _toolmenu_tpl = `
-            <div class="main-column col-left tool-menu">
+            <div class="main-column col-left tool-menu ration-sidebar">
+              <div class="ration-brand" aria-label="Ration Docs">
+                <span class="ration-brand-mark">R</span>
+                <span class="ration-brand-name">Ration Docs</span>
+              </div>
               <li class="menu-item">
                 <a action="recents">
                     <div class="icon-box">
@@ -92,7 +96,7 @@ $(document).ready(function() {
                   </a>
               </li>
             </div>
-            <div class="main-column col-center after-left">
+            <div class="main-column col-center after-left ration-content">
             </div>`;
     $('#placeholder').html(_toolmenu_tpl);
 
