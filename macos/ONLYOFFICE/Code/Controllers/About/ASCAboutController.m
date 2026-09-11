@@ -117,8 +117,13 @@
         [self.appNameText setStringValue:locProductName];
         
         // Version
-        NSString * tplVersion = !isCommercialVersion ? NSLocalizedString(@"Community version %@", nil) : NSLocalizedString(@"Enterprise version %@", nil);
-        [self.versionText setStringValue:[NSString stringWithFormat:tplVersion, [infoDictionary objectForKey:@"CFBundleShortVersionString"]]];
+        // Ration Docs versions on a calendar scheme -- year.major.minor -- with the
+        // build number always shown beside it, so a running copy can be traced back
+        // to the commit that produced it without the user having to click anything.
+        // "Community"/"Enterprise" was ONLYOFFICE edition tiering and does not apply.
+        [self.versionText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Version %@ (build %@)", nil),
+                                          [infoDictionary objectForKey:@"CFBundleShortVersionString"],
+                                          [infoDictionary objectForKey:@"CFBundleVersion"]]];
 
         NSClickGestureRecognizer *click = [[NSClickGestureRecognizer alloc] initWithTarget:self action:@selector(onVersionClick:)];
         [self.versionText addGestureRecognizer:click];
@@ -152,12 +157,13 @@
 - (void)onVersionClick:(NSTextField *)sender {
     NSDictionary * infoDictionary = [[NSBundle mainBundle] infoDictionary];
 
-    NSString * tplVersion = !isCommercialVersion ? NSLocalizedString(@"Community version %@ (%@-%@)", nil) :
-                                            NSLocalizedString(@"Enterprise version %@ (%@-%@)", nil);
-    [self.versionText setStringValue:[NSString stringWithFormat:tplVersion,
+    // Clicking the version adds the upstream baseline, so a support report can say
+    // which ONLYOFFICE release this build was derived from.
+    NSString * baseline = [infoDictionary objectForKey:@"RationUpstreamBaseline"];
+    [self.versionText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Version %@ (build %@)\n%@", nil),
                                       [infoDictionary objectForKey:@"CFBundleShortVersionString"],
                                       [infoDictionary objectForKey:@"CFBundleVersion"],
-                                      [infoDictionary objectForKey:@"ASCBundleBuildNumber"]]];
+                                      baseline ? baseline : @""]];
     
 #if _V8_VERSION
     [self.versionText setStringValue:[NSString stringWithFormat:@"%@ x86", [self.versionText stringValue]]];
