@@ -58,3 +58,9 @@ macos/Vendor/ONLYOFFICE
 
 # Xcode product directory for local macOS builds
 /build/
+
+# The vendor tree is ignored, but this licence page is our content, not
+# vendored: the build copies Vendor/ONLYOFFICE/license wholesale into the
+# bundle, and without it the License Agreement menu opens nothing.
+!macos/Vendor/ONLYOFFICE/license/
+!macos/Vendor/ONLYOFFICE/license/LICENSE.html
