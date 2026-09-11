@@ -71,7 +71,7 @@ l10n.sr_Latn_RS = {
     licPanelDescr: 'Vaš ključ proizvoda je poslat na email adresu navedenu tokom kupovine.',
     checkUpdates: 'Proveri ažuriranja',
     strVersion: 'verzija',
-    strVersionCommunity: 'Community verzija',
+    strVersionCommunity: 'Verzija',
     strVersionCommercial: 'Enterprise verzija',
     emptySlide1Title: 'Deli i sarađuj',
     emptySlide1Text: 'Odaberite između Brzog or Strogog ko-editovanja u stvarnom vremenu, četujte u svojim dokumentima, dodajte komentare ili ih delite za pregled.',

@@ -71,7 +71,7 @@ l10n.he = {
     licPanelDescr: 'מפתח המוצר שלך נשלח לכתובת הדואר האלקטרוני שצוינה במהלך הרכישה.',
     checkUpdates: 'בדוק אם קיימים עדכונים',
     strVersion: 'גרסה',
-    strVersionCommunity: 'גרסת הקהילה',
+    strVersionCommunity: 'גרסה',
     strVersionCommercial: 'גרסת ארגונית',
     emptySlide1Title: 'שתף ושתף פעולה',
     emptySlide1Text: 'בחר בין עריכה משותפת מהירה או קפדנית בזמן אמת, שוחח בצ אט במסמך שלך, הוסף הערות או שתף אותו לבדיקה.',

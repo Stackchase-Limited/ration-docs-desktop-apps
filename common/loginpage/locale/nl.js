@@ -66,7 +66,7 @@
     licPanelDescr: 'Uw productcode is naar het bij de aankoop opgegeven e-mailadres gestuurd.',
     checkUpdates: 'Controleer of er updates zijn',
     strVersion: 'versie',
-    strVersionCommunity: 'Community-versie',
+    strVersionCommunity: 'Versie',
     strVersionCommercial: 'Enterprise-versie',
     emptySlide1Title: 'Delen & samenwerken',
     emptySlide1Text: 'Kies tussen Snelle of Strikte real-time medebewerking, chat in uw doc, voeg commentaar toe of deel het voor beoordeling.',

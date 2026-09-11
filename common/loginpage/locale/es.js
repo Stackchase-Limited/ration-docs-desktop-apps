@@ -71,7 +71,7 @@ l10n.es = {
     licPanelDescr: 'La clave de producto ha sido enviada a la dirección de correo electrónico especificada durante la compra.',
     checkUpdates: 'Comprobar si hay actualizaciones',
     strVersion: 'versión',
-    strVersionCommunity: 'Versión comunitaria',
+    strVersionCommunity: 'Versión',
     strVersionCommercial: 'Versión empresarial',
     emptySlide1Title: 'Comparta y colabore',
     emptySlide1Text: 'Seleccione entre dos modos de coedición en tiempo real: «Rápido» y «Estricto», chatee en su documento, añada comentarios o compártalo para revisión.',

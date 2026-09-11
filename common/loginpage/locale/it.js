@@ -71,7 +71,7 @@ l10n.it_IT = {
     licPanelDescr: 'Il codice prodotto è stato inviato all\'indirizzo e-mail specificato durante l\'acquisto.',
     checkUpdates: 'Controlla gli aggiornamenti',
     strVersion: 'versione',
-    strVersionCommunity: 'Versione Community',
+    strVersionCommunity: 'Versione',
     strVersionCommercial: 'Versione Enterprise',
     emptySlide1Title: 'Condividi e collabora',
     emptySlide1Text: 'Scegli tra le modalità rapida e precisa, chatta nel tuo documento, aggiungi commenti o condividi i documenti per la revisione.',

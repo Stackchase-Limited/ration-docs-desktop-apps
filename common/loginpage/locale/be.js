@@ -66,7 +66,7 @@ l10n.be = {
     licPanelDescr: 'Ваш ключ прадукту быў адпраўлены на адрас электроннай пошты, пазначаны падчас куплі.',
     checkUpdates: 'Праверыць на наяўнасць абнаўленняў',
     strVersion: 'версія',
-    strVersionCommunity: 'Версія Community',
+    strVersionCommunity: 'Версія',
     strVersionCommercial: 'Версія Enterprise',
     emptySlide1Title: 'Адкрыццё доступу і сумесная праца',
     emptySlide1Text: 'Выкарыстоўвайце хуткі або строгі рэжым сумеснага рэдагавання, карыстайцеся чатам, дадавайце каментары або адпраўляйце дакументы на перагляд.',

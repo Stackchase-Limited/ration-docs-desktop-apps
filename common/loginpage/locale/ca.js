@@ -66,7 +66,7 @@ l10n.ca = {
     licPanelDescr: 'La vostra clau de producte s\'ha enviat a l\'adreça de correu electrònic especificada durant la compra.',
     checkUpdates: 'Cercar actualitzacions',
     strVersion: 'versió',
-    strVersionCommunity: 'Versió comunitària',
+    strVersionCommunity: 'Versió',
     strVersionCommercial: 'Versió empresarial',
     emptySlide1Title: 'Compartir i col·laborar',
     emptySlide1Text: 'Trieu entre una coedició ràpida o estricta en temps real, xatejar al document, afegir comentaris o compartir per a la seva revisió.',

@@ -66,7 +66,7 @@ l10n.sv = {
     licPanelDescr: 'Din produktnyckel var skickad till e-postadressen du angav under köpet.',
     checkUpdates: 'Sök efter uppdateringar',
     strVersion: 'version',
-    strVersionCommunity: 'Community-version',
+    strVersionCommunity: 'Version',
     strVersionCommercial: 'Enterprise-version',
     emptySlide1Title: 'Dela & samarbeta',
     emptySlide1Text: 'Välj mellan Snabb eller Strikt realtidsredigering, chatta i ditt dokument, lägg till kommentarer eller dela det för ett omdöme.',

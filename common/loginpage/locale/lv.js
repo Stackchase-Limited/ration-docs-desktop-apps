@@ -71,7 +71,7 @@ l10n.lv = {
     licPanelDescr: 'Jūsu produkta atslēga tika nosūtīta uz e-pasta adresi, kas norādīta pirkuma veikšanas brīdī.',
     checkUpdates: 'Pārbaudīt atjauninājumus',
     strVersion: 'versija',
-    strVersionCommunity: 'Community versija',
+    strVersionCommunity: 'Versija',
     strVersionCommercial: 'Enterprise versija',
     emptySlide1Title: 'Koplietojiet un līdzdarbojieties',
     emptySlide1Text: 'Izvēlieties Ātro vai Strikto reāllaika koprediģēšanu, tērzējiet savos dokumentos, pievienojiet komentārus vai koplietojiet tos pārskatīšanai.',

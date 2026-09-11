@@ -66,7 +66,7 @@ l10n.pl = {
     licPanelDescr: 'Klucz produktu został wysłany na adres e-mail podany podczas zakupu.',
     checkUpdates: 'Sprawdź Dostępność Aktualizacji',
     strVersion: 'wersja',
-    strVersionCommunity: 'Wersja Community',
+    strVersionCommunity: 'Wersja',
     strVersionCommercial: 'Wersja Enterprise',
     emptySlide1Title: 'Udostępniaj i współpracuj',
     emptySlide1Text: 'Wybierz pomiędzy Szybkim lub Dokładnym współedytowaniem w czasie rzeczywistym, czatuj w dokumencie, dodawaj komentarze lub udostępniaj go do przeglądu.',

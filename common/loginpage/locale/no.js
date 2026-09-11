@@ -66,7 +66,7 @@ l10n.no = {
     licPanelDescr: 'Produktnøkkelen din ble sendt til e-postadressen som ble spesifisert ved kjøpet.',
     checkUpdates: 'Se etter oppdateringer',
     strVersion: 'versjon',
-    strVersionCommunity: 'Community-versjon',
+    strVersionCommunity: 'Versjon',
     strVersionCommercial: 'Enterprise-versjon',
     emptySlide1Title: 'Del og kollaborer',
     emptySlide1Text: 'Velg mellom rask eller streng samredigering i sanntid, chat i dokumentet ditt, legg til kommentarer eller del det for gjennomgang.',

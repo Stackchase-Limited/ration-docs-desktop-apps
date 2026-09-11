@@ -71,7 +71,7 @@ l10n.ru = {
     licPanelDescr: 'Ваш ключ продукта был выслан на адрес электронной почты, указанный при покупке.',
     checkUpdates: 'Проверить обновления',
     strVersion: 'версия',
-    strVersionCommunity: 'Версия Community',
+    strVersionCommunity: 'Версия',
     strVersionCommercial: 'Версия Enterprise',
     emptySlide1Title: 'Предоставление доступа и совместная работа',
     emptySlide1Text: 'Выбирайте быстрый или строгий режим совместного редактирования, используйте встроенный чат или отправляйте документ на рецензирование.',

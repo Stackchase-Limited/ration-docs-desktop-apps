@@ -71,7 +71,7 @@ l10n.el = {
     licPanelDescr: 'Ο κωδικός προϊόντος σας στάλθηκε στη διεύθυνση email που καθορίστηκε κατά την αγορά.',
     checkUpdates: 'Έλεγχος για ενημερώσεις',
     strVersion: 'έκδοση',
-    strVersionCommunity: 'Κοινοτική έκδοση',
+    strVersionCommunity: 'Έκδοση',
     strVersionCommercial: 'Enterprise έκδοση',
     emptySlide1Title: 'Κοινοποίηση & Συνεργασία',
     emptySlide1Text: 'Επιλέξτε μεταξύ γρήγορης ή αυστηρής συνεπεξεργασίας σε πραγματικό χρόνο, συνομιλήστε στο έγγραφό σας, προσθέστε σχόλια ή μοιραστείτε το για έλεγχο.',

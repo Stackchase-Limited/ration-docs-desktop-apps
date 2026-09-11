@@ -66,7 +66,7 @@ l10n.da = {
     licPanelDescr: 'Din produktnøgle blev sendt til emailaddressen specificeret under købet.',
     checkUpdates: 'Tjek for opdateringer',
     strVersion: 'version',
-    strVersionCommunity: 'Fællesskabsversion',
+    strVersionCommunity: 'Version',
     strVersionCommercial: 'Enterprise-version',
     emptySlide1Title: 'Del & kollaborer',
     emptySlide1Text: 'Vælg mellem Hurtig eller Streng co-redigering i realtid, chat i din doc, tilføj kommentarer eller del det for bedømmelse.',

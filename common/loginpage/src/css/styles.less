@@ -3587,3 +3587,18 @@ mark.search-hit {
     }
   }
 }
+
+// About dialog wordmark. The artwork is white-on-transparent so it can sit on
+// the navy rail; on the light About panel it is rendered dark by removing all
+// luminance, which keeps the alpha channel intact. In dark themes it is used
+// as authored.
+.ration-about-logo {
+  display: block;
+  width: auto;
+  height: 28px;
+  filter: brightness(0);
+}
+
+.theme-type-dark .ration-about-logo {
+  filter: none;
+}

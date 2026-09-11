@@ -71,7 +71,7 @@ l10n.sk = {
     licPanelDescr: 'Váš kód Product Key bol odoslaný na e-mail, ktorý ste zadali pri nákupe.',
     checkUpdates: 'Vyhľadať aktualizácie',
     strVersion: 'verzia',
-    strVersionCommunity: 'Verzia Community',
+    strVersionCommunity: 'Verzia',
     strVersionCommercial: 'Verzia Enterprise',
     emptySlide1Title: 'Zdieľajte a spolupracujte',
     emptySlide1Text: 'Vyberte si medzi Rýchlou alebo Prísnou spoločnou editáciou v reálnom čase, chatujte vo vašich dokumentoch, pridávajte komentáre alebo ich zdieľajte na posúdenie.',

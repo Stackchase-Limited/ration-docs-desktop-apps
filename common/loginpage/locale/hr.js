@@ -71,7 +71,7 @@ l10n.hr = {
     licPanelDescr: 'Vaš ključ proizvoda poslan je na adresu e-pošte koju ste naveli tijekom kupnje.',
     checkUpdates: 'Provjerite ima li ažuriranja',
     strVersion: 'verzija',
-    strVersionCommunity: 'Zajednička verzija',
+    strVersionCommunity: 'Verzija',
     strVersionCommercial: 'Enterprise verzija',
     emptySlide1Title: 'Dijelite & surađujte',
     emptySlide1Text: 'Odaberite između brzog ili striktnog zajedničkog uređivanja u stvarnom vremenu, razgovarajte u svom dokumentu, dodajte komentare ili ga podijelite za reviziju.',
