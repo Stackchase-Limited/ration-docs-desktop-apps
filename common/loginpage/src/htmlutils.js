@@ -34,6 +34,21 @@
  */
 
 
+// File and folder names are arbitrary text and several panels interpolate them
+// straight into HTML template strings. Escape anything user-controlled before it
+// gets there, in attribute as well as text position.
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function checkScaling() {
     const matches = {
         'pixel-ratio__1': `screen (-webkit-max-device-pixel-ratio: 1.24)`,

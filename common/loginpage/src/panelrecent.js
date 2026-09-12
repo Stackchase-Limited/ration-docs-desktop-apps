@@ -193,12 +193,20 @@
                 info.ext = '';
             }
 
+            // A name like "<h1>report.xlsx" was being rendered as markup, and the
+            // title attributes could be broken out of with a quote. Escape for HTML
+            // here rather than on `info`, which is read back elsewhere.
+            const escName = escapeHtml(info.name);
+            const escExt = escapeHtml(info.ext);
+            const escFullName = escapeHtml(fullName);
+            const escDescr = escapeHtml(info.descr);
+
             // todo: crypted icon
 
             //language=HTML
             let _tpl = `
                 <div ${id} class="row text-normal">
-                    <div class="col-name" title="${fullName}">
+                    <div class="col-name" title="${escFullName}">
                         <div class="icon">
                             <svg class="icon" data-iconname="${info.type === 'folder' ? 'folder' : `${info.format}`}"
                                  data-precls="tool-icon">
@@ -211,12 +219,12 @@
                             ${info.crypted && !isSvgIcons ? `<i class="icon img-el shield"></i>` : ''}
                         </div>
                         <p class="name">
-                            ${info.name}<span class="ext">${info.ext}</span>
+                            ${escName}<span class="ext">${escExt}</span>
                         </p>
                     </div>
-                    <div class="col-location" title="${info.descr}">
+                    <div class="col-location" title="${escDescr}">
                         <!--              todo: icon here          -->
-                        ${info.descr}
+                        ${escDescr}
                     </div>
             `;
 
