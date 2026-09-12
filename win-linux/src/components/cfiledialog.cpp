@@ -202,13 +202,41 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
         fileName = _exec_dialog(_parent, _croped_name, _filters, _sel_filter);
 
         if ( !fileName.isEmpty() ) {
+            /* Work out the extension the chosen filter implies. Normally it is in
+             * the filter string; if the platform dialog hands back a filter without
+             * a pattern, fall back to the filter we hold for that format, so the
+             * name still ends up agreeing with what we are about to write. */
+            _ext.clear();
             match = reFilter.match(_sel_filter);
-
             if ( match.hasMatch() ) {
                 _ext = match.captured(1);
+            } else if ( m_filters.length() ) {
+                const int _fmt = getKey(_sel_filter);
+                if ( _fmt > 0 && m_mapFilters.contains(_fmt) ) {
+                    match = reFilter.match(m_mapFilters[_fmt]);
+                    if ( match.hasMatch() )
+                        _ext = match.captured(1);
+                }
+            }
 
-                if (!fileName.endsWith(_ext))
-                    fileName.append(_ext);
+            /* Saving a .pptx as PDF used to leave the name saying .pptx, and the
+             * write then replaced the original presentation with a PDF. Do this
+             * before the "already exists" prompt, so the user confirms the name we
+             * will actually write. */
+            if ( !_ext.isEmpty() && !fileName.endsWith(_ext, Qt::CaseInsensitive) ) {
+                /* Drop a trailing extension when it is one of the formats this
+                 * dialog offers, so test.pptx becomes test.pdf; otherwise only
+                 * append, so a dotted name that is not an extension - report.v2 -
+                 * is kept. */
+                const QString _cur_suffix = QFileInfo(fileName).suffix();
+                if ( !_cur_suffix.isEmpty() ) {
+                    QRegularExpression reKnownExt("\\(\\*\\." + QRegularExpression::escape(_cur_suffix) + "[\\s)]",
+                                                  QRegularExpression::CaseInsensitiveOption);
+                    if ( reKnownExt.match(_filters).hasMatch() )
+                        fileName.chop(_cur_suffix.length() + 1);
+                }
+
+                fileName.append(_ext);
             }
 
             QFileInfo info(fileName);
