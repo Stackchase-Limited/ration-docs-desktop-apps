@@ -166,6 +166,7 @@ namespace WindowHelper {
         OTHER
     };
     auto getEnvInfo() -> int;
+    auto isWaylandSession() -> bool;
     auto useGtkDialog() -> bool;
 #else
 //    auto isWindowSystemDocked(HWND handle) -> bool;

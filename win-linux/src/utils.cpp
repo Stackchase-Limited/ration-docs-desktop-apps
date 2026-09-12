@@ -1004,6 +1004,17 @@ namespace WindowHelper {
         return desktop_env;
     }
 
+    /* #2168: is this a Wayland session? The application itself runs on XWayland, so
+       QGuiApplication's platform name says "xcb" and cannot answer this - the session
+       environment can. Either variable alone is enough: XDG_SESSION_TYPE is what logind
+       sets, WAYLAND_DISPLAY what the compositor sets, and a session can present one
+       without the other. */
+    auto isWaylandSession() -> bool {
+        if (QString(qgetenv("XDG_SESSION_TYPE")).compare("wayland", Qt::CaseInsensitive) == 0)
+            return true;
+        return !qgetenv("WAYLAND_DISPLAY").isEmpty();
+    }
+
     auto useGtkDialog() -> bool {
         GET_REGISTRY_USER(reg_user)
         bool use_gtk_dialog = true;
@@ -1020,6 +1031,18 @@ namespace WindowHelper {
         } else {
             if (saved_flag)
                 use_gtk_dialog = false;
+            else
+            if (isWaylandSession()) {
+                /* #2168: the GTK chooser runs inside this process, and this process is a
+                   Qt application on XWayland. Under a Wayland compositor that dialog has
+                   no way to be handled properly - it does not repaint and it ignores
+                   input, which is what the report describes on GNOME. The portal is the
+                   mechanism Wayland actually supports, and it puts the dialog in its own
+                   process where the compositor owns it. Only the default changes: both
+                   command-line flags above still decide, and a saved preference still
+                   wins over this. */
+                use_gtk_dialog = false;
+            }
         }
         return use_gtk_dialog;
     }
