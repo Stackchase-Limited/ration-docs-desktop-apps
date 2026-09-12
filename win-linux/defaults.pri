@@ -203,6 +203,28 @@ core_linux {
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN/converter\'"
     QMAKE_LFLAGS += -static-libstdc++ -static-libgcc
 
+    # #1748: -static-libstdc++ puts a whole copy of the C++ runtime in this executable, and
+    # nothing was hiding it. The linker adds to an executable's dynamic symbol table any
+    # symbol a shared library it links against refers to, so Qt and CEF referring to
+    # std::ios_base, std::locale and friends published *our* static copies into the global
+    # scope. The process then contains two implementations under one set of names, and ELF
+    # resolves through a single scope in load order: when the system libstdc++.so.6 runs its
+    # own initialiser it binds std::basic_ios::init to the copy in this executable, operates
+    # on objects laid out by the other one, and aborts in free() - which is the backtrace in
+    # the report, frames #8-#11 in the executable called from #12 in the system library.
+    #
+    # Hide just the statically linked runtime. --exclude-libs,ALL would also work and is what
+    # core/Common/base.pri uses for plugins and static libraries, but on an executable it
+    # would hide everything, and the videoplayer plugin and the CEF helpers resolve against
+    # this binary. Naming the archives keeps the change to the collision itself.
+    #
+    # Same family as #2136, where libgraphics exported its bundled FreeType and cairo bound
+    # to it. Note that base.pri's config_hidden_symbols - which carries both
+    # -fvisibility=hidden and --exclude-libs - is only ever set for `plugin` and `staticlib`
+    # targets, so the `equals(TEMPLATE, app)` branch inside it has never once applied to an
+    # application. That is why this has to be set here.
+    QMAKE_LFLAGS += -Wl,--exclude-libs,libstdc++.a -Wl,--exclude-libs,libgcc.a -Wl,--exclude-libs,libgcc_eh.a
+
     INCLUDEPATH += $$PWD/extras/update-daemon/src/classes
 
     HEADERS +=  $$PWD/src/windows/platform_linux/cx11decoration.h \
