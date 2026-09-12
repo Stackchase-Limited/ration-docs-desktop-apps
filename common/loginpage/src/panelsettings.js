@@ -400,15 +400,27 @@
 
         function _on_btn_apply(e) {
             let _user_new_name = $userName.val();
-            if ( _user_new_name && _user_new_name.length &&
-                    _validate_user_name(_user_new_name) )
-            {
+            // A name the validator rejects used to abandon the whole Apply, so an
+            // unrelated change - language, theme, open mode - was thrown away with no
+            // explanation. Mark the field and carry on with everything else, keeping
+            // whatever name was last applied rather than clobbering it. Sending an
+            // empty name would make the app fall back to the system user name, which
+            // would quietly replace a custom one.
+            const _name_valid = !!(_user_new_name && _user_new_name.length &&
+                    _validate_user_name(_user_new_name));
+
+            if ( _name_valid ) {
                 _user_new_name = _user_new_name.trim();
                 $userName.val(_user_new_name);
+                $userName.removeClass('error');
+            } else {
+                $userName.addClass('error');
+            }
 
+            {
                 let _doc_open_mode = $chOpenMode.prop('checked') ? 'view' : 'edit';
                 let _new_settings = {
-                    username:_user_new_name,
+                    username: _name_valid ? _user_new_name : (localStorage.getItem('username') || ''),
                     docopenmode: _doc_open_mode,
                     restart: false,
                 };
@@ -487,12 +499,11 @@
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
                 $btnApply.disable(true);
 
-                localStorage.setItem('username', _user_new_name);
+                if ( _name_valid )
+                    localStorage.setItem('username', _user_new_name);
                 localStorage.setItem('docopenmode', _doc_open_mode);
 
                 _lock_createnew(_doc_open_mode == 'view');
-            } else {
-                $userName.addClass('error');
             }
         };
 
