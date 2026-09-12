@@ -124,6 +124,10 @@ namespace CEditorTools
         WindowHelper::CParentDisable disabler(parent);
 #endif
         if (pView && !(pagesCount < 1)) {
+            // #2312: the point at which a printer name is genuinely wanted. Resolving it at
+            // startup instead put the CUPS connect timeout in front of the first window.
+            EditorJSVariables::ensureDefaultPrinterName();
+
             NSEditorApi::CAscMenuEvent * pEvent;
             QAscPrinterContext * pContext = new QAscPrinterContext(AscAppManager::printData().printerInfo());
 

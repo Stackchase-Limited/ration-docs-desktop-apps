@@ -177,7 +177,27 @@ namespace EditorJSVariables {
                 vars_object["helpUrl"] = URL_WEBAPPS_HELP;
 #endif
         }
+    }
+
+    /* #2312: this was `vars_object["defaultPrinterName"] = QPrinterInfo::defaultPrinterName()`
+       inside init(), which runs before the main window is created. On Linux that call goes
+       through the CUPS client, and with no cupsd listening - cups.socket masked, or simply
+       not installed - /run/cups/cups.sock is missing, so the client falls back to connecting
+       to localhost. Nothing answers and nothing refuses, so connect() returns EINPROGRESS and
+       the client polls in 250 ms steps until it gives up. The whole application sat behind
+       that before drawing anything.
+
+       Resolve it the first time someone actually needs a printer name instead. Nothing in
+       the tree reads this variable today - Desktop.js declares getDefaultPrinterName() and
+       has no callers - so on the startup path it now costs nothing at all, and a consumer
+       that appears later still gets a value.
+       https://github.com/ONLYOFFICE/DesktopEditors/issues/2312 */
+    auto ensureDefaultPrinterName() -> void {
+        if ( vars_object.contains("defaultPrinterName") )
+            return;
+
         vars_object["defaultPrinterName"] = QPrinterInfo::defaultPrinterName();
+        apply();
     }
 
     auto setVariable(const QString& name, const QString& var) -> void {

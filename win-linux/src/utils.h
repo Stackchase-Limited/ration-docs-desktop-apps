@@ -65,6 +65,9 @@ namespace EditorJSVariables {
     auto setVariable(const QString& name, const QJsonObject& obj) -> void;
     auto setVariable(const QString& name, const QJsonArray& array) -> void;
     auto applyVariable(const QString& name, const QJsonObject& obj) -> void;
+    // #2312: resolves "defaultPrinterName" on first use. Not done in init(), because on
+    // Linux it goes to CUPS and blocks the main thread before the window exists.
+    auto ensureDefaultPrinterName() -> void;
     auto toWString() -> std::wstring;
     auto apply() -> void;
 }
