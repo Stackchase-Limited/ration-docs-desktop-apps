@@ -153,7 +153,8 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
 
         if ( _sel_filter.isEmpty() )
             _sel_filter = getFilter(_ext);
-        _filters.append(";;" + _sel_filter);
+        if ( !_sel_filter.isEmpty() )
+            _filters.append(";;" + _sel_filter);
     }
 
 #ifdef _WIN32
@@ -448,7 +449,15 @@ QStringList CFileDialogWrapper::modalOpenMedia(const QString& type, const QStrin
         extra = "Mp3 (*.mp3);;Mp2 (*.mp2);;Wav (*.wav);;Flac (*.flac);;Wma (*.wma);;Ogg (*.ogg);;Ape (*.ape);;Aac (*.aac);;M4a (*.m4a)";
     }
 
-    QString filter = m_mapFilters[AVS_OFFICESTUDIO_FILE_UNKNOWN] + ";;" + selected + ";;" + extra;
+    // same hazard as setFormats: an empty `selected` or `extra` would leave a ";;" run,
+    // and one nameless filter is enough for the portal to refuse the dialog outright
+    QStringList filterParts;
+    filterParts.append(m_mapFilters[AVS_OFFICESTUDIO_FILE_UNKNOWN]);
+    if ( !selected.isEmpty() )
+        filterParts.append(selected);
+    if ( !extra.isEmpty() )
+        filterParts.append(extra);
+    QString filter = filterParts.join(";;");
     auto result = modalOpen(path, filter, &selected, multi);
     checkForMimeTypes(result, type);
     return result;
@@ -497,13 +506,20 @@ void CFileDialogWrapper::setFormats(std::vector<int>& vf)
 {
     m_filters.clear();
 
-    if ( vf.size() ) {
-        std::vector<int>::iterator i = vf.begin();
-        m_filters = m_mapFilters.value(*(i++));
-        while (i != vf.end()) {
-            m_filters += ";;" + m_mapFilters.value(*(i++));
-        }
+    /* QMap::value() returns a default-constructed (empty) QString for a format id that
+       has no entry here, silently. Appending it produced a ";;" run, which becomes a
+       filter with an empty name - and xdg-desktop-portal refuses the whole request when
+       it sees one, so Save As never opens a dialog and the document cannot be saved.
+       Skip unmapped ids instead of emitting a nameless filter for them.
+       https://github.com/ONLYOFFICE/DesktopEditors/issues/2243 */
+    QStringList names;
+    for (std::vector<int>::iterator i = vf.begin(); i != vf.end(); ++i) {
+        const QString name = m_mapFilters.value(*i);
+        if ( !name.isEmpty() )
+            names.append(name);
     }
+
+    m_filters = names.join(";;");
 }
 
 int CFileDialogWrapper::getKey(const QString &value)

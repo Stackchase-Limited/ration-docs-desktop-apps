@@ -252,7 +252,11 @@ void setFilter(DBusMessageIter &msg_iter, const FilterItem &filterItem) {
             const unsigned nil = 0;
             __dbusAppend(&array_struct_iter, DBUS_TYPE_UINT32, &nil);
         }
-        char *ptrn = pattern.toUtf8().data();
+        /* toUtf8() returns a temporary QByteArray; taking .data() from it and letting
+           the statement end frees the buffer, so the append below read freed memory.
+           Hold the QByteArray for as long as the pointer is used. */
+        const QByteArray patternUtf8 = pattern.toUtf8();
+        const char *ptrn = patternUtf8.constData();
         __dbusAppend(&array_struct_iter, DBUS_TYPE_STRING, &ptrn);
         __dbusClose(&array_iter, &array_struct_iter);
     }
@@ -260,8 +264,23 @@ void setFilter(DBusMessageIter &msg_iter, const FilterItem &filterItem) {
     __dbusClose(&msg_iter, &struct_iter);
 }
 
+bool isUsableFilter(const FilterItem &filterItem) {
+    /* xdg-desktop-portal rejects the entire SaveFile/OpenFile request with
+       "invalid filter: name is empty" if any one filter has an empty name - the dialog
+       never opens and the document cannot be saved at all. A nameless filter is also
+       useless to the user, so drop it here rather than let one bad entry take the
+       dialog down with it. https://github.com/ONLYOFFICE/DesktopEditors/issues/2243 */
+    return filterItem.name && filterItem.name[0] != '\0';
+}
+
 void setFilters(DBusMessageIter &msg_iter, const FilterItem *filterList, uint filterCount, FilterItem *selFilter) {
-    if (filterCount != 0) {
+    uint usableCount = 0;
+    for (uint i = 0; i != filterCount; ++i) {
+        if (isUsableFilter(filterList[i]))
+            ++usableCount;
+    }
+
+    if (usableCount != 0) {
         DBusMessageIter dict_iter, var_iter, arr_iter;
         const char* FILTERS = "filters";
         const char* CURRENT_FILTER = "current_filter";
@@ -271,14 +290,15 @@ void setFilters(DBusMessageIter &msg_iter, const FilterItem *filterList, uint fi
         __dbusOpen(&dict_iter, DBUS_TYPE_VARIANT, "a(sa(us))", &var_iter);
         __dbusOpen(&var_iter, DBUS_TYPE_ARRAY, "(sa(us))", &arr_iter);
         for (uint i = 0; i != filterCount; ++i) {
-            setFilter(arr_iter, filterList[i]);
+            if (isUsableFilter(filterList[i]))
+                setFilter(arr_iter, filterList[i]);
         }
         __dbusClose(&var_iter, &arr_iter);
         __dbusClose(&dict_iter, &var_iter);
         __dbusClose(&msg_iter, &dict_iter);
 
         // set current filter
-        if (selFilter && selFilter->name && selFilter->pattern) {
+        if (selFilter && isUsableFilter(*selFilter) && selFilter->pattern) {
             __dbusOpen(&msg_iter, DBUS_TYPE_DICT_ENTRY, nullptr, &dict_iter);
             __dbusAppend(&dict_iter, DBUS_TYPE_STRING, &CURRENT_FILTER);
             __dbusOpen(&dict_iter, DBUS_TYPE_VARIANT, "(sa(us))", &var_iter);
@@ -867,7 +887,11 @@ Result callXdgPortal(Window parent, Xdg::Mode mode, const char* title,
     dbus_message_iter_init_append(methd, &iter);
 
     QString parent_window_qstr = "x11:" + QString::number((long)parent, 16);
-    char* parent_window = parent_window_qstr.toUtf8().data();
+    /* Same temporary-QByteArray mistake as in setFilter: the buffer was freed before
+       the append read it, so the portal was handed whatever happened to be there as
+       the parent window handle. */
+    const QByteArray parentWindowUtf8 = parent_window_qstr.toUtf8();
+    const char* parent_window = parentWindowUtf8.constData();
     __dbusAppend(&iter, DBUS_TYPE_STRING, &parent_window);
     __dbusAppend(&iter, DBUS_TYPE_STRING, &title);
 
