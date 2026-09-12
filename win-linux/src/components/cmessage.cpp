@@ -761,6 +761,7 @@ int showMessage(QWidget *parent, const QString &msg, MsgType msgType, MsgBtns ms
     GtkDialogFlags flags;
     flags = (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT);
 
+    sync_color_scheme(AscAppManager::themes().current().isDark() ? TRUE : FALSE);
     if (AscAppManager::isRtlEnabled())
         gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
     GtkWidget *dialog = NULL;

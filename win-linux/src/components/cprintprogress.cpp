@@ -115,6 +115,7 @@ public:
             }
 #else
             Window parent_xid = (parent) ? (Window)parent->winId() : 0L;
+            sync_color_scheme(AscAppManager::themes().current().isDark() ? TRUE : FALSE);
             if (AscAppManager::isRtlEnabled())
                 gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
             GtkDialogFlags flags = (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT);

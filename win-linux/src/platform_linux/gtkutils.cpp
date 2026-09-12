@@ -39,6 +39,24 @@
 #include "platform_linux/xcbutils.h"
 
 
+void sync_color_scheme(gboolean prefer_dark)
+{
+    // A GTK dialog takes its colours from the desktop's GtkSettings, never from
+    // us. Inside a Flatpak sandbox, and on desktops that publish no GTK
+    // preference at all (KDE among them), that resolves to plain light Adwaita -
+    // so a user who had chosen a dark theme in the editors was still handed a
+    // glaring white "Save As" window. Ask GTK for the dark variant of whatever
+    // theme it did resolve, so these windows follow the theme the user picked.
+    GtkSettings *settings = gtk_settings_get_default();
+    if (!settings)
+        return;
+
+    gboolean current = FALSE;
+    g_object_get(settings, "gtk-application-prefer-dark-theme", &current, NULL);
+    if ((current ? TRUE : FALSE) != (prefer_dark ? TRUE : FALSE))
+        g_object_set(settings, "gtk-application-prefer-dark-theme", prefer_dark ? TRUE : FALSE, NULL);
+}
+
 gboolean set_focus(GtkWidget *dialog)
 {
     GdkWindow *gdk_dialog = gtk_widget_get_window(dialog);

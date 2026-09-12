@@ -101,6 +101,7 @@ static void nativeFileDialog(const Window &parent_xid,
 {
     GtkFileChooserAction action = (mode == Gtk::Mode::FOLDER) ? GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER :
                                       (mode == Gtk::Mode::SAVE) ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN;
+    sync_color_scheme(AscAppManager::themes().current().isDark() ? TRUE : FALSE);
     if (AscAppManager::isRtlEnabled())
         gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
     GtkWidget *dialog = NULL;

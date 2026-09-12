@@ -44,6 +44,7 @@ typedef struct DialogTag {
     ulong parent_xid;
 } DialogTag;
 
+void sync_color_scheme(gboolean prefer_dark);
 gboolean set_focus(GtkWidget *dialog);
 gboolean focus_out(gpointer data);
 void set_parent(GtkWidget *dialog, gpointer data);

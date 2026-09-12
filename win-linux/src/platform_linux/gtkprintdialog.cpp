@@ -382,6 +382,7 @@ QDialog::DialogCode GtkPrintDialog::exec()
     }
 
     // Init dialog
+    sync_color_scheme(AscAppManager::themes().current().isDark() ? TRUE : FALSE);
     if (AscAppManager::isRtlEnabled())
         gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
     GtkWidget *dialog;
