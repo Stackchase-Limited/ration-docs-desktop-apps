@@ -170,6 +170,19 @@ int main( int argc, char *argv[] )
 
     /* the order is important */
 #ifdef __linux
+    /* CEF calls gtk_disable_setlocale() during its own startup, so that GTK does not
+       call setlocale() and move the process off the locale Chromium has settled on.
+       gtk_init() here runs first and makes that call a no-op, and GTK prints
+       "gtk_disable_setlocale() must be called before gtk_init()" for it - a line that
+       turns up in the logs attached to #1324 and #1832 and sends triage after the
+       wrong thing. Say it before gtk_init() so the intent is honoured and the warning
+       stops.
+
+       Safe where it stands: SingleApplication is constructed above, and Qt calls
+       setlocale(LC_ALL, "") itself during that, so the process locale is already
+       established and GTK dialogs stay translated. Measured rather than assumed - under
+       LC_ALL=de_DE.UTF-8 a QCoreApplication moves LC_NUMERIC from C to de_DE.UTF-8. */
+    gtk_disable_setlocale();
     gtk_init(&argc, &argv);
 #endif
     CApplicationCEF::Prepare(argc, argv);
