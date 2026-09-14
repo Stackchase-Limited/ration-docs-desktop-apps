@@ -273,15 +273,54 @@ static bool themeExists(const char *theme)
     return access(path, F_OK) == 0;
 }
 
+/* Split out from applyGtkTheme so the decision can be tested on its own:
+   gtk_settings_get_default() needs a GTK initialised against a display, and this
+   question - "has the user got a GTK theme of their own?" - does not. */
+static bool userHasOwnGtkTheme(const char *current, const char *light, const char *dark)
+{
+    if (!current || !*current)
+        return false;
+    return 0 != g_strcmp0(current, light) && 0 != g_strcmp0(current, dark);
+}
+
 static void applyGtkTheme(bool isDark)
 {
+    /* #2216: this used to set GTK_THEME and gtk-theme-name to Adwaita unconditionally,
+       which replaces whatever GTK theme the user actually runs - Breeze, Yaru, Arc -
+       with Adwaita for every GTK window we open. That is the report: the file dialogs
+       stopped looking like the rest of the desktop in 9.2.0, which is when this was
+       added (f59a46a0b).
+
+       The case it was written for is real, and is the one described in
+       gtkutils.cpp's sync_color_scheme: inside a Flatpak sandbox, and on desktops that
+       publish no GTK preference at all - KDE among them - GTK resolves to plain light
+       Adwaita, so a user who had chosen a dark editor theme still got a white Save As
+       window. Forcing Adwaita-dark does fix that, at the cost of everybody else's theme.
+
+       So only override when GTK resolved to Adwaita anyway - that is precisely the "no
+       theme configured" case, where naming the dark variant takes nothing away from the
+       user. When GTK resolved to a real theme, leave it alone: sync_color_scheme asks
+       that theme for its dark variant through gtk-application-prefer-dark-theme, which
+       is how this is meant to be done. */
     const char *theme_light = "Adwaita";
     const char *theme_dark = "Adwaita-dark";
     if (!themeExists(theme_light) || !themeExists(theme_dark))
         return;
+
+    GtkSettings *stn = gtk_settings_get_default();
+    if (!stn)
+        return;
+
+    gchar *current = nullptr;
+    g_object_get(stn, "gtk-theme-name", &current, NULL);
+    const bool bUserHasTheme = userHasOwnGtkTheme(current, theme_light, theme_dark);
+    g_free(current);
+
+    if (bUserHasTheme)
+        return;
+
     qputenv("GTK_THEME", isDark ? theme_dark : theme_light);
-    if (GtkSettings *stn = gtk_settings_get_default())
-        g_object_set(stn, "gtk-theme-name", isDark ? theme_dark : theme_light, NULL);
+    g_object_set(stn, "gtk-theme-name", isDark ? theme_dark : theme_light, NULL);
 }
 #endif
 
