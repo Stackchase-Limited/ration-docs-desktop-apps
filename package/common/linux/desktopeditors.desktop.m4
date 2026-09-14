@@ -2,6 +2,53 @@ include(defines.m4)dnl
 [Desktop Entry]
 Version=1.0
 Name=_NAME
+dnl #2395: a launcher that is running in a locale may index only the localised
+dnl Name and never fall back to the plain one, so the application is unfindable by
+dnl name on any non-English system. The product name is a brand and is the same
+dnl string everywhere, so each of these is _NAME - the point is that the key exists
+dnl for the locale. The list is the one the Desktop Actions below already use, which
+dnl is why the actions were findable when the application itself was not.
+Name[ar]=_NAME
+Name[be]=_NAME
+Name[bg]=_NAME
+Name[ca]=_NAME
+Name[cs]=_NAME
+Name[da]=_NAME
+Name[de]=_NAME
+Name[el]=_NAME
+Name[es]=_NAME
+Name[fi]=_NAME
+Name[fr]=_NAME
+Name[gl]=_NAME
+Name[he]=_NAME
+Name[hu]=_NAME
+Name[hy]=_NAME
+Name[id]=_NAME
+Name[it]=_NAME
+Name[ja]=_NAME
+Name[ko]=_NAME
+Name[lo]=_NAME
+Name[lv]=_NAME
+Name[nb]=_NAME
+Name[nl]=_NAME
+Name[pl]=_NAME
+Name[pt]=_NAME
+Name[pt_BR]=_NAME
+Name[ro]=_NAME
+Name[ru]=_NAME
+Name[si]=_NAME
+Name[sk]=_NAME
+Name[sl]=_NAME
+Name[sq]=_NAME
+Name[sr@latin]=_NAME
+Name[sr]=_NAME
+Name[sv]=_NAME
+Name[tr]=_NAME
+Name[uk]=_NAME
+Name[ur]=_NAME
+Name[vi]=_NAME
+Name[zh_CN]=_NAME
+Name[zh_TW]=_NAME
 GenericName=_GENERICNAME
 GenericName[ru]=_GENERICNAME_ru
 Comment=_COMMENT
