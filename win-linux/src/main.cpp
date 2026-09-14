@@ -66,6 +66,26 @@ int main( int argc, char *argv[] )
         return 0;
     }
 #else
+    /* #2105: the line below forces the xcb platform plugin, and on a Wayland session
+       with no X display there is nothing for it to connect to - the process died with a
+       segmentation fault before Qt got as far as saying so.
+
+       This is a limitation, not a bug we can fix here, and it is worth being plain about
+       it: the shipped Qt carries no wayland platform plugin (the reporter's own log lists
+       what is there - eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, xcb), and the
+       in-process GTK file dialogs are X11-only, which is what #2168 was about. Running
+       natively on Wayland is a port, not a flag.
+
+       What we can do is say so instead of crashing. XWayland sets DISPLAY, so a Wayland
+       session that has it is unaffected and still takes the xcb path below; only the
+       case that was already doomed changes, from a segfault to a sentence. */
+    if ( Utils::isWaylandSession() && qgetenv("DISPLAY").isEmpty() ) {
+        fputs("onlyoffice: this is a Wayland session and no X display is available.\n"
+              "These editors need X11, either directly or through XWayland: the bundled Qt\n"
+              "has no wayland platform plugin, and the file dialogs are X11-only.\n"
+              "Start XWayland, or use an X11 session.\n", stderr);
+        return 1;
+    }
     qputenv("QT_QPA_PLATFORM", "xcb");
     qputenv("GDK_BACKEND", "x11");
     InputArgs::init(argc, argv);
