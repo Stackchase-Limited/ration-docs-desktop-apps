@@ -53,6 +53,7 @@
 # define close_socket(a) closesocket(a)
 #else
 # include <unistd.h>
+# include <errno.h>
 # include <sys/socket.h>
 # include <sys/un.h>
 # include <netinet/in.h>
@@ -68,6 +69,17 @@
 #define BUFFSIZE 1024
 
 typedef struct sockaddr_in SockAddr;
+
+/* The address itself is not present on this host's loopback - as opposed to being in
+   use by somebody else, which is what EADDRINUSE says. See the note in initSocket. */
+static bool addr_not_available()
+{
+#ifdef _WIN32
+    return WSAGetLastError() == WSAEADDRNOTAVAIL;
+#else
+    return errno == EADDRNOTAVAIL;
+#endif
+}
 
 static unsigned long inetAddrFromUserId()
 {
@@ -105,6 +117,26 @@ static bool initSocket(u_short port, SOCKET &tmpd, SockAddr &addr, int &ret, std
     addr.sin_addr.s_addr = use_unique_addr ? inetAddrFromUserId() : inet_addr(INADDR);
     addr.sin_port = htons(port);
     ret = ::bind(tmpd, (struct sockaddr*)&addr, sizeof(addr));
+
+    /* #2434: inetAddrFromUserId() derives 127.<uid>.1 so that two users on one machine
+       do not fight over the instance port. Linux puts the whole of 127.0.0.0/8 on lo, so
+       any address in it binds. FreeBSD - and so the Linuxulator, which uses the FreeBSD
+       network stack - configures only 127.0.0.1 on lo0, so every uid but 1000 fails this
+       bind with EADDRNOTAVAIL.
+
+       That failure used to be indistinguishable from EADDRINUSE to the caller, so the
+       application decided it was a second instance, tried to hand its arguments to a
+       primary that does not exist, and exited 0 with no window and nothing printed.
+
+       Fall back to 127.0.0.1, which exists everywhere. This is done here rather than in
+       the callers so that the receiver and the sender cannot end up on different
+       addresses. It costs per-user separation on such a host - the behaviour there is
+       one shared instance, as it was before the unique address was introduced - which is
+       a great deal better than not starting. */
+    if (ret != 0 && use_unique_addr && addr.sin_addr.s_addr != inet_addr(INADDR) && addr_not_available()) {
+        addr.sin_addr.s_addr = inet_addr(INADDR);
+        ret = ::bind(tmpd, (struct sockaddr*)&addr, sizeof(addr));
+    }
     return true;
 }
 

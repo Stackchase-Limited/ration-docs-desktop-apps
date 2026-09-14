@@ -51,6 +51,7 @@
 #include "common/File.h"
 #include <QStyleFactory>
 #include <QGuiApplication>
+#include <cstdio>
 
 
 int main( int argc, char *argv[] )
@@ -177,8 +178,21 @@ int main( int argc, char *argv[] )
             }
         }
         bool res = app.sendMessage(_out_args.toUtf8());
-        CLogger::log("The instance is not primary and will be closed. Parameter sending status: " + QString::number(res));
-        return 0;
+        if ( res ) {
+            CLogger::log("The instance is not primary and will be closed. Parameter sending status: 1");
+            return 0;
+        }
+
+        /* #2434: we were told we are not the primary instance, but there is nobody
+           there to hand the arguments to. Exiting 0 here is how the application came
+           to vanish after Qt had initialised, showing no window and printing nothing -
+           the log line went to the log file, which is not where somebody watching a
+           terminal is looking. Whatever the cause (see csocket.cpp for one: a loopback
+           address that does not exist on this host), the user asked for an editor, so
+           carry on and give them one rather than disappearing. A second window is a
+           visible, recoverable outcome; a silent exit is neither. */
+        CLogger::log("The instance is not primary, but no primary instance answered. Continuing anyway.");
+        fputs("onlyoffice: no primary instance answered; starting a new one.\n", stderr);
     }
 
     app.setAttribute(Qt::AA_UseHighDpiPixmaps);
