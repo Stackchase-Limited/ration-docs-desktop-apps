@@ -345,13 +345,35 @@ void CLangater::init()
 
     if ( _lang.isEmpty() ) {
         if ( APP_DEFAULT_SYSTEM_LOCALE ) {
-            QRegularExpression _re;
-            QString _env_name = qgetenv("LANG");
-            _re.setPattern("^(\\w{2,5})\\.?");
-            QRegularExpressionMatch _re_match = _re.match(_env_name);
+            /* #2302: LANG was the only variable read, but it is the last of three that
+               decide the message language. POSIX precedence is LC_ALL, then LC_MESSAGES,
+               then LANG, and a desktop that offers "interface language" separately from
+               "formats" - KDE and GNOME both do - expresses that by setting LC_MESSAGES
+               while leaving LANG alone. Reading only LANG then reports a language the user
+               did not pick, which is what the report describes: the application starting
+               with --lang=en-US on a system set to French.
 
-            if ( _re_match.hasMatch() ) {
-                _lang = _re_match.captured(1);
+               "C" and "POSIX" are not languages. They mean "no localisation chosen", and
+               taking them as a language code yields nonsense, so they are skipped and the
+               next variable - or the application default - is used instead. */
+            QRegularExpression _re;
+            _re.setPattern("^(\\w{2,5})\\.?");
+
+            const char * _vars[] = { "LC_ALL", "LC_MESSAGES", "LANG" };
+            for ( size_t i = 0; i < sizeof(_vars)/sizeof(_vars[0]) && _lang.isEmpty(); ++i ) {
+                const QString _env_name = qgetenv(_vars[i]);
+                if ( _env_name.isEmpty() )
+                    continue;
+
+                QRegularExpressionMatch _re_match = _re.match(_env_name);
+                if ( !_re_match.hasMatch() )
+                    continue;
+
+                const QString _captured = _re_match.captured(1);
+                if ( _captured == "C" || _captured == "POSIX" )
+                    continue;
+
+                _lang = _captured;
             }
         } else _lang = APP_DEFAULT_LOCALE;
     }
