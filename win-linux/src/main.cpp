@@ -50,6 +50,7 @@
 #include "chelp.h"
 #include "common/File.h"
 #include <QStyleFactory>
+#include <QGuiApplication>
 
 
 int main( int argc, char *argv[] )
@@ -83,6 +84,21 @@ int main( int argc, char *argv[] )
     QCoreApplication::setAttribute(Qt::AA_Use96Dpi);
     QCoreApplication::setApplicationName(QString::fromUtf8(WINDOW_NAME));
     QApplication::setApplicationDisplayName(QString::fromUtf8(WINDOW_NAME));
+#ifdef __linux
+    /* #2397: tell Qt which desktop entry this application is, so a panel can tie the
+       window back to it and show the right icon.
+
+       On Wayland this is what Qt reports as the xdg-shell app_id, and a panel has nothing
+       else to match on - there is no WM_CLASS to fall back to as there is under X11. So
+       without it the window is anonymous and the panel shows a placeholder, which is what
+       the report describes on a Wayland session. The desktop entry itself is fine: it has
+       carried StartupWMClass all along, and that key is an X11 mechanism the compositor
+       never sees.
+
+       DESKTOP_FILE_NAME already existed for the DBus activation call in
+       singleapplication.cpp; it was simply never given to Qt. */
+    QGuiApplication::setDesktopFileName(QString::fromUtf8(DESKTOP_FILE_NAME));
+#endif
 
     QString user_data_path = Utils::getUserPath() + APP_DATA_PATH;
     auto setup_paths = [&user_data_path](CAscApplicationManager * manager) {
