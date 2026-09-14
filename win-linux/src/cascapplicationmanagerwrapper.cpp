@@ -40,6 +40,8 @@
 #include <QMutexLocker>
 #include <QTimer>
 #include <QDir>
+#include <QFileInfo>
+#include <QUrl>
 #include <QDateTime>
 #include <qtcomp/qdesktopwidget.h>
 #include <QJsonDocument>
@@ -275,7 +277,38 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
 
         SKIP_EVENTS_QUEUE([event] () {
             CAscOnOpenExternalLink * const pData = static_cast<CAscOnOpenExternalLink *>(event->m_pData);
-            Utils::openUrl( QString::fromStdWString(pData->get_Url()) );
+            QString _url = QString::fromStdWString(pData->get_Url());
+
+            /* #2293: a hyperlink to a file may be relative to the document holding it -
+               "..\..\file.pdf" is what Excel and LibreOffice both write and both resolve.
+               Handing that to QDesktopServices/xdg-open unchanged gives a URL with no
+               scheme and no anchor, so nothing opens and the user gets no error either:
+               they confirm the prompt and nothing happens, which is the report.
+
+               Resolve it against the directory of the document it came from. Only a
+               genuinely relative path is touched - anything with a scheme, a UNC path or an
+               absolute path is passed through exactly as before - and if the document has
+               no path yet, or the target does not exist, the original string is used so the
+               behaviour is no worse than it was. */
+            if ( !_url.isEmpty() && QUrl(_url).scheme().isEmpty() && !_url.startsWith("\\\\") ) {
+                QString _native = QString(_url).replace('\\', '/');
+                if ( QDir::isRelativePath(_native) ) {
+                    if ( CCefView * pView = AscAppManager::getInstance().GetViewById(event->get_SenderId()) ) {
+                        const QString _doc = QString::fromStdWString(pView->GetLocalFilePath());
+                        if ( !_doc.isEmpty() ) {
+                            // cleanPath collapses the ".." segments; absoluteFilePath only joins,
+                            // which would leave "<dir>/a/b/../../file.pdf" - resolvable, but an
+                            // untidy thing to hand to a shell handler
+                            const QString _resolved = QDir::cleanPath(
+                                        QDir(QFileInfo(_doc).absolutePath()).absoluteFilePath(_native));
+                            if ( QFileInfo::exists(_resolved) )
+                                _url = QUrl::fromLocalFile(_resolved).toString();
+                        }
+                    }
+                }
+            }
+
+            Utils::openUrl( _url );
 
             event->Release();
         });
