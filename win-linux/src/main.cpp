@@ -51,6 +51,7 @@
 #include "common/File.h"
 #include <QStyleFactory>
 #include <QGuiApplication>
+#include <QFileInfo>
 #include <cstdio>
 
 
@@ -82,6 +83,24 @@ int main( int argc, char *argv[] )
 #else
     QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
 #endif
+    /* #2274: the virtual keyboard input context is a Qt Quick plugin, and Qt Quick
+       resolves `import QtQuick 2.x` through the QML import path - which Qt compiles in
+       as the path on the machine that built it, and which means nothing on a user's
+       system. Point it at the qml tree deployed beside the executable.
+
+       This has to happen before QApplication is constructed: Qt instantiates platform
+       input context plugins during that construction, so an import path set afterwards
+       is set too late to matter. GetProcessDirectory is used rather than
+       QCoreApplication::applicationDirPath for the same reason - there is no
+       application yet.
+
+       Nothing here forces the plugin on. Qt loads it only when QT_IM_MODULE names it;
+       what this fixes is that when a user does ask for it, it now has the imports it
+       needs instead of failing at the first one. */
+    const QString sQmlDir = QString::fromStdWString(NSFile::GetProcessDirectory()) + "/qml";
+    if ( QFileInfo(sQmlDir).isDir() )
+        qputenv("QML2_IMPORT_PATH", sQmlDir.toUtf8());
+
     QCoreApplication::setAttribute(Qt::AA_Use96Dpi);
     QCoreApplication::setApplicationName(QString::fromUtf8(WINDOW_NAME));
     QApplication::setApplicationDisplayName(QString::fromUtf8(WINDOW_NAME));
