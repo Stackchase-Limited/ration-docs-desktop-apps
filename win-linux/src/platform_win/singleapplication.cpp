@@ -48,8 +48,27 @@ SingleApplication::SingleApplication(int &argc, char *argv[]) :
     QApplication(argc, argv),
     m_isPrimary(false)
 {
+    /* #2189: the application closed itself the moment it started, every time, with no
+       message at all. GetLastError() is thread-local and sticky - CreateMutex does not
+       clear it when it creates the mutex fresh, it only *sets* ERROR_ALREADY_EXISTS when
+       the mutex was already there. So whatever last failed on this thread is still in it,
+       and reading it without clearing it first asks the wrong question.
+
+       ERROR_ALREADY_EXISTS is exactly the value most likely to be sitting there: it is
+       what CreateDirectory leaves behind for a directory that is already present, and Qt
+       touches its settings and cache directories while QApplication is constructed - which
+       happens in the initialiser list, just above. So on a machine where that ordering
+       falls out the wrong way, the only running instance decided it was a second one,
+       spent five seconds hunting for a receiver window that does not exist, and returned 0
+       from main.
+
+       Clear the error first and check the handle, so this asks only what it means to ask.
+       A CreateMutex that fails outright is treated as primary: without the mutex we cannot
+       know, and starting is the recoverable answer. */
+    SetLastError(ERROR_SUCCESS);
     m_hMutex = CreateMutex(NULL, FALSE, TEXT(APP_MUTEX_NAME));
-    if (GetLastError() != ERROR_ALREADY_EXISTS) {
+    const DWORD createResult = GetLastError();
+    if (m_hMutex == NULL || createResult != ERROR_ALREADY_EXISTS) {
         m_isPrimary = true;
         startPrimary();
     }
@@ -57,7 +76,9 @@ SingleApplication::SingleApplication(int &argc, char *argv[]) :
 
 SingleApplication::~SingleApplication()
 {
-    if (m_isPrimary && m_hMutex != nullptr)
+    /* Closed whether or not we are primary - a secondary instance opened a handle to the
+       same mutex and used to leak it. */
+    if (m_hMutex != nullptr)
         CloseHandle(m_hMutex);
 
     if (m_hWnd)
