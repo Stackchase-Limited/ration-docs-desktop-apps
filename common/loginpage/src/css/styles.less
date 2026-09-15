@@ -1282,6 +1282,15 @@ li.menu-item {
       font-weight: 500;
       text-decoration: none;
 
+      // ViewPortals.render() does $('#idx-sidebar-portals').html(tpl_sidebar), and
+      // that template opens with its own "Clouds" heading - so the branded .rd-grp
+      // heading just above it was followed by a second one, plus a second "+"
+      // button. Hide the injected heading rather than editing panelconnect.js,
+      // which serves other views that still want it.
+      #idx-sidebar-portals .sidebar-block-title {
+        display: none;
+      }
+
       .icon-box {
         width: 21px;
         height: 21px;
