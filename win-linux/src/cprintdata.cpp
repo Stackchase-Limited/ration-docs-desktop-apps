@@ -43,10 +43,17 @@
 #include <QSettings>
 #include <thread>
 #include <cmath>
+#include <cctype>
+#include <cstdlib>
+#include <cstring>
 #ifdef __linux__
 # include <cups/cups.h>
 # include <cups/ppd.h>
 #endif
+
+/* Bump whenever the shape or the meaning of printers.cache changes, so that a cache
+   written by an older build is discarded rather than trusted. */
+#define PRINTERS_CACHE_VERSION 2
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
 # define SKIP_EMPTY Qt::SkipEmptyParts
@@ -80,6 +87,124 @@ static QString getDriverName(LPWSTR printerName)
     return name;
 }
 #endif
+
+#ifdef __linux__
+/* #2147: whether a queue can print in colour was decided by one PPD option keyword,
+   "ColorModel". Drivers do not agree on that keyword - Epson's ESC/P-R driver calls it
+   "Ink" (choices COLOR/MONO, which is exactly what the reporter's `lpoptions -l` shows),
+   Brother uses "BRMonoColor", Kyocera "SelectColor", Sharp "ARCMode" - so a colour
+   printer whose PPD spells it any other way was published as color_supported:false.
+   web-apps then greys the "Color printing" combo out and pins it to black-and-white
+   (FileMenuPanels.js, setCmbColorPrintingDisabled), which is the whole bug: the choice
+   disappears from the UI even though the printer and CUPS both offer it.
+
+   Ask three independent sources and take any "yes":
+     1. the PPD's own *ColorDevice declaration, which ppdOpenFile exposes as
+        ppd_file_t::color_device - driver-independent and set by nearly every colour PPD;
+     2. the queue's printer-type bits, which cupsd derives itself and cupsGetDests
+        returns as an option, so it still answers when the PPD says nothing;
+     3. the option scan, now over the keywords drivers actually use.
+
+   Deliberately biased towards offering colour: a wrong "yes" costs one greyscale page,
+   a wrong "no" removes the choice from the dialog altogether.
+   https://github.com/ONLYOFFICE/DesktopEditors/issues/2147 */
+
+static bool equalsNoCase(const char *a, const char *b)
+{
+    if (!a || !b)
+        return false;
+    for (; *a && *b; ++a, ++b) {
+        if (tolower((unsigned char)*a) != tolower((unsigned char)*b))
+            return false;
+    }
+    return *a == *b;
+}
+
+static bool containsNoCase(const char *haystack, const char *needle)
+{
+    if (!haystack || !needle)
+        return false;
+    for (const char *h = haystack; *h; ++h) {
+        const char *a = h, *b = needle;
+        while (*a && *b && tolower((unsigned char)*a) == tolower((unsigned char)*b))
+            ++a, ++b;
+        if (!*b)
+            return true;
+    }
+    return false;
+}
+
+/* The option keywords drivers use for the colour/monochrome toggle. Quality-only
+   keywords ("PrintoutMode", "OutputMode") are left out on purpose: their choices are
+   Draft/Normal/High on monochrome printers too, so they would answer "colour" for
+   every queue. */
+static const char * const kColorOptionKeywords[] = {
+    "ColorModel", "ColorMode", "Ink", "SelectColor", "HPColorMode",
+    "BRMonoColor", "ARCMode", "XRXColor", "EPRendering", "ColorType", nullptr
+};
+
+/* Choice names that mean "no colour". Anything else offered by a colour-toggle option
+   is taken to be a colour choice. */
+static const char * const kMonochromeChoices[] = {
+    "Gray", "Grey", "Grayscale", "Greyscale", "KGray", "CMYGray", "DeviceGray", "sGray",
+    "Gray16", "1bitGray", "8bitGray", "Mono", "MONO", "Monochrome", "Black", "BlackOnly",
+    "BlackAndWhite", "BW", "CMBW", "FastGray", "K", "W", "None", "Off", "False", nullptr
+};
+
+static bool ppdChoiceMeansColor(const ppd_choice_t &choice)
+{
+    if (containsNoCase(choice.choice, "color") || containsNoCase(choice.choice, "colour") ||
+        containsNoCase(choice.text, "color")   || containsNoCase(choice.text, "colour"))
+        return true;
+
+    for (const char * const *mono = kMonochromeChoices; *mono; ++mono) {
+        if (equalsNoCase(choice.choice, *mono))
+            return false;
+    }
+    return true;
+}
+
+static bool ppdOffersColor(ppd_file_t *ppdF)
+{
+    if (!ppdF)
+        return false;
+    if (ppdF->color_device)
+        return true;
+
+    for (const char * const *keyword = kColorOptionKeywords; *keyword; ++keyword) {
+        /* ppdFindOption searches every group, including subgroups, which the
+           ppdFirstOption/ppdNextOption walk below does not. */
+        ppd_option_t *option = ppdFindOption(ppdF, *keyword);
+        if (!option)
+            continue;
+        for (int j = 0; j < option->num_choices; j++) {
+            if (ppdChoiceMeansColor(option->choices[j]))
+                return true;
+        }
+    }
+    return false;
+}
+
+static bool destAdvertisesColor(cups_dest_t *dest)
+{
+    if (!dest)
+        return false;
+    const char *type = cupsGetOption("printer-type", dest->num_options, dest->options);
+    if (!type || !*type)
+        return false;
+
+    char *end = nullptr;
+    const unsigned long bits = strtoul(type, &end, 10);
+    if (!end || *end)
+        return false;
+    return (bits & CUPS_PRINTER_COLOR) != 0;
+}
+
+static bool printerSupportsColor(cups_dest_t *dest, ppd_file_t *ppdF)
+{
+    return ppdOffersColor(ppdF) || destAdvertisesColor(dest);
+}
+#endif // __linux__
 
 static bool jsonArrayContainsDriverName(const QJsonArray &array, const QString &name, QJsonObject &printerObject)
 {
@@ -288,7 +413,12 @@ public:
         const QString printers_cache = QString::fromStdWString(user_data_path.append(L"/printers.cache"));
         if (QFile::exists(printers_cache)) {
             QJsonObject cache = Utils::parseJsonFile(printers_cache);
-            if (!cache.isEmpty() && cache.contains("printers")) {
+            /* #2147: the cache is keyed on the driver nickname and is never expired, so
+               entries written before the colour-detection fix - every one of them saying
+               color_supported:false - would survive the upgrade and the fix would never
+               be seen. Version the file and ignore anything an older scheme wrote. */
+            if (!cache.isEmpty() && cache.contains("printers") &&
+                    cache.value("version").toInt() == PRINTERS_CACHE_VERSION) {
                 cachedPrintersArray = cache["printers"].toArray();
             }
         }
@@ -386,18 +516,10 @@ public:
                 printerObject["driver"] = driverName;
                 printerObject["name"] = QString::fromUtf8(dest->name);
                 printerObject["duplex_supported"] = duplex_supported;
-                printerObject["color_supported"] = false;
+                printerObject["color_supported"] = printerSupportsColor(dest, ppdF);
 
                 ppd_option_t *option = ppdFirstOption(ppdF);
                 while (option) {
-                    if (strcmp(option->keyword, "ColorModel") == 0) {
-                        for (int j = 0; j < option->num_choices; j++) {
-                            if (strcmp(option->choices[j].choice, "Gray") != 0) {
-                                printerObject["color_supported"] = true;
-                                break;
-                            }
-                        }
-                    } else
                     if (strcmp(option->keyword, "PageSize") == 0) {
                         QJsonArray paperArray;
                         for (int j = 0; j < option->num_choices; j++) {
@@ -423,6 +545,7 @@ public:
         }
 #endif
         QJsonObject rootObject;
+        rootObject["version"] = PRINTERS_CACHE_VERSION;
         rootObject["printers"] = printersArray;
         if (needUpdateCache) {
             const QByteArray json = QJsonDocument(rootObject).toJson(QJsonDocument::Compact);
