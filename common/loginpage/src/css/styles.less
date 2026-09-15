@@ -1321,6 +1321,26 @@ li.menu-item {
       color: @rd-side-ink;
     }
 
+    // The active item is a petrol left accent, a faint wash, and white text - see
+    // the block below. But the generic rule
+    //
+    //   .tool-menu>li.menu-item:not(.separator):not(.devider).selected {
+    //       background: var(--highlight-sidebar-item-pressed);
+    //       outline: 1px solid var(--border-sidebar-item); outline-offset: -1px; ... }
+    //
+    // styles the LI while ours styles the A inside it, so the two never competed on
+    // specificity - both simply applied. On this dark sidebar that painted a
+    // near-white filled box with a 1px outline behind the item, and our own
+    // `color: #fff` then put white text on top of it, so "Home" read as an empty
+    // white rectangle rather than as the selected item.
+    //
+    // Neutralise the LI-level treatment here; (0,6,1) against the generic (0,5,1).
+    &.selected {
+      background: none;
+      outline: 0;
+      box-shadow: none;
+    }
+
     &.selected a,
     a.selected {
       border-left-color: @ration-petrol;
