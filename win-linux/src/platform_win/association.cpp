@@ -231,8 +231,32 @@ void Association::AssociationPrivate::tryProposeAssociation(QWidget *parent, con
     }
 }
 
+/* #2389: the modal form of this prompt carries a "Do not show this message again"
+   checkbox, and that checkbox is the only thing that ever stops it. A Windows toast has
+   room for two buttons and no checkbox, and the toast is the path actually taken -
+   notifications are supported on every Windows this ships to - so on the path users see,
+   the opt-out does not exist.
+
+   Worse, the answer they did give was discarded. The notification callback re-enters
+   showAssociationMessage with the result; that result is neither DLG_RESULT_NONE nor
+   MODAL_RESULT_YES, so it fell through both branches and the function returned having
+   recorded nothing at all. chekForAssociations then let the prompt through again a day
+   later, and again the day after, for as long as any supported format stayed associated
+   with something else - which, for somebody who deliberately keeps another default
+   editor, is forever. That is the stream of prompts #2389 is about.
+
+   So read an explicit No from the toast as the checkbox the toast could not draw. Only
+   an explicit No: NOTIF_FAILED means the toast never appeared and the modal is about to
+   be shown instead, a dismissal or an unrecognised action (-1) is not an answer, and Yes
+   is handled by associating. */
+static bool notificationAnswerStopsAsking(int result)
+{
+    return result == MODAL_RESULT_NO;
+}
+
 void Association::AssociationPrivate::showAssociationMessage(QWidget *parent, const std::vector<std::wstring> &unassocFileExts, bool forceModal, int result)
 {
+    const bool fromNotification = (result != DLG_RESULT_NONE);
     if (result == DLG_RESULT_NONE) {
         QString msg = unassocFileExts.size() == 1 ? QObject::tr("Do you want to make %1 your default application for extension: %2?")
                                                         .arg(QString(WINDOW_NAME), QString::fromStdWString(unassocFileExts[0])) :
@@ -257,6 +281,12 @@ void Association::AssociationPrivate::showAssociationMessage(QWidget *parent, co
             GET_REGISTRY_USER(reg_user)
             reg_user.setValue("ignoreAssocMsg", true);
         }
+    }
+
+    if (fromNotification && notificationAnswerStopsAsking(result) && !m_ignoreAssocMsg) {
+        m_ignoreAssocMsg = true;
+        GET_REGISTRY_USER(reg_user)
+        reg_user.setValue("ignoreAssocMsg", true);
     }
 
     if (result == MODAL_RESULT_YES) {
