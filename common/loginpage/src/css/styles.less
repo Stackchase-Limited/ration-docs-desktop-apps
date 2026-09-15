@@ -1286,6 +1286,11 @@ li.menu-item {
         width: 21px;
         height: 21px;
         padding: 0;
+        // The generic `.tool-menu .menu-item .icon-box` rule draws a 1px border
+        // around every icon box. This block outranks it and resets the radius and
+        // the background, but never named `border` - so that one property leaked
+        // through and put a square outline around each icon in the left menu.
+        border: 0;
         border-radius: 0;
         background: none;
       }
