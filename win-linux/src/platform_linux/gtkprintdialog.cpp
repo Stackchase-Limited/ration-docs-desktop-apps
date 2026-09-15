@@ -175,6 +175,48 @@ auto gtkPaperNameFromPageSize(const QSizeF &size)->QString
     return gtkPaperName;
 }
 
+/* #2161: this used to be `gtk_paper_size_new_custom(paper_name, ...)` unconditionally,
+   with the name gtkPaperNameFromPageSize() had just resolved passed in as the custom
+   size's name. That name is ignored: gtk_paper_size_new_custom() always produces a
+   custom size - is_custom is TRUE and gtk_paper_size_get_ppd_name() returns NULL
+   whatever you call it - so the CUPS backend had no media name to send and fell back
+   to "Custom.<w>x<h>mm". A custom media carries no margins, which is why the reporter's
+   CUPS log says
+
+       media=Custom.279x216mm
+       WARN: Could not determine the output page dimensions, falling back to US Letter
+       WARN: Could not determine the width of the left/right/top/bottom margins
+
+   In portrait the fallback media happens to be the same shape as the real one and the
+   page comes out right; in landscape the job is laid out as 279x216 on a 216x279
+   fallback, and the 63mm difference is the wide left margin and the cut-off right edge
+   in the report. Ask GTK for the standard size by name when there is one, so CUPS gets
+   a media name it knows the margins for, and keep a custom size only for media that
+   genuinely is not standard.
+
+   The lookup is normalised to portrait first: GtkPageSetup carries the media in
+   portrait and the orientation separately (gtk_page_setup_set_orientation, below), and
+   gtk_paper_size_get_paper_sizes() lists portrait sizes only - so a size that has
+   already been swapped for landscape upstream matches nothing and falls through to the
+   custom branch, which is how a plain Letter sheet ended up as custom media.
+   https://github.com/ONLYOFFICE/DesktopEditors/issues/2161 */
+auto gtkPaperSizeFromPageSize(const QSizeF &page_size, const QString &display_name)->GtkPaperSize*
+{
+    const QSizeF portrait(qMin(page_size.width(), page_size.height()),
+                          qMax(page_size.width(), page_size.height()));
+
+    const QString paper_name = gtkPaperNameFromPageSize(portrait);
+    if (!paper_name.isEmpty())
+        return gtk_paper_size_new(paper_name.toUtf8().data());
+
+    const QString custom_name = QString("custom_%1x%2mm")
+            .arg(portrait.width()).arg(portrait.height());
+    return gtk_paper_size_new_custom(custom_name.toUtf8().data(),
+                                     display_name.toUtf8().data(),
+                                     portrait.width(), portrait.height(),
+                                     GTK_UNIT_MM);
+}
+
 GtkPrintDialog::GtkPrintDialog(QPrinter *printer, QWidget *parent) :
     m_printer(printer),
     m_parent(parent),
@@ -355,14 +397,7 @@ QDialog::DialogCode GtkPrintDialog::exec()
         gtk_page_setup_set_bottom_margin(page_setup, bottom_in, unit);
 
         QPageSize ps = m_printer->pageLayout().pageSize();
-        QSizeF page_size = ps.size(QPageSize::Millimeter);
-        const QString paper_name = gtkPaperNameFromPageSize(page_size);
-        GtkPaperSize *psize = gtk_paper_size_new_custom(
-                    paper_name.toUtf8().data(),
-                    ps.name().toUtf8().data(),
-                    page_size.width(),
-                    page_size.height(),
-                    unit);
+        GtkPaperSize *psize = gtkPaperSizeFromPageSize(ps.size(QPageSize::Millimeter), ps.name());
         gtk_page_setup_set_paper_size(page_setup, psize);
         gtk_paper_size_free(psize);
 
