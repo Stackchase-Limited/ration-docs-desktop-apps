@@ -142,29 +142,38 @@ int main( int argc, char *argv[] )
 
     QString user_data_path = Utils::getUserPath() + APP_DATA_PATH;
     auto setup_paths = [&user_data_path](CAscApplicationManager * manager) {
+        // Work on a copy. The capture is by reference and the Windows branch below
+        // does user_data_path.append("/data"), which QString performs IN PLACE - so
+        // before this copy the captured variable stayed one directory deeper after
+        // the call returned. Harmless only because there is exactly one call site;
+        // a second call appended "/data" again and silently relocated recover_path,
+        // cookie_path, fonts_cache_info_path, user_plugins_path and recents.xml to
+        // .../data/data/, abandoning the user's recovery files and recent list with
+        // no error. Found while checking #2123.
+        QString data_path = user_data_path;
 #ifdef _WIN32
         QString common_data_path = Utils::getAppCommonPath();
         if ( !common_data_path.isEmpty() ) {
             manager->m_oSettings.SetUserDataPath(common_data_path.toStdWString());
             manager->m_oSettings.user_templates_path = (common_data_path + "/templates").toStdWString();
 
-            Utils::makepath(user_data_path.append("/data"));
-            manager->m_oSettings.cookie_path = (user_data_path + "/cookie").toStdWString();
-            manager->m_oSettings.recover_path = (user_data_path + "/recover").toStdWString();
-            manager->m_oSettings.fonts_cache_info_path = (user_data_path + "/fonts").toStdWString();
+            Utils::makepath(data_path.append("/data"));
+            manager->m_oSettings.cookie_path = (data_path + "/cookie").toStdWString();
+            manager->m_oSettings.recover_path = (data_path + "/recover").toStdWString();
+            manager->m_oSettings.fonts_cache_info_path = (data_path + "/fonts").toStdWString();
 
             Utils::makepath(QString().fromStdWString(manager->m_oSettings.fonts_cache_info_path));
         } else
 #else
 #endif
         {
-            manager->m_oSettings.SetUserDataPath(user_data_path.toStdWString());
+            manager->m_oSettings.SetUserDataPath(data_path.toStdWString());
         }
         std::wstring app_path = NSFile::GetProcessDirectory();
         manager->m_oSettings.spell_dictionaries_path    = app_path + L"/dictionaries";
         manager->m_oSettings.file_converter_path        = app_path + L"/converter";
-        manager->m_oSettings.recover_path               = (user_data_path + "/recover").toStdWString();
-        manager->m_oSettings.user_plugins_path          = (user_data_path + "/sdkjs-plugins").toStdWString();
+        manager->m_oSettings.recover_path               = (data_path + "/recover").toStdWString();
+        manager->m_oSettings.user_plugins_path          = (data_path + "/sdkjs-plugins").toStdWString();
         manager->m_oSettings.local_editors_path         = app_path + L"/editors/web-apps/apps/api/documents/index.html";
         manager->m_oSettings.system_templates_path      = app_path  + L"/converter/templates";
         manager->m_oSettings.additional_fonts_folder.push_back(app_path + L"/fonts");
