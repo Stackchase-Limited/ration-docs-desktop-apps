@@ -1167,6 +1167,30 @@ void CTabBar::wheelEvent(QWheelEvent *event)
     }
 }
 
+/* #2334: a tab drag becomes an undock - a whole new window - the instant the pointer
+   leaves the tab strip in any direction. The strip is a thin horizontal band, so the
+   slack above and below it is a few pixels; on a compositor that gives the pointer no
+   inertia of its own, a hand that twitches while dragging a tab sideways tears the tab
+   out into its own window instead of reordering it. There is no way back either: the
+   application cannot merge two of its windows again.
+
+   Two things are wrong with the old test. It fires on horizontal overshoot, which is
+   part of an ordinary reorder - dragging the first tab past the left end of the strip
+   is how you say "put this one first", not "give this one a window". And vertically it
+   has no threshold at all, so a one-pixel wobble counts as a gesture.
+
+   So: undock on vertical travel only, and only once the pointer is a tab's height clear
+   of the strip. The height of the strip is what scales with the DPI here, which is why
+   the threshold is taken from it rather than from a constant - CTabBar keeps no scaling
+   factor of its own. Dragging out of the strip is still the gesture; it now has to be
+   meant. */
+static bool tabDragLeavesBar(const QRect &tabArea, const QPoint &pos)
+{
+    const int threshold = qMax(tabArea.height(), 1);
+    return pos.y() < tabArea.top() - threshold ||
+           pos.y() > tabArea.bottom() + threshold;
+}
+
 bool CTabBar::eventFilter(QObject *watched, QEvent *event)
 {
     if (!isEnabled())
@@ -1204,7 +1228,7 @@ bool CTabBar::eventFilter(QObject *watched, QEvent *event)
                         }
                     }
                     // bool undockDirectionIsValid = AscAppManager::isRtlEnabled() ? d->tabArea->rect().left() <= me->x() : d->tabArea->rect().right() >= me->x();
-                    if (!d->tabArea->rect().contains(me->pos()) /*&& undockDirectionIsValid*/) {
+                    if (tabDragLeavesBar(d->tabArea->rect(), me->pos()) /*&& undockDirectionIsValid*/) {
                         if (d->currentIndex != d->movedTabIndex)
                             d->reorderIndexes();
                         bool accepted = false;
