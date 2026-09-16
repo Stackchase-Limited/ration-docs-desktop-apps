@@ -201,6 +201,7 @@ core_linux {
 
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN\'"
     QMAKE_LFLAGS += "-Wl,-rpath,\'\$$ORIGIN/converter\'"
+    core_linux_static_libstd {
     QMAKE_LFLAGS += -static-libstdc++ -static-libgcc
 
     # #1748: -static-libstdc++ puts a whole copy of the C++ runtime in this executable, and
@@ -224,6 +225,23 @@ core_linux {
     # targets, so the `equals(TEMPLATE, app)` branch inside it has never once applied to an
     # application. That is why this has to be set here.
     QMAKE_LFLAGS += -Wl,--exclude-libs,libstdc++.a -Wl,--exclude-libs,libgcc.a -Wl,--exclude-libs,libgcc_eh.a
+    }
+    # ...and all of it is off by default now, because hiding the static runtime turns
+    # the #1748 collision into a process that will not start at all. The linker puts
+    # into an executable's dynamic symbol table every symbol the shared libraries it
+    # links against refer to; --exclude-libs then makes our copy of those local, so the
+    # entry stays *undefined* and no one can supply it - libstdc++.so.6 exports neither
+    # of these:
+    #   ./DesktopEditors: symbol lookup error: ./DesktopEditors:
+    #   undefined symbol: _ZN10__cxxabiv111__terminateEPFvvE
+    #   (_ZSt16__at_thread_exitPSt20__at_thread_exit_elt is the other one)
+    #
+    # The real answer to #1748 is one C++ runtime in the process rather than two well
+    # separated ones, and that is what core/Common/base.pri now does as well: link the
+    # system libstdc++ everywhere. With a single shared runtime there is nothing left to
+    # collide, so neither the static link nor the hiding is needed. CONFIG +=
+    # core_linux_static_libstd puts both back together, since they only make sense
+    # together.
 
     INCLUDEPATH += $$PWD/extras/update-daemon/src/classes
 
