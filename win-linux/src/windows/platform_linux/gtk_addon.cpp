@@ -34,7 +34,7 @@
  */
 
 /*#include "./gtk_addon.h"
-#include <gtk/gtk.h>
+#include "platform_linux/glib_includes.h"
 
 namespace gtk_addon
 {

@@ -40,7 +40,7 @@
 #include <QByteArray>
 #pragma push_macro("signals")
 #undef signals
-#include <gio/gio.h>
+#include "platform_linux/glib_includes.h"
 #pragma pop_macro("signals")
 
 

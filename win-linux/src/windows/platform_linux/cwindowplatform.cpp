@@ -39,6 +39,10 @@
 #include "utils.h"
 #include <QTimer>
 #include <QPainter>
+// QPainterPath used to arrive with <QPainter>; since Qt 5.13 it is its own header,
+// and without this the use at the bottom of this file reads as a nonsense type error:
+//   error: aggregate 'QPainterPath path' has incomplete type and cannot be defined
+#include <QPainterPath>
 #include <QX11Info>
 #include <xcb/xcb.h>
 

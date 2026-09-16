@@ -36,7 +36,7 @@
 #ifdef _WIN32
 # include "platform_win/singleapplication.h"
 #else
-# include <gtk/gtk.h>
+# include "platform_linux/glib_includes.h"
 # include "platform_linux/singleapplication.h"
 # include "components/cmessage.h"
 # include <unistd.h>

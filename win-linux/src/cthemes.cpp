@@ -36,9 +36,7 @@
 
 #include "cthemes.h"
 #ifdef Q_OS_LINUX
-# include <gtk/gtk.h>
-# include <gio/gio.h>
-# include <glib.h>
+# include "platform_linux/glib_includes.h"
 # include "cascapplicationmanagerwrapper.h"
 #endif
 #include "defines.h"

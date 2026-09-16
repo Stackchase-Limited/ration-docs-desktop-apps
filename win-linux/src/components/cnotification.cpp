@@ -41,8 +41,7 @@
 # define APP_SHORTCUT_NAME "\\" APP_REG_NAME ".lnk"
 #else
 # include <libnotify/notify.h>
-# include <gio/gio.h>
-# include <glib.h>
+# include "platform_linux/glib_includes.h"
 # include <unordered_map>
 # include "utils.h"
 # include <QDBusConnection>

@@ -54,7 +54,15 @@
 #include "cascapplicationmanagerwrapper.h"
 #include "qdpichecker.h"
 #include "common/File.h"
-#if QT_VERSION < QT_VERSION_CHECK(5, 11, 0)
+/* The code below calls QApplication::desktop(), which returns a QDesktopWidget*, so the
+   class definition is needed wherever that code is compiled. Guarding the include on
+   QT_VERSION < 5.11 - the release where <QApplication> stopped pulling it in - is exactly
+   backwards: on anything newer the include is skipped and every use fails with
+     error: invalid use of incomplete type 'class QDesktopWidget'
+   which names the type but not the missing header. Qt 6 removes QApplication::desktop()
+   outright, and the calls themselves will have to become QGuiApplication::screens() then;
+   until that happens this keeps the two in step. */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 # include <QDesktopWidget>
 #endif
 

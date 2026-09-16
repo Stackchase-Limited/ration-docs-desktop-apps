@@ -34,7 +34,7 @@
  */
 
 #ifdef __linux__
-# include <gtk/gtk.h>
+# include "platform_linux/glib_includes.h"
 # include "cascapplicationmanagerwrapper.h"
 # include "platform_linux/gtkutils.h"
 # include <gdk/gdkx.h>

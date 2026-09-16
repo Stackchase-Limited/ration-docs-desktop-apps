@@ -36,7 +36,7 @@
 #ifndef GTKUTILS_H
 #define GTKUTILS_H
 
-#include <gtk/gtk.h>
+#include "platform_linux/glib_includes.h"
 
 
 typedef struct DialogTag {
