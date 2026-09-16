@@ -294,7 +294,13 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
                 QString _native = QString(_url).replace('\\', '/');
                 if ( QDir::isRelativePath(_native) ) {
                     if ( CCefView * pView = AscAppManager::getInstance().GetViewById(event->get_SenderId()) ) {
-                        const QString _doc = QString::fromStdWString(pView->GetLocalFilePath());
+                        // GetLocalFilePath() is CCefViewEditor's, not CCefView's; the sdk
+                        // checks GetType() before casting (applicationmanager.cpp) and so
+                        // does this. A non-editor view leaves _doc empty and the url is
+                        // passed through untouched, as it was before.
+                        const QString _doc = pView->GetType() == cvwtEditor
+                                ? QString::fromStdWString(((CCefViewEditor *)pView)->GetLocalFilePath())
+                                : QString();
                         if ( !_doc.isEmpty() ) {
                             // cleanPath collapses the ".." segments; absoluteFilePath only joins,
                             // which would leave "<dir>/a/b/../../file.pdf" - resolvable, but an

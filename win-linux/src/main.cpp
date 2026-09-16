@@ -79,7 +79,7 @@ int main( int argc, char *argv[] )
        What we can do is say so instead of crashing. XWayland sets DISPLAY, so a Wayland
        session that has it is unaffected and still takes the xcb path below; only the
        case that was already doomed changes, from a segfault to a sentence. */
-    if ( Utils::isWaylandSession() && qgetenv("DISPLAY").isEmpty() ) {
+    if ( WindowHelper::isWaylandSession() && qgetenv("DISPLAY").isEmpty() ) {
         fputs("onlyoffice: this is a Wayland session and no X display is available.\n"
               "These editors need X11, either directly or through XWayland: the bundled Qt\n"
               "has no wayland platform plugin, and the file dialogs are X11-only.\n"
