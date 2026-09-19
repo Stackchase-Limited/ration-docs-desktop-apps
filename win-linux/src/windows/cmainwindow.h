@@ -151,7 +151,6 @@ public slots:
     void onPortalLogin(int viewid, const std::wstring& json);
     void onPortalUITheme(int viewid, const std::wstring& json);
     void onPortalNew(QString);
-    void onPortalCreate();
     void onOutsideAuth(QString);
     void onEditorAllowedClose(int);
     void onWebTitleChanged(int, std::wstring json) {}

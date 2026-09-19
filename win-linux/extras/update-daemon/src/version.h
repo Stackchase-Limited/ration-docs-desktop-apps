@@ -68,6 +68,31 @@
 #define VER_LANG_ID                 0x0409
 #define VER_CHARSET_ID              1252
 
+/* Attribution per the additional terms in LICENSE - see src/version.h for the full
+   reasoning. In short: term 1 keeps Ascensio System SIA's notice, term 2 requires
+   the modification notice with its date (VER_COMMENTS_STR), term 4 grants no rights
+   in their marks. */
+#define VER_FILEDESCRIPTION_STR     "Ration Docs Update Service\0"
+#define VER_PRODUCTNAME_STR         "Ration Docs Update Service\0"
+#define VER_COMPANYNAME_STR         "Stackchase Limited\0"
+#define VER_LEGALCOPYRIGHT_STR      "© Stackchase Limited " TO_STR(COPYRIGHT_YEAR) ". © Ascensio System SIA 2009-" TO_STR(COPYRIGHT_YEAR) ".\0"
+#define VER_COMPANYDOMAIN_STR       "ration.works\0"
+#define ABOUT_COPYRIGHT_STR         VER_LEGALCOPYRIGHT_STR
+#define VER_COMMENTS_STR            "Part of Ration Docs, a modified version of ONLYOFFICE Desktop Editors, " \
+                                    "originally developed by Ascensio System SIA. Modified by " \
+                                    "Stackchase Limited, " TO_STR(COPYRIGHT_YEAR) ". Licensed under the GNU AGPL v3 " \
+                                    "with additional terms; see the LICENSE file supplied with this program.\0"
+#define VER_INTERNALNAME_STR        "Ration Docs Update Service\0"
+#define VER_LEGALTRADEMARKS1_STR    "ONLYOFFICE is a trademark of Ascensio System SIA, used here only to " \
+                                    "identify the software this product is based on. Ration Docs is not " \
+                                    "produced by, endorsed by, or affiliated with Ascensio System SIA.\0"
+#define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
+#define VER_ORIGINALFILENAME_STR    "updatesvc.exe\0"
+
+#define VER_LANG_AND_CHARSET_STR    "040904E4"
+#define VER_LANG_ID                 0x0409
+#define VER_CHARSET_ID              1252
+
 #define VER_FILEDESCRIPTION_STR     "ONLYOFFICE Update Service\0"
 #define VER_PRODUCTNAME_STR         "ONLYOFFICE Update Service\0"
 #define VER_COMPANYNAME_STR         "Ascensio System SIA\0"

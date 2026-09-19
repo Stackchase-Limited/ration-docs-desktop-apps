@@ -64,22 +64,39 @@
 # define VER_PRODUCTVERSION_STR     VER_STRING_SHORT
 #endif
 
-/* These strings become the Windows version resource and the About box's copyright
-   line, so they have to say two things at once: who modified this, and whose work it
-   started as. AGPL s.1 requires the upstream copyright notice to survive, and the
-   additional terms require the original developer to remain identifiable - dropping
-   "Ascensio System SIA" here would breach both, while leaving it alone would credit
-   them for our changes. Both names, in the order that says which is which.
+/* Attribution. LICENSE carries additional terms under AGPL s.7 that this block has
+   to satisfy, so it is written against them rather than by eye:
 
-   The trademark line is the reason it cannot simply read "ONLYOFFICE": the additional
-   terms grant no rights in their marks. */
+     1. Retention of Notices and Attribution - all copyright, licence, warranty and
+        origin notices in the Program must be retained. Hence Ascensio System SIA's
+        notice stays, with its own years, beside ours rather than being replaced by
+        it.
+     2. Modification Notice Requirement - a modified version must carry prominent
+        notices stating that it is modified, INCLUDING THE DATE, and must clearly
+        indicate that it is based on the original ONLYOFFICE software developed by
+        Ascensio System SIA. That is what VER_COMMENTS_STR is for: the version
+        resource is where Windows shows a binary's provenance, and it is the only
+        place in an .exe a user can look without running it.
+     4. No Trademark License - so the mark appears only where it identifies whose
+        software this started as, which term 2 requires, and the resource says so
+        outright instead of leaving the reader to infer a relationship.
+
+   "All rights reserved" as a trademark line, which is what this said before, is
+   both meaningless here and wrong: the rights in the code are not reserved, they
+   are granted under the AGPL. */
 #define VER_COMPANYNAME_STR         "Stackchase Limited\0"
-#define VER_LEGALCOPYRIGHT_STR      "Stackchase Limited " TO_STR(COPYRIGHT_YEAR) ". Portions © Ascensio System SIA.\0"
+#define VER_LEGALCOPYRIGHT_STR      "© Stackchase Limited " TO_STR(COPYRIGHT_YEAR) ". © Ascensio System SIA 2009-" TO_STR(COPYRIGHT_YEAR) ".\0"
 #define VER_COMPANYDOMAIN_STR       "ration.works\0"
 #define ABOUT_COPYRIGHT_STR         VER_LEGALCOPYRIGHT_STR
+#define VER_COMMENTS_STR            "Ration Docs is a modified version of ONLYOFFICE Desktop Editors, " \
+                                    "originally developed by Ascensio System SIA. Modified by " \
+                                    "Stackchase Limited, " TO_STR(COPYRIGHT_YEAR) ". Licensed under the GNU AGPL v3 " \
+                                    "with additional terms; see the LICENSE file supplied with this program.\0"
 #define VER_FILEDESCRIPTION_STR     "Ration Docs\0"
 #define VER_INTERNALNAME_STR        "Ration Docs\0"
-#define VER_LEGALTRADEMARKS1_STR    "ONLYOFFICE is a trademark of Ascensio System SIA.\0"
+#define VER_LEGALTRADEMARKS1_STR    "ONLYOFFICE is a trademark of Ascensio System SIA, used here only to " \
+                                    "identify the software this product is based on. Ration Docs is not " \
+                                    "produced by, endorsed by, or affiliated with Ascensio System SIA.\0"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "RationDocs.exe\0"
 #define VER_PRODUCTNAME_STR         "Ration Docs\0"

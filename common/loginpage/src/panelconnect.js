@@ -153,9 +153,11 @@
                                         <div id='box-providers-premium-button' />
                                         <div id="box-providers-buttons" style='font-size:0;' />
                                     </section>
-                                    <h4 class='text-description separate-top' l10n='portalEmptyAdv1'>${_lang.portalEmptyAdv1}</h4>
+                                    <!-- The advert for ONLYOFFICE Cloud Service and the
+                                         button that opened its signup page are both gone;
+                                         connecting to a server you already run is what this
+                                         panel is for. -->
                                     <div class="tools-connect">
-                                        <button class="btn btn--landing newportal" l10n>${_lang.btnCreatePortal}</button>
                                         <section class="link-connect">
                                             <label l10n>${_lang.textHavePortal}</label><a class="login link" href="#" l10n>${_lang.btnConnect}</a>
                                         </section>
@@ -439,10 +441,6 @@
             };
         };
 
-        var _on_create_portal = function() {
-            window.sdk.execCommand('portal:create', '');
-        };
-
         var _on_login_message = function(info) {
             let _write_portal_cookie = portal => {
                 let _re = /^(https?:\/{2})?([^\<\>\/\s]+)(\/[^\s]+)?/i.exec(portal);
@@ -673,7 +671,6 @@
                     }
                 });
 
-                window.CommonEvents.on('portal:create', _on_create_portal);
                 window.CommonEvents.on('lang:changed', _on_lang_changed);
                 window.CommonEvents.on('theme:changed', _on_theme_changed);
                 window.CommonEvents.on("icons:svg", this.view.onscale);

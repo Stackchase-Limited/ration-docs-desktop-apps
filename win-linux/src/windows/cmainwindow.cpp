@@ -1471,19 +1471,6 @@ void CMainWindow::onPortalNew(QString in)
     }
 }
 
-void CMainWindow::onPortalCreate()
-{
-    QString _url = URL_SIGNUP;
-    GET_REGISTRY_SYSTEM(reg_system)
-    if (reg_system.contains("Store"))
-            _url += "&store=" + reg_system.value("Store").toString();
-    int res = m_pTabs->newPortal(_url, tr("Sign Up"));
-    if (!(res < 0)) {
-        toggleButtonMain(false, true);
-        m_pTabs->setCurrentIndex(res);
-    }
-}
-
 void CMainWindow::onOutsideAuth(QString json)
 {
     QJsonParseError jerror;

@@ -61,8 +61,14 @@ window.DialogConnect = function(params) {
                                     <input id="auth-portal" type="text" name="" spellcheck="false" class="tbox dlg--option" placeholder="${utils.Lang.pshPortal}" value="">
                                 </div>
                                 <div style="height:12px;"></div>
+                                <!-- No "create a portal" link. It opened ONLYOFFICE's own
+                                     registration page, which advertises their commercial
+                                     service from inside a rebranded product, and the
+                                     additional terms grant no rights in their marks. We do
+                                     not run a cloud, so there is nothing of ours to offer
+                                     instead; connecting to a server you already have is
+                                     unaffected. -->
                                 <div class="lr-flex">
-                                    <a class="text-sub link newportal" target="popup" href="javascript:void(0)">${utils.Lang.linkCreatePortal}</a>
                                     <span />
                                     <div class="lr-flex">
                                         <img class="img-loader">
@@ -323,9 +329,7 @@ window.DialogConnect = function(params) {
                 }
                 $combo.val(params.provider);
 
-                let $newportal = $el.find('.newportal').disable(!(params.provider=='onlyoffice'));
                 $combo.on('change', e => {
-                    $newportal.disable(!(e.target.value=='onlyoffice'));
                     _clear_error();
                 });
 
@@ -342,9 +346,6 @@ window.DialogConnect = function(params) {
             $el.get(0).showModal();
             $el.addClass('scaled');
             $el.on('close', _on_close_click);
-            $body.find('.newportal').one('click', e => {
-                setTimeout(t =>_close(), 0);
-            });
 
             setTimeout(()=>{$portal.focus();}, 50);
         },

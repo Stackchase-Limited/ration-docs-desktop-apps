@@ -16,10 +16,13 @@ COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z)
 PRODUCT_NAME_LOW = $(shell echo $(PRODUCT_NAME_SHORT) | tr A-Z a-z)
 
 PUBLISHER_NAME ?= Stackchase Limited
-PUBLISHER_URL ?= https://lab02.ration.works/ration/ration-docs-desktop
-SUPPORT_URL ?= https://lab02.ration.works/ration/ration-docs-desktop/-/issues
+PUBLISHER_URL ?= https://ration.works
+SUPPORT_URL ?= https://ration.works/support
+# Debian's Source: field is also where a recipient looks for the corresponding
+# source, so it goes through the same redirect the About box uses.
+SOURCE_URL ?= https://ration.works/source
 # Debian requires a Maintainer address and it ends up in the published package.
-SUPPORT_MAIL ?= ademola@stackchase.com
+SUPPORT_MAIL ?= apps@stackchase.com
 # Must match APP_PROTOCOL in win-linux/src/defines.h. Sharing ONLYOFFICE's
 # oo-office scheme meant a machine with both installed would hand their links to
 # us or ours to them, depending on which registered last.
@@ -111,6 +114,7 @@ M4_PARAMS += -D M4_COMPANY_NAME_LOW='$(COMPANY_NAME_LOW)'
 M4_PARAMS += -D M4_PRODUCT_NAME='$(PRODUCT_NAME)'
 M4_PARAMS += -D M4_PUBLISHER_NAME='$(PUBLISHER_NAME)'
 M4_PARAMS += -D M4_PUBLISHER_URL='$(PUBLISHER_URL)'
+M4_PARAMS += -D M4_SOURCE_URL='$(SOURCE_URL)'
 M4_PARAMS += -D M4_SUPPORT_MAIL='$(SUPPORT_MAIL)'
 M4_PARAMS += -D M4_SUPPORT_URL='$(SUPPORT_URL)'
 M4_PARAMS += -D M4_PACKAGE_NAME='$(PACKAGE_NAME)'

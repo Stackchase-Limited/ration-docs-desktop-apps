@@ -3400,10 +3400,16 @@ mark.search-hit {
 }
 
 #idx-about-cut-logo {
-  width: 52px;
-  overflow: hidden;
+  // Upstream sized this box to 52px with overflow:hidden on purpose: their About
+  // mark is a glyph followed by a wordmark, and the box crops everything but the
+  // glyph. Ours is a single wordmark, so the same crop rendered it as "Ora". The
+  // box sizes to the image now.
+  width: auto;
+  overflow: visible;
   margin-right: 15px;
   height: 45px;
+  display: flex;
+  align-items: center;
 }
 
 #idx-about-appname {

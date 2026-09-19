@@ -87,11 +87,12 @@
 #define APP_PROTOCOL "rationdocs"
 #define FILE_PREFIX "rationdocs_"
 
-#define URL_SITE                "https://lab02.ration.works/ration/ration-docs-desktop"
-/* Left pointing at ONLYOFFICE deliberately. This is the "create a portal" link in
-   the connect-a-cloud dialog, and an ONLYOFFICE portal is what it creates - it is a
-   reference to their service, not a claim about ours. We do not run a cloud. */
-#define URL_SIGNUP              "https://onlyoffice.com/registration.aspx?desktop=true"
+/* Public URLs live under ration.works, not under the GitHub repository that will
+   actually hold the files. Two reasons: the binary's own source offer has to keep
+   working if the repository is renamed or moved, and these strings are compiled in -
+   changing one means a new release. The domain redirects; the release does not have
+   to. Paths used: / (site), /downloads, /releases, /source, /support. */
+#define URL_SITE                "https://ration.works"
 
 #define GET_REGISTRY_USER(variable) \
     QSettings variable(QSettings::NativeFormat, QSettings::UserScope, REG_GROUP_KEY, REG_APP_NAME);
@@ -105,8 +106,13 @@
 #define ACTIONPANEL_ACTIVATE    ACTIONPANEL_CONNECT + 1
 
 #define URL_AGPL "https://www.gnu.org/licenses/agpl-3.0.en.html"
-#define DOWNLOAD_PAGE "https://lab02.ration.works/ration/ration-docs-desktop/-/releases"
-#define RELEASE_NOTES "https://lab02.ration.works/ration/ration-docs-desktop/-/blob/ration/9.4-stability/CHANGELOG.md"
+#define DOWNLOAD_PAGE "https://ration.works/downloads"
+#define RELEASE_NOTES "https://ration.works/releases"
+/* AGPL s.6: recipients of a binary must be able to get the corresponding source.
+   lab02 required a sign-in, so the link in About was a dead end for anyone outside
+   the company - it named a source offer without honouring one. This redirects to
+   the public repository. */
+#define URL_SOURCE    "https://ration.works/source"
 
 #ifdef __linux
 typedef unsigned char BYTE;

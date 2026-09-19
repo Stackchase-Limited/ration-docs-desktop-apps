@@ -162,10 +162,6 @@ $(document).ready(function() {
         else selectAction('recents');
     }
 
-    $('#placeholder').on('click', '.newportal', function(){
-        CommonEvents.fire("portal:create");
-    });
-
     if (!window.config.portals.checklist) {
         $('.tools-connect').hide();
         hideAction('connect');

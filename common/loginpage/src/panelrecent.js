@@ -60,12 +60,14 @@
 
 
 		//language=HTML
-        const helpLink = `<a l10n class="link" href="https://helpcenter.onlyoffice.com/" target="popup">${_lang.textHelpCenter}</a>`;
+        // No "Need help? Visit our Help Center" line. It linked helpcenter.onlyoffice.com,
+        // which is their documentation for their product; we ship no help of our own to
+        // put in its place, and pointing users at someone else's support for software
+        // they did not install is worse than saying nothing.
 		const welcomeBannerTemplate = !localStorage.getItem('welcome') ? `
             <div id="area-welcome">
                 <h2 l10n>${_lang.welWelcome}</h2>
                 <p l10n class="text-normal">${_lang.welDescr}</p>
-                <p l10n class="text-normal">${_lang.welNeedHelp.replace('$1', helpLink)}</p>
             </div>` : '';
 
         //language=HTML

@@ -137,8 +137,15 @@
                                       <a class="link" draggable="false" target="popup"
                                          href="https://www.gnu.org/licenses/agpl-3.0.html" l10n>${_lang.ossViewLicence}</a>
                                       <a class="link" draggable="false" target="popup"
-                                         href="https://lab02.ration.works/ration/ration-docs-desktop-apps" l10n>${_lang.ossViewSource}</a>
+                                         href="https://creativecommons.org/licenses/by-sa/4.0/legalcode" l10n>${_lang.ossViewCC}</a>
+                                      <a class="link" draggable="false" target="popup"
+                                         href="https://ration.works/source" l10n>${_lang.ossViewSource}</a>
                                   </p>
+                                  <!-- Additional term 5: the non-code elements we ship - their
+                                       illustrations and icon sets - are CC BY-SA 4.0, which
+                                       carries its own attribution requirement, so it is named
+                                       and linked rather than folded into the AGPL line. -->
+                                  <p class="oss-line oss-muted" l10n>${_lang.ossNonCode}</p>
                                   <p class="oss-line oss-muted" l10n>${_lang.ossTrademark}</p>
                                   <h4 class="oss-title" l10n>${_lang.ossTechnical}</h4>
                                   <dl class="oss-tech">
