@@ -64,16 +64,25 @@
 # define VER_PRODUCTVERSION_STR     VER_STRING_SHORT
 #endif
 
-#define VER_COMPANYNAME_STR         "Ascensio System SIA\0"
-#define VER_LEGALCOPYRIGHT_STR      "© Ascensio System SIA " TO_STR(COPYRIGHT_YEAR) ". All rights reserved.\0"
-#define VER_COMPANYDOMAIN_STR       "www.onlyoffice.com\0"
+/* These strings become the Windows version resource and the About box's copyright
+   line, so they have to say two things at once: who modified this, and whose work it
+   started as. AGPL s.1 requires the upstream copyright notice to survive, and the
+   additional terms require the original developer to remain identifiable - dropping
+   "Ascensio System SIA" here would breach both, while leaving it alone would credit
+   them for our changes. Both names, in the order that says which is which.
+
+   The trademark line is the reason it cannot simply read "ONLYOFFICE": the additional
+   terms grant no rights in their marks. */
+#define VER_COMPANYNAME_STR         "Stackchase Limited\0"
+#define VER_LEGALCOPYRIGHT_STR      "Stackchase Limited " TO_STR(COPYRIGHT_YEAR) ". Portions © Ascensio System SIA.\0"
+#define VER_COMPANYDOMAIN_STR       "ration.works\0"
 #define ABOUT_COPYRIGHT_STR         VER_LEGALCOPYRIGHT_STR
-#define VER_FILEDESCRIPTION_STR     "ONLYOFFICE Desktop Editors\0"
-#define VER_INTERNALNAME_STR        "Desktop Editors\0"
-#define VER_LEGALTRADEMARKS1_STR    "All Rights Reserved\0"
+#define VER_FILEDESCRIPTION_STR     "Ration Docs\0"
+#define VER_INTERNALNAME_STR        "Ration Docs\0"
+#define VER_LEGALTRADEMARKS1_STR    "ONLYOFFICE is a trademark of Ascensio System SIA.\0"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
-#define VER_ORIGINALFILENAME_STR    "documenteditor.exe\0"
-#define VER_PRODUCTNAME_STR         "ONLYOFFICE\0"
+#define VER_ORIGINALFILENAME_STR    "RationDocs.exe\0"
+#define VER_PRODUCTNAME_STR         "Ration Docs\0"
 
 #define VER_LANG_AND_CHARSET        "040904E4"
 #define VER_LANG_ID                 0x0409

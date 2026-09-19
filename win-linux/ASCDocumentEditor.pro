@@ -1,5 +1,5 @@
 
-TARGET = DesktopEditors
+TARGET = RationDocs
 DESTDIR = $$PWD
 
 include(defaults.pri)

@@ -143,8 +143,10 @@ void CMainWindowImpl::refreshAboutVersion()
 #if defined(ABOUT_PAGE_APP_NAME)
     _json_obj["appname"]    = ABOUT_PAGE_APP_NAME;
 #else
-    // _json_obj["appname"]    = WINDOW_NAME;
-    _json_obj["appname"]    = "ONLYOFFICE Desktop Editors";
+    // The About box's product name. WINDOW_NAME is the same string now that both
+    // are "Ration Docs"; kept explicit so a future window-title change does not
+    // silently rename the product in About.
+    _json_obj["appname"]    = APP_TITLE;
 #endif
     _json_obj["rights"]     = ABOUT_COPYRIGHT_STR;
     _json_obj["link"]       = URL_SITE;

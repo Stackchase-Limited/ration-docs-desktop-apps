@@ -1,17 +1,29 @@
 PWD := $(shell pwd)
 
-COMPANY_NAME ?= ONLYOFFICE
-PRODUCT_NAME ?= Desktop Editors
+# Product identity. COMPANY_NAME and PRODUCT_NAME are not only labels here: they
+# derive PACKAGE_NAME (ration-docs), the launcher in /usr/bin, the .desktop file's
+# basename and the install prefix (/opt/ration/docs). The .desktop basename in
+# particular must match DESKTOP_FILE_NAME in win-linux/src/defines.h, which the
+# application passes to QGuiApplication::setDesktopFileName - if the two disagree
+# the running window is not associated with its launcher entry.
+#
+# PUBLISHER_NAME is the actual company; COMPANY_NAME is the naming namespace.
+COMPANY_NAME ?= Ration
+PRODUCT_NAME ?= Docs
 PRODUCT_NAME_SHORT ?= $(subst $(empty) $(empty),,$(PRODUCT_NAME))
 
 COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z)
 PRODUCT_NAME_LOW = $(shell echo $(PRODUCT_NAME_SHORT) | tr A-Z a-z)
 
-PUBLISHER_NAME ?= Ascensio System SIA
-PUBLISHER_URL ?= http://onlyoffice.com
-SUPPORT_URL ?= http://support.onlyoffice.com
-SUPPORT_MAIL ?= support@onlyoffice.com
-SCHEME_HANDLER ?= oo-office
+PUBLISHER_NAME ?= Stackchase Limited
+PUBLISHER_URL ?= https://lab02.ration.works/ration/ration-docs-desktop
+SUPPORT_URL ?= https://lab02.ration.works/ration/ration-docs-desktop/-/issues
+# Debian requires a Maintainer address and it ends up in the published package.
+SUPPORT_MAIL ?= ademola@stackchase.com
+# Must match APP_PROTOCOL in win-linux/src/defines.h. Sharing ONLYOFFICE's
+# oo-office scheme meant a machine with both installed would hand their links to
+# us or ours to them, depending on which registered last.
+SCHEME_HANDLER ?= rationdocs
 
 PRODUCT_VERSION ?= 0.0.0
 BUILD_NUMBER ?= 0
@@ -86,7 +98,13 @@ DEB_DEPS += deb/build/debian/$(PACKAGE_NAME).links
 DEB_DEPS += deb/build/debian/$(PACKAGE_NAME)-help.install
 DEB_DEPS += deb/build/package.config
 
-SOURCE_DIR := ../../build_tools/out/$(PLATFORM)/$(COMPANY_NAME_LOW)
+# Where build_tools leaves the payload. That directory is named by build_tools'
+# branding-name option, which defaults to "onlyoffice" and is still that: the macOS
+# Xcode project hardcodes .../out/mac_arm64/onlyoffice/desktopeditors in its copy
+# phase, so renaming it would break the mac build for no user-visible gain. It is an
+# internal build path; nothing in the installed package carries it. Decoupled from
+# COMPANY_NAME_LOW, which is now "ration" and no longer names this directory.
+SOURCE_DIR := ../../build_tools/out/$(PLATFORM)/onlyoffice
 
 M4_PARAMS += -D M4_COMPANY_NAME='$(COMPANY_NAME)'
 M4_PARAMS += -D M4_COMPANY_NAME_LOW='$(COMPANY_NAME_LOW)'
@@ -161,7 +179,7 @@ clean :
 build : $(LINUX_DEPS)
 	mkdir -p $@/main/opt/$(DESKTOPEDITORS_PREFIX)
 	cp -rft $@/main/opt/$(DESKTOPEDITORS_PREFIX) $(SOURCE_DIR)/desktopeditors/*
-	chmod 755 $@/main/opt/$(DESKTOPEDITORS_PREFIX)/DesktopEditors
+	chmod 755 $@/main/opt/$(DESKTOPEDITORS_PREFIX)/RationDocs
 
 ifneq ($(PACKAGE_EDITION), commercial)
 	cp -f $(BRANDING_DIR)/common/license/$(PACKAGE_EDITION)/LICENSE.txt \
