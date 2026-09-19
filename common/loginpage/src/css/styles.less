@@ -1245,6 +1245,24 @@ li.menu-item {
 
 // ---- rail ----------------------------------------------------------------
 .ration-sidebar {
+  // ViewPortals.render() does $('#idx-sidebar-portals').html(tpl_sidebar), and that
+  // template opens with its own "Clouds" heading and "+" button, so the branded
+  // .rd-grp heading just above it was followed by a second one. Hide the injected
+  // heading rather than editing panelconnect.js, which serves other views that
+  // still want it.
+  //
+  // This rule used to sit inside the `> li.menu-item ... a` block below, where it
+  // compiled to
+  //   .ration-sidebar>li.menu-item:not(...) a #idx-sidebar-portals .sidebar-block-title
+  // and matched nothing at all: the section is a sibling of the menu items, not a
+  // descendant of an anchor. It had no effect on any platform, and the duplicate
+  // was simply never looked for again. Reading the compiled CSS is what settles
+  // this - grepping the built page for the id finds the selector's tail and looks
+  // like a hit.
+  #idx-sidebar-portals .sidebar-block-title {
+    display: none;
+  }
+
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1282,15 +1300,6 @@ li.menu-item {
       font-weight: 500;
       text-decoration: none;
 
-      // ViewPortals.render() does $('#idx-sidebar-portals').html(tpl_sidebar), and
-      // that template opens with its own "Clouds" heading - so the branded .rd-grp
-      // heading just above it was followed by a second one, plus a second "+"
-      // button. Hide the injected heading rather than editing panelconnect.js,
-      // which serves other views that still want it.
-      #idx-sidebar-portals .sidebar-block-title {
-        display: none;
-      }
-
       .icon-box {
         width: 21px;
         height: 21px;
@@ -1316,9 +1325,12 @@ li.menu-item {
       }
     }
 
+    // Hover changes the background only. Brightening the label and icon as well
+    // made hover read as a second selected state, and meant the text moved every
+    // time the pointer crossed the rail; the colour the item has at rest is the
+    // colour it keeps.
     a:hover {
       background: @rd-side-hover;
-      color: @rd-side-ink;
     }
 
     // The active item is a petrol left accent, a faint wash, and white text - see
@@ -1350,9 +1362,9 @@ li.menu-item {
       box-shadow: none;
     }
 
-    // The agent entry is the one violet accent in an otherwise petrol rail.
+    // The agent entry is the one violet accent in an otherwise petrol rail. It
+    // does not brighten on hover either, for the same reason as above.
     a.rd-ai svg.icon { color: @rd-violet; }
-    a.rd-ai:hover svg.icon { color: #9d86ff; }
   }
 
   > li.menu-item.separator,
@@ -1412,7 +1424,6 @@ li.menu-item {
 
     &:hover {
       background: @rd-side-hover;
-      color: #fff;
     }
   }
 }

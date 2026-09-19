@@ -159,6 +159,16 @@
 
 @rd-side-ink:    #E9EFF3;
 @rd-side-mut:    #8CA0AE;
-@rd-side-hover:  rgba(255, 255, 255, 0.05);
-@rd-side-active: rgba(255, 255, 255, 0.08);
+// Sidebar hover and selected are solid navy steps, not white washes. A white
+// overlay on the navy rail reads as grey haze, and at the strength hover has to
+// reach to be noticeable it reads as a pale box rather than as the rail lighting
+// up. Both of these are the rail's own hue, one step apart:
+//   @rd-navy        #0B1B2A   the rail
+//   @rd-side-active #1E2D3B   exactly what rgba(255,255,255,.08) resolved to over it
+//   @rd-side-hover  #25384A   one step lighter again
+// Hover is the lighter of the two deliberately: the item under the pointer should
+// be distinct from the item you are already on, and the selected item carries the
+// petrol left accent to mark it besides.
+@rd-side-hover:  #25384A;
+@rd-side-active: #1E2D3B;
 @rd-side-edge:   #10263A;
