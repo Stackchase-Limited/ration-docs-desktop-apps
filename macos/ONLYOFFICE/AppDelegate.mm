@@ -98,7 +98,15 @@
 #ifndef _MAS
     PFMoveToApplicationsFolderIfNecessary();
 #endif
-    
+
+    // Tell Launch Services about this copy of the app on every launch. Finder only
+    // offers an app for a file type once Launch Services has indexed the bundle's
+    // CFBundleDocumentTypes, and an app dragged in from a disk image, or copied over
+    // an older build, can sit unindexed or keep the previous build's claims. Forcing
+    // the update here means the first launch is enough for .xlsx, .docx and the rest
+    // to list Ration Docs under Open With.
+    LSRegisterURL((__bridge CFURLRef)[[NSBundle mainBundle] bundleURL], true);
+
     // Remove 'Start Dictation' and 'Special Characters' from menu
     [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"NSDisabledDictationMenuItem"];
     [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"NSDisabledCharacterPaletteMenuItem"];
