@@ -1018,17 +1018,17 @@
 		<true/>
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Once ONLYOFFICE Desktop Editors has permission, document tabs will be able to ask you for access.</string>
+	<string>Once Ration Docs has permission, document tabs will be able to ask you for access.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Once ONLYOFFICE Desktop Editors has permission, document tabs will be able to ask you for access.</string>
+	<string>Once Ration Docs has permission, document tabs will be able to ask you for access.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Once ONLYOFFICE Desktop Editors has permission, document tabs will be able to ask you for access.</string>
+	<string>Once Ration Docs has permission, document tabs will be able to ask you for access.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 Stackchase Limited. Portions © Ascensio System SIA. Licensed under the GNU AGPL v3.</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Once ONLYOFFICE Desktop Editors has permission, document tabs will be able to ask you for access.</string>
+	<string>Once Ration Docs has permission, document tabs will be able to ask you for access.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>RationUpstreamBaseline</key>
