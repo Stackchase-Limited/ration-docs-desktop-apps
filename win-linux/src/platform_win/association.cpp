@@ -201,8 +201,12 @@ bool Association::AssociationPrivate::isFormatAssociated(const wchar_t *fileExt)
     if (hr == S_FALSE) {
         std::wstring buf(bufSize - 1, '\0');
         hr = AssocQueryString(ASSOCF_NONE, ASSOCSTR_FRIENDLYAPPNAME, fileExt, NULL, &buf[0], &bufSize);
+        // The friendly name is the ProgID's FriendlyAppName or else the FileDescription
+        // of DesktopEditors.exe ("Ration Docs Icons"), so match the title, which both
+        // contain. APP_REG_NAME is "RationDocs" with no space and matched neither, so
+        // every format read as unassociated and the prompt came back on every launch.
         if (SUCCEEDED(hr))
-            return buf.find(TEXT(APP_REG_NAME)) != std::wstring::npos;
+            return buf.find(TEXT(APP_TITLE)) != std::wstring::npos;
     }
     return false;
 }
@@ -356,8 +360,11 @@ void Association::AssociationPrivate::associate(const std::vector<std::wstring> 
         }
         args.append(L"\"");
 
+        // The projicons stub handles --assoc. It is deployed as DesktopEditors.exe
+        // (build_tools deploy_desktop.py); this used REG_APP_NAME, which was that
+        // name until the rename made it RationDocs, a file that does not exist.
         QString appPath = qApp->applicationDirPath();
-        appPath += "/" + QString(REG_APP_NAME);
+        appPath += "/DesktopEditors.exe";
         std::wstring path = appPath.toStdWString();
 
         SHELLEXECUTEINFO shExInfo = {0};
