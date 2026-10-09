@@ -76,8 +76,10 @@ static NSString * const uiThemeGray                       = @"theme-gray";
 static NSString * const uiThemeWhite                      = @"theme-white";
 static NSString * const uiThemeNight                      = @"theme-night";
 
-// Custom schemes
-static NSString * const kSchemeApp                          = @"oo-office";
+// Custom schemes. Ours, not ONLYOFFICE's oo-office, which made a Mac with both
+// installed hand links to whichever registered last. Must match CFBundleURLSchemes in
+// the Info.plists and GetExternalSchemeName() in desktop-sdk.
+static NSString * const kSchemeApp                          = @"rationdocs";
 
 // Analitics
 static NSString * const ASCAnalyticsCategoryApplication     = @"Application";

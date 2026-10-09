@@ -1006,7 +1006,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>oo-office</string>
+				<string>rationdocs</string>
 			</array>
 		</dict>
 	</array>
