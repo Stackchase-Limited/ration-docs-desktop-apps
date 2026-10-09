@@ -26,7 +26,7 @@ platform :mac do
   lane :common_release do |options|
     build = "build"
     scheme = options[:scheme]
-    app_name = "ONLYOFFICE"
+    app_name = "Ration Docs"
     app = "#{build}/#{app_name}.app"
     git_suffix = options[:git_suffix]
     edition = options[:edition]
@@ -47,7 +47,7 @@ platform :mac do
       path: "ONLYOFFICE/Resources/#{scheme}/Info.plist",
       key: "ASCBundleBuildNumber"
     )
-    package_name = app_name
+    package_name = "Ration-Docs"
     if edition && !edition.empty? then package_name += "-#{edition}" end
     package_name += "-#{git_suffix}-#{version_number}-#{app_build_number}"
 
@@ -76,7 +76,7 @@ platform :mac do
     )
 
     desc 'Prepare zip for delta update'
-    sh("ditto -c -k --sequesterRsrc --keepParent #{ENV['PWD']}/#{app} #{ENV['PWD']}/#{build}/#{scheme}-#{version_number}.zip")
+    sh("ditto -c -k --sequesterRsrc --keepParent \"#{ENV['PWD']}/#{app}\" \"#{ENV['PWD']}/#{build}/#{scheme}-#{version_number}.zip\"")
 
     desc 'Create DMG image'
     sh("npm install appdmg")
