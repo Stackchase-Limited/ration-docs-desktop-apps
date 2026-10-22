@@ -72,8 +72,8 @@
    reasoning. In short: term 1 keeps Ascensio System SIA's notice, term 2 requires
    the modification notice with its date (VER_COMMENTS_STR), term 4 grants no rights
    in their marks. */
-#define VER_FILEDESCRIPTION_STR     "Ration Docs Icons\0"
-#define VER_PRODUCTNAME_STR         "Ration Docs Icons\0"
+#define VER_FILEDESCRIPTION_STR     "Ration Docs\0"
+#define VER_PRODUCTNAME_STR         "Ration Docs\0"
 #define VER_COMPANYNAME_STR         "Stackchase Limited\0"
 #define VER_LEGALCOPYRIGHT_STR      "© Stackchase Limited " TO_STR(COPYRIGHT_YEAR) ". © Ascensio System SIA 2009-" TO_STR(COPYRIGHT_YEAR) ".\0"
 #define VER_COMPANYDOMAIN_STR       "ration.works\0"
@@ -87,22 +87,8 @@
                                     "identify the software this product is based on. Ration Docs is not " \
                                     "produced by, endorsed by, or affiliated with Ascensio System SIA.\0"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
-#define VER_ORIGINALFILENAME_STR    "projicons.exe\0"
+#define VER_ORIGINALFILENAME_STR    "RationDocs.exe\0"
 
-#define VER_LANG_AND_CHARSET_STR    "040904E4"
-#define VER_LANG_ID                 0x0409
-#define VER_CHARSET_ID              1252
-
-#define VER_FILEDESCRIPTION_STR     "ONLYOFFICE Editors\0"
-#define VER_PRODUCTNAME_STR         "ONLYOFFICE Editors\0"
-#define VER_COMPANYNAME_STR         "Ascensio System SIA\0"
-#define VER_LEGALCOPYRIGHT_STR      "© Ascensio System SIA " TO_STR(COPYRIGHT_YEAR) ". All rights reserved.\0"
-#define VER_COMPANYDOMAIN_STR       "www.onlyoffice.com\0"
-
-#define VER_INTERNALNAME_STR        "AppIcons\0"
-#define VER_LEGALTRADEMARKS1_STR    "All rights reserved\0"
-#define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
-#define VER_ORIGINALFILENAME_STR    "projicons.exe\0"
 
 #ifdef APP_USE_PRIVATE_ASSETS
 # include "src/version_p.h"
