@@ -80,7 +80,7 @@ int main( int argc, char *argv[] )
        session that has it is unaffected and still takes the xcb path below; only the
        case that was already doomed changes, from a segfault to a sentence. */
     if ( WindowHelper::isWaylandSession() && qgetenv("DISPLAY").isEmpty() ) {
-        fputs("onlyoffice: this is a Wayland session and no X display is available.\n"
+        fputs(REG_APP_NAME ": this is a Wayland session and no X display is available.\n"
               "These editors need X11, either directly or through XWayland: the bundled Qt\n"
               "has no wayland platform plugin, and the file dialogs are X11-only.\n"
               "Start XWayland, or use an X11 session.\n", stderr);
@@ -240,7 +240,7 @@ int main( int argc, char *argv[] )
            carry on and give them one rather than disappearing. A second window is a
            visible, recoverable outcome; a silent exit is neither. */
         CLogger::log("The instance is not primary, but no primary instance answered. Continuing anyway.");
-        fputs("onlyoffice: no primary instance answered; starting a new one.\n", stderr);
+        fputs(REG_APP_NAME ": no primary instance answered; starting a new one.\n", stderr);
     }
 
     app.setAttribute(Qt::AA_UseHighDpiPixmaps);

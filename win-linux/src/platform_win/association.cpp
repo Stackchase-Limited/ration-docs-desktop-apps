@@ -360,11 +360,10 @@ void Association::AssociationPrivate::associate(const std::vector<std::wstring> 
         }
         args.append(L"\"");
 
-        // The projicons stub handles --assoc. It is deployed as DesktopEditors.exe
-        // (build_tools deploy_desktop.py); this used REG_APP_NAME, which was that
-        // name until the rename made it RationDocs, a file that does not exist.
+        // The projicons stub handles --assoc. build_tools deploy_desktop.py deploys it
+        // as REG_APP_NAME.exe (RationDocs.exe); the application itself is editors.exe.
         QString appPath = qApp->applicationDirPath();
-        appPath += "/DesktopEditors.exe";
+        appPath += "/" REG_APP_NAME ".exe";
         std::wstring path = appPath.toStdWString();
 
         SHELLEXECUTEINFO shExInfo = {0};

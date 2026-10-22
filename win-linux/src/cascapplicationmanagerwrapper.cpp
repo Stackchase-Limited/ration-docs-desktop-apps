@@ -553,9 +553,14 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
             if ( pData->get_Param() == L"external" ) {
                 static QByteArray _json_to_open;
                 if ( _json_to_open.isEmpty() ) {
+                    // No default: it was ONLYOFFICE's online template gallery
+                    // (templates.onlyoffice.com). Only a gallery passed with
+                    // --templates-url is opened.
                     QString _templates_url{QString::fromStdWString(InputArgs::argument_value(L"--templates-url"))};
-                    if ( _templates_url.isEmpty() )
-                        _templates_url = "https://templates.onlyoffice.com/?desktop=true";
+                    if ( _templates_url.isEmpty() ) {
+                        CLogger::log("open:template external ignored: no --templates-url");
+                        return true;
+                    }
 
                     QJsonObject _json_obj{
                         {"portal", _templates_url},

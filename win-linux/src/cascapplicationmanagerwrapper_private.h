@@ -51,12 +51,12 @@
 #include <QApplication>
 #include <QJsonParseError>
 #ifdef _WIN32
-# define APP_LAUNCH_NAME "\\DesktopEditors.exe"
+# define APP_LAUNCH_NAME "\\" REG_APP_NAME ".exe"
 # define RESTART_BATCH "/apprestart.bat"
 #else
 # include "platform_linux/xcbutils.h"
 # include <QProcess>
-# define APP_LAUNCH_NAME "/DesktopEditors"
+# define APP_LAUNCH_NAME "/" REG_APP_NAME
 # define RESTART_BATCH "/apprestart.sh"
 #endif
 

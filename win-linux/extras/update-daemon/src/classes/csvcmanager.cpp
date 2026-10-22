@@ -54,7 +54,7 @@
 # include <Windows.h>
 # include <WinInet.h>
 # include <shlwapi.h>
-# define APP_LAUNCH_NAME  L"/DesktopEditors.exe"
+# define APP_LAUNCH_NAME  TEXT("/" REG_APP_NAME ".exe")
 # define APP_LAUNCH_NAME2 L"/editors.exe"
 # define APP_HELPER       L"/editors_helper.exe"
 # define DAEMON_NAME      L"/updatesvc.exe"
@@ -70,7 +70,7 @@
 # include <unistd.h>
 # include <fnmatch.h>
 # include <uuid/uuid.h>
-# define APP_LAUNCH_NAME  "/DesktopEditors"
+# define APP_LAUNCH_NAME  "/" REG_APP_NAME
 # define APP_HELPER       "/editors_helper"
 # define DAEMON_NAME      "/updatesvc"
 # define DAEMON_NAME_OLD  "/~updatesvc"

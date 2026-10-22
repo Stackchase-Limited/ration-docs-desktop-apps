@@ -114,9 +114,6 @@ int main(int argc, char *argv[])
 
     qputenv("Path", "./converter;" + qgetenv("Path"));
 
-#define APP_LAUNCH_NAME "./DesktopEditors.exe"
-
-//    QProcess::startDetached(fi.absolutePath() + APP_LAUNCH_NAME, _cmdArgs, fi.absolutePath());
     QProcess::startDetached(_fi.absolutePath() + "./editors.exe", _cmdArgs, _fi.absolutePath());
 
     return 0;
