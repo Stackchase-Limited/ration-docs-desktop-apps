@@ -1,4 +1,4 @@
-$PackageName = "ONLYOFFICE Desktop Editors"
+$PackageName = "Ration Docs"
 $BuildDir = "build"
 $DesktopDir = "DesktopEditors"
 

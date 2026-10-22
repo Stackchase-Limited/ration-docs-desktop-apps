@@ -18,9 +18,9 @@
 ; The ProgIDs (ASCC_REG_PREFIX, ASSOC_PROG_ID) and the scheme were ONLYOFFICE's, so a
 ; machine with both installed had whichever installed last own .docx, .xlsx and links.
 ;
-; iconsExe and NAME_EXE_OUT keep the deploy layout (build_tools deploy_desktop.py):
-; DesktopEditors.exe is the projicons stub that carries the file-type icons and
-; launches editors.exe.
+; iconsExe and NAME_EXE_OUT follow the deploy layout (build_tools deploy_desktop.py):
+; RationDocs.exe (REG_APP_NAME.exe) is the projicons stub that carries the file-type
+; icons and launches editors.exe. It was DesktopEditors.exe until the Windows pass.
 
 #define sCompanyName                    "Ration"
 #define sIntCompanyName                 sCompanyName
@@ -46,7 +46,7 @@
 #define APP_MUTEX_NAME                  "RationDocs"
 #define APPWND_CLASS_NAME               "DocEditorsWindowClass"
 
-#define iconsExe                        "DesktopEditors.exe"
+#define iconsExe                        "RationDocs.exe"
 #define NAME_EXE_OUT                    "editors.exe"
 
 #define ASSC_APP_NAME                   "Ration Docs"

@@ -2,8 +2,8 @@
     [System.Version]$Version = "0.0.0.0",
     [string]$Arch = "x64",
     [string]$Target,
-    [string]$CompanyName = "ONLYOFFICE",
-    [string]$ProductName = "DesktopEditors",
+    [string]$CompanyName = "Ration",
+    [string]$ProductName = "Docs",
     [string]$BuildDir
 )
 
@@ -18,9 +18,9 @@ if (-not (Test-Path "$BuildDir")) {
     Write-Error "Path `"$BuildDir`" does not exist"
 }
 $ZipFile = switch ($Target) {
-    "commercial" { "$CompanyName-$ProductName-Enterprise-$Version-$Arch.zip" }
-    "xp"         { "$CompanyName-$ProductName-XP-$Version-$Arch.zip" }
-    default      { "$CompanyName-$ProductName-$Version-$Arch.zip" }
+    "commercial" { "$CompanyName$ProductName-Enterprise-$Version-$Arch.zip" }
+    "xp"         { "$CompanyName$ProductName-XP-$Version-$Arch.zip" }
+    default      { "$CompanyName$ProductName-$Version-$Arch.zip" }
 }
 
 Write-Host @"

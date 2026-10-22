@@ -2,8 +2,8 @@
     [System.Version]$Version = "0.0.0.0",
     [string]$Arch = "x64",
     [string]$Target,
-    [string]$CompanyName = "ONLYOFFICE",
-    [string]$ProductName = "DesktopEditors",
+    [string]$CompanyName = "Ration",
+    [string]$ProductName = "Docs",
     [string]$BuildDir,
     [string]$BrandingDir,
     [switch]$Sign,
@@ -21,11 +21,11 @@ if (-not (Test-Path "$BuildDir")) {
     Write-Error "Path `"$BuildDir`" does not exist"
 }
 $InnoFile = switch ($Target) {
-    "commercial" { "$CompanyName-$ProductName-Enterprise-$Version-$Arch.exe" }
-    "standalone" { "$CompanyName-$ProductName-Standalone-$Version-$Arch.exe" }
-    "update"     { "$CompanyName-$ProductName-Update-$Version-$Arch.exe" }
-    "xp"         { "$CompanyName-$ProductName-XP-$Version-$Arch.exe" }
-    default      { "$CompanyName-$ProductName-$Version-$Arch.exe" }
+    "commercial" { "$CompanyName$ProductName-Enterprise-$Version-$Arch.exe" }
+    "standalone" { "$CompanyName$ProductName-Standalone-$Version-$Arch.exe" }
+    "update"     { "$CompanyName$ProductName-Update-$Version-$Arch.exe" }
+    "xp"         { "$CompanyName$ProductName-XP-$Version-$Arch.exe" }
+    default      { "$CompanyName$ProductName-$Version-$Arch.exe" }
 }
 
 Write-Host @"
@@ -103,8 +103,9 @@ $InnoArgs = "/DVERSION=$Version",
 if ($BrandingDir) {
     $InnoArgs += "/DBRANDING_DIR=$BrandingDir"
 }
-if ($CompanyName -eq "onlyoffice") {
-    $InnoArgs += "/D_ONLYOFFICE"
+# _RATION: the vendor's own build (URL scheme, form templates, English first).
+if ($CompanyName -eq "Ration") {
+    $InnoArgs += "/D_RATION"
 }
 switch ($Target) {
     "commercial" {

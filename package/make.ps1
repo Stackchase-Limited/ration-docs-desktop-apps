@@ -2,8 +2,8 @@
     [System.Version]$Version = "0.0.0.0",
     [string]$Arch = "x64",
     [string]$Target,
-    [string]$CompanyName = "ONLYOFFICE",
-    [string]$ProductName = "DesktopEditors",
+    [string]$CompanyName = "Ration",
+    [string]$ProductName = "Docs",
     [string]$SourceDir,
     [string]$BuildDir,
     [switch]$Sign
@@ -19,8 +19,11 @@ if (-not $SourceDir) {
         "x86" { "win_32" + $(if ($Target -eq "xp") { "_xp" }) }
         "arm64" { "win_arm64" }
     }
+    # Where build_tools leaves the payload: named by its branding-name option, which is
+    # still "onlyoffice" (see SOURCE_DIR in Makefile). An internal build path, not the
+    # product name, so it does not follow CompanyName/ProductName.
     $SourceDir = "$PSScriptRoot\..\..\build_tools\out\" `
-        + "$BuildPrefix\$CompanyName\$ProductName" | Resolve-Path
+        + "$BuildPrefix\onlyoffice\DesktopEditors" | Resolve-Path
 }
 if (-not (Test-Path "$SourceDir")) {
     Write-Error "Path `"$SourceDir`" does not exist"
