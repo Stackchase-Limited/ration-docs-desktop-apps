@@ -102,6 +102,7 @@ CFileDialogWrapper::CFileDialogWrapper(QWidget * parent) : QObject(parent)
     m_mapFilters[AVS_OFFICESTUDIO_FILE_SPREADSHEET_ODS]     = tr("ODS File (*.ods)");
     m_mapFilters[AVS_OFFICESTUDIO_FILE_SPREADSHEET_OTS]     = tr("OpenDocument Spreadsheet Template") + " (*.ots)";
     m_mapFilters[AVS_OFFICESTUDIO_FILE_SPREADSHEET_CSV]     = tr("CSV File (*.csv)");
+    m_mapFilters[AVS_OFFICESTUDIO_FILE_SPREADSHEET_TSV]     = tr("TSV File (*.tsv)");
 
     m_mapFilters[AVS_OFFICESTUDIO_FILE_CROSSPLATFORM_PDF]   = tr("PDF File (*.pdf)");
     m_mapFilters[AVS_OFFICESTUDIO_FILE_CROSSPLATFORM_PDFA]  = tr("PDFA File (*.pdf)");

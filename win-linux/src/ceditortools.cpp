@@ -551,7 +551,8 @@ namespace CEditorTools
                 bool _allowed = true;
                 switch ( dlg.getFormat() ) {
                 case AVS_OFFICESTUDIO_FILE_DOCUMENT_TXT:
-                case AVS_OFFICESTUDIO_FILE_SPREADSHEET_CSV: {
+                case AVS_OFFICESTUDIO_FILE_SPREADSHEET_CSV:
+                case AVS_OFFICESTUDIO_FILE_SPREADSHEET_TSV: {
                     int res = CMessage::showMessage(_parent,
                                                     QCoreApplication::translate("CEditorWindow", "Some data will lost.<br>Continue?"),
                                                     MsgType::MSG_WARN, MsgBtns::mbOkDefCancel);
