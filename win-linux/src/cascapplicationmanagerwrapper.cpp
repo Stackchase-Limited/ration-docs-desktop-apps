@@ -995,10 +995,23 @@ CMainWindow * CAscApplicationManagerWrapper::prepareMainWindow(const QRect& r)
     return _window;
 }
 
-void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& vargs)
+void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& vargs_in)
 {
     APP_CAST(_app);
     GET_REGISTRY_USER(reg_user);
+
+    // #2527: only --view=path was understood; "--view path" reached substr() past the
+    // end of "--view" and the uncaught std::out_of_range aborted the app. Join the
+    // space-separated form into the documented one before parsing.
+    std::vector<wstring> vargs;
+    for (size_t i = 0; i < vargs_in.size(); ++i) {
+        const wstring& a = vargs_in[i];
+        if ( (a == L"--review" || a == L"--view" || a == L"--edit") &&
+                i + 1 < vargs_in.size() && vargs_in[i + 1].rfind(L"--", 0) != 0 )
+        {
+            vargs.push_back(a + L"=" + vargs_in[++i]);
+        } else vargs.push_back(a);
+    }
 
     auto check_param = [] (const wstring& line, const wstring& param) {
         return line.find(param) == 0;
@@ -1041,8 +1054,9 @@ void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& v
             auto i = check_params(arg, arg_check_list);
             if ( !(i < 0) ) {
                 auto c = arg_check_list[size_t(i)].size();
-                if ( !(c < 0) )
-                    open_opts.wurl = arg.substr(++c);
+                if ( arg.size() <= c + 1 )
+                    continue;   // the flag without a file: nothing to open
+                open_opts.wurl = arg.substr(++c);
 
                 open_in_new_window = true;
                 open_opts.mode = i == 0 ? COpenOptions::eOpenMode::review :
@@ -1066,11 +1080,14 @@ void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& v
             // correct url from browsers
             std::wstring argScheme = arg;
             Utils::replaceAll(argScheme, L"%7C", L"|");
-            if (argScheme[argScheme.length() - 1] == '/')
+            if (!argScheme.empty() && argScheme.back() == '/')
                 argScheme.pop_back();
 
             if ( argScheme.rfind(app_action_plugin, 0) == 0 ) {
-                std::wstring _plugin_name = argScheme.substr(app_action_plugin.size() + 1);
+                // a link that ends at "install-plugin" has no name after it: substr past the
+                // end threw, and an uncaught out_of_range from a clicked link closes the app
+                std::wstring _plugin_name = argScheme.size() > app_action_plugin.size() + 1 ?
+                                            argScheme.substr(app_action_plugin.size() + 1) : std::wstring();
                 if ( !_plugin_name.empty() ) {
                     _app.InstallPluginFromStore(_plugin_name);
                 }
