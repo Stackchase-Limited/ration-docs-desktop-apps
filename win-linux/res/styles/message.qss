@@ -32,46 +32,46 @@ QLabel[class=msg-icon][type=msg-confirm] {image: url(":/message_confirm.svg");}
 #messageBody[scaling="4.5x"] QPushButton {padding:0 90px; height: 99px; font-size: 50px;}
 #messageBody[scaling="5x"] QPushButton {padding:0 100px; height: 110px; font-size: 55px;}
 
-/* dark theme */
-#messageBody[uitheme=theme-dark] {background-color: #404040; color: rgba(255,255,255,.8);}
-#messageBody[uitheme=theme-dark] QLabel {color: rgba(255,255,255,.8);}
-#messageBody[uitheme=theme-dark] QPushButton {background-color: #555; color: #d9d9d9; border: 1px solid rgba(255,255,255,.8);}
+/* dark themes: keyed on the theme type, so theme-night and user dark themes get them too (#2537) */
+#messageBody[uithemetype=dark] {background-color: #404040; color: rgba(255,255,255,.8);}
+#messageBody[uithemetype=dark] QLabel {color: rgba(255,255,255,.8);}
+#messageBody[uithemetype=dark] QPushButton {background-color: #555; color: #d9d9d9; border: 1px solid rgba(255,255,255,.8);}
 
-#messageBody[uitheme=theme-dark][scaling="2.25x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="2x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="1.75x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="1.5x"] QPushButton {border-width: 2px;}
+#messageBody[uithemetype=dark][scaling="2.25x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="2x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="1.75x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="1.5x"] QPushButton {border-width: 2px;}
 
-#messageBody[uitheme=theme-dark][scaling="2.5x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="2.75x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="3x"] QPushButton {border-width: 3px;}
+#messageBody[uithemetype=dark][scaling="2.5x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="2.75x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="3x"] QPushButton {border-width: 3px;}
 
-#messageBody[uitheme=theme-dark][scaling="3.5x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="4x"] QPushButton {border-width: 4px;}
+#messageBody[uithemetype=dark][scaling="3.5x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="4x"] QPushButton {border-width: 4px;}
 
-#messageBody[uitheme=theme-dark][scaling="4.5x"] QPushButton,
-#messageBody[uitheme=theme-dark][scaling="5x"] QPushButton {border-width: 5px;}
+#messageBody[uithemetype=dark][scaling="4.5x"] QPushButton,
+#messageBody[uithemetype=dark][scaling="5x"] QPushButton {border-width: 5px;}
 
-#messageBody[uitheme=theme-dark] QPushButton:focus {border: 2px solid rgba(255,255,255,.9);}
-#messageBody[uitheme=theme-dark][scaling="1.5x"] QPushButton:focus {border-width: 3px;}
+#messageBody[uithemetype=dark] QPushButton:focus {border: 2px solid rgba(255,255,255,.9);}
+#messageBody[uithemetype=dark][scaling="1.5x"] QPushButton:focus {border-width: 3px;}
 
-#messageBody[uitheme=theme-dark][scaling="1.75x"] QPushButton:focus,
-#messageBody[uitheme=theme-dark][scaling="2x"] QPushButton:focus {border-width: 4px;}
+#messageBody[uithemetype=dark][scaling="1.75x"] QPushButton:focus,
+#messageBody[uithemetype=dark][scaling="2x"] QPushButton:focus {border-width: 4px;}
 
-#messageBody[uitheme=theme-dark][scaling="2.25x"] QPushButton:focus,
-#messageBody[uitheme=theme-dark][scaling="2.5x"] QPushButton:focus {border-width: 5px;}
+#messageBody[uithemetype=dark][scaling="2.25x"] QPushButton:focus,
+#messageBody[uithemetype=dark][scaling="2.5x"] QPushButton:focus {border-width: 5px;}
 
-#messageBody[uitheme=theme-dark][scaling="2.75x"] QPushButton:focus,
-#messageBody[uitheme=theme-dark][scaling="3x"] QPushButton:focus {border-width: 6px;}
+#messageBody[uithemetype=dark][scaling="2.75x"] QPushButton:focus,
+#messageBody[uithemetype=dark][scaling="3x"] QPushButton:focus {border-width: 6px;}
 
-#messageBody[uitheme=theme-dark][scaling="3.5x"] QPushButton:focus {border-width: 7px;}
-#messageBody[uitheme=theme-dark][scaling="4x"] QPushButton:focus {border-width: 8px;}
-#messageBody[uitheme=theme-dark][scaling="4.5x"] QPushButton:focus {border-width: 9px;}
-#messageBody[uitheme=theme-dark][scaling="5x"] QPushButton:focus {border-width: 10px;}
+#messageBody[uithemetype=dark][scaling="3.5x"] QPushButton:focus {border-width: 7px;}
+#messageBody[uithemetype=dark][scaling="4x"] QPushButton:focus {border-width: 8px;}
+#messageBody[uithemetype=dark][scaling="4.5x"] QPushButton:focus {border-width: 9px;}
+#messageBody[uithemetype=dark][scaling="5x"] QPushButton:focus {border-width: 10px;}
 
-#messageBody[uitheme=theme-dark] QPushButton:pressed {background-color: #707070;}
+#messageBody[uithemetype=dark] QPushButton:pressed {background-color: #707070;}
 
-/* contrast theme definition */
+/* contrast theme definition: same selectors as the dark ones and later, so it overrides them */
 #messageBody[uitheme=theme-contrast-dark] {background-color: #2a2a2a; color: #e8e8e8;}
 #messageBody[uitheme=theme-contrast-dark] QLabel {color: #e8e8e8;}
 

@@ -229,6 +229,9 @@ QtMsg::QtMsg(QWidget * p)
     layout()->setSizeConstraint(QLayout::SetFixedSize);
     m_centralWidget->setObjectName("messageBody");
     m_centralWidget->setProperty("uitheme", QString::fromStdWString(GetCurrentTheme().originalId()));
+    // #2537: message.qss styles dark themes by type, not by id - theme-night (the dark theme
+    // "Same as system" picks) and user themes have no rules of their own
+    m_centralWidget->setProperty("uithemetype", GetCurrentTheme().stype());
 
     QVBoxLayout * _c_layout  = new QVBoxLayout;
     QHBoxLayout * _h_layout2 = new QHBoxLayout;
