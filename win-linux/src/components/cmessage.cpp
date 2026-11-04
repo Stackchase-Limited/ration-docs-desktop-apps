@@ -930,6 +930,18 @@ int showMessage(QWidget *parent, const QString &msg, MsgType msgType, MsgBtns ms
 
 // -------------------- CMessage ------------------
 
+#ifdef _WIN32
+/* #2537: the native task dialog has no dark style of its own. Once the process is
+   allowed dark mode (CEF does that while Windows is in dark mode) Windows 11 paints
+   its background dark but keeps the light-theme colours for the main instruction -
+   dark blue text on near-black, about 1.2:1, unreadable. Our own dialog follows the
+   app theme (message.qss), so use it whenever either side is dark. */
+static bool isNativeMsgDark()
+{
+    return AscAppManager::themes().isSystemSchemeDark() || AscAppManager::themes().current().isDark();
+}
+#endif
+
 int CMessage::showMessage(QWidget *parent,
                           const QString &msg,
                           MsgType msgType,
@@ -939,7 +951,8 @@ int CMessage::showMessage(QWidget *parent,
     if (WindowHelper::useNativeDialog()) {
 #ifdef _WIN32
 # ifndef __OS_WIN_XP
-        return WinMsg::showMessage(parent, msg, msgType, msgBtns, opts);
+        if (!isNativeMsgDark())
+            return WinMsg::showMessage(parent, msg, msgType, msgBtns, opts);
 # endif
 #else
         WindowHelper::CParentDisable oDisabler(parent);
