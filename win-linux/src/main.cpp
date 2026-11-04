@@ -52,7 +52,28 @@
 #include <QStyleFactory>
 #include <QGuiApplication>
 #include <QFileInfo>
+#include <QDir>
+#include <QRegularExpression>
 #include <cstdio>
+
+/* #2523: a second instance hands its arguments to the running one, which resolved a
+   relative path against ITS OWN working directory - "onlyoffice-desktopeditors ../doc.docx"
+   typed in another directory opened (or failed to find) the wrong file. Only the sender
+   knows where it was started, so make the path absolute here, before it is forwarded.
+   URLs and deep links (http://, file://, the app scheme) go as they are; a Windows drive
+   letter is not a scheme, and a relative name that exists here wins over looking like one. */
+static QString forwardablePath(const QString& arg)
+{
+    if ( arg.isEmpty() || QDir::isAbsolutePath(arg) )
+        return arg;
+
+    const QString abs_path = QDir::cleanPath(QDir::current().absoluteFilePath(arg));
+    static const QRegularExpression re_scheme("^[a-zA-Z][a-zA-Z0-9+.-]+:");
+    if ( re_scheme.match(arg).hasMatch() && !QFileInfo::exists(abs_path) )
+        return arg;
+
+    return QDir::toNativeSeparators(abs_path);
+}
 
 
 int main( int argc, char *argv[] )
@@ -222,7 +243,7 @@ int main( int argc, char *argv[] )
                     _out_args.append(arg).append("\x01");
                 else
                 if ( arg.mid(0,2) != "--" )
-                    _out_args.append(arg + "\x01");
+                    _out_args.append(forwardablePath(arg) + "\x01");
             }
         }
         bool res = app.sendMessage(_out_args.toUtf8());
