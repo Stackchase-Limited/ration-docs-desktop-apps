@@ -100,6 +100,12 @@ public:
         m_threads.push_back(std::thread(&CWindowsQueue::cancel_thread_func, this));
     }
 
+    bool empty()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return m_wintoclose.empty();
+    }
+
     void setcallback(std::function<void(T)>& fn)
     {
         m_callback = fn;

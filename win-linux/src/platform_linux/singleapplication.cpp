@@ -39,6 +39,7 @@
 #include "utils.h"
 #include "defines.h"
 #include <QSessionManager>
+#include <QTimer>
 
 
 static const char *GNOME_SESSION_NAME     = "org.gnome.SessionManager",
@@ -126,16 +127,34 @@ static void onSessionSignal(GDBusConnection*, const gchar*, const gchar*, const 
    manager (KDE Plasma, over XSMP) the logout was cancelled every time, even with
    nothing to save - and the close queue then closed the app anyway. Turn the
    fallback off and answer the request here: veto the logout only when a document
-   really has unsaved changes, and leave everything open so the user can deal with
-   them. With nothing to save the session ends normally. */
+   really has unsaved changes. With nothing to save the session ends normally.
+   When the logout is vetoed, start the same close as quitting the app (after the
+   callback has returned), so the user sees the "save changes?" dialogs and knows
+   why; saving or discarding everything then quits the app as usual. The session
+   manager may ask again while that close is still running: don't start another. */
 static void setupSessionManagement(QApplication *app)
 {
 #ifndef QT_VERSION_6
     QGuiApplication::setFallbackSessionManagementEnabled(false);
 #endif
-    QObject::connect(app, &QGuiApplication::commitDataRequest, app, [](QSessionManager &sm) {
-        if (AscAppManager::hasUnsavedChanges() && sm.allowsInteraction())
+    QObject::connect(app, &QGuiApplication::commitDataRequest, app, [app](QSessionManager &sm) {
+        if (AscAppManager::hasUnsavedChanges() && sm.allowsInteraction()) {
             sm.cancel();
+
+            static bool closeScheduled = false;
+            CMainWindow *w = AscAppManager::mainWindow();
+            if (closeScheduled || !AscAppManager::getInstance().closeQueue().empty() || (w && w->isAboutToClose()))
+                return;
+
+            closeScheduled = true;
+            QTimer::singleShot(0, app, []() {
+                closeScheduled = false;
+                CMainWindow *w = AscAppManager::mainWindow();
+                if (w && w->isVisible())
+                    w->bringToTop();
+                AscAppManager::closeAppWindows();
+            });
+        }
     });
 }
 
