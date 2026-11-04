@@ -119,6 +119,26 @@ static void onSessionSignal(GDBusConnection*, const gchar*, const gchar*, const 
     }
 }
 
+/* #2553: when the session ends, Qt 5 asks every top-level window to close and, if
+   one of them refuses, cancels the logout ("fallback session management"). Our
+   windows always refuse: closeEvent() ignores the event and hands the window to the
+   asynchronous close queue instead. So on a desktop that talks to Qt's session
+   manager (KDE Plasma, over XSMP) the logout was cancelled every time, even with
+   nothing to save - and the close queue then closed the app anyway. Turn the
+   fallback off and answer the request here: veto the logout only when a document
+   really has unsaved changes, and leave everything open so the user can deal with
+   them. With nothing to save the session ends normally. */
+static void setupSessionManagement(QApplication *app)
+{
+#ifndef QT_VERSION_6
+    QGuiApplication::setFallbackSessionManagementEnabled(false);
+#endif
+    QObject::connect(app, &QGuiApplication::commitDataRequest, app, [](QSessionManager &sm) {
+        if (AscAppManager::hasUnsavedChanges() && sm.allowsInteraction())
+            sm.cancel();
+    });
+}
+
 SingleApplication::SingleApplication(int &argc, char *argv[]) :
     QApplication(argc, argv)
 {
@@ -129,6 +149,7 @@ SingleApplication::SingleApplication(int &argc, char *argv[]) :
             QString data = QString::fromLocal8Bit((const char*)buff, size);
             QMetaObject::invokeMethod(this, "invokeSignal", Qt::QueuedConnection, Q_ARG(QString, data));
         });
+        setupSessionManagement(this);
 
         if (WindowHelper::getEnvInfo() == WindowHelper::GNOME && !(m_client_id = registerClient()).empty()) {
             if ((m_conn = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, nullptr)) != nullptr) {
