@@ -167,12 +167,38 @@ namespace InputArgs {
 namespace EditorJSVariables {
     QJsonObject vars_object;
 
+    /* #2508: the editors draw their own caret and used to blink it every 500 ms
+       whatever the OS said, so turning cursor blinking off (an accessibility
+       setting) was ignored while editing a cell or a document. Hand them the OS
+       setting as caretBlinkTime: ms the caret stays on (or off), 0 for no blinking;
+       -1 when it cannot be read, which leaves the editors at their default.
+       Read once at startup, like the other variables here.
+       https://github.com/ONLYOFFICE/DesktopEditors/issues/2508 */
+    static auto caretBlinkTime() -> int {
+#if defined(_WIN32)
+        const UINT time = GetCaretBlinkTime();      // ms per phase, INFINITE when off
+        return time == INFINITE ? 0 : time == 0 ? -1 : int(time);
+#elif defined(__linux__)
+        GtkSettings *settings = gtk_settings_get_default();     // gtk_init() ran in main()
+        if ( !settings )
+            return -1;
+
+        gboolean blink = TRUE;
+        gint time = 0;                              // ms for a whole on+off cycle
+        g_object_get(settings, "gtk-cursor-blink", &blink, "gtk-cursor-blink-time", &time, NULL);
+        return !blink ? 0 : time > 0 ? time / 2 : -1;
+#else
+        return -1;
+#endif
+    }
+
     auto init() -> void {
 #if defined(__OS_WIN_XP)
         vars_object["os"] = "winxp";
 #elif defined(__linux__)
         vars_object["os"] = "linux";
 #endif
+        vars_object["caretBlinkTime"] = caretBlinkTime();
         if ( InputArgs::contains(L"--help-url") )
             vars_object["helpUrl"] = QUrl(QString::fromStdWString(InputArgs::argument_value(L"--help-url"))).toString();
         else {

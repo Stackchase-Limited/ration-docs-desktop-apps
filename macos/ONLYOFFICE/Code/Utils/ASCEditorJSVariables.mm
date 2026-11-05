@@ -95,6 +95,15 @@
         [keybLangs setObject:[ASCLinguist keyboardLanguages] forKey:@"langs"];
         [_jsVariables setObject:keybLangs forKey:@"keyboard"];
         [_jsVariables setValue:[ASCLinguist appLanguageCode] forKey:@"lang"];
+
+        // #2508: the editors draw their own caret; pass the AppKit caret blink period
+        // (ms the caret stays on) when the user has set one. A huge value is how blinking
+        // is turned off on macOS - the editors treat anything over a minute as "no blink".
+        NSUserDefaults * defaults = [NSUserDefaults standardUserDefaults];
+        id blinkOn = [defaults objectForKey:@"NSTextInsertionPointBlinkPeriodOn"] ?: [defaults objectForKey:@"NSTextInsertionPointBlinkPeriod"];
+        if ( [blinkOn respondsToSelector:@selector(doubleValue)] && [blinkOn doubleValue] >= 0 ) {
+            [_jsVariables setValue:@([blinkOn doubleValue]) forKey:@"caretBlinkTime"];
+        }
     }
 
     return self;
