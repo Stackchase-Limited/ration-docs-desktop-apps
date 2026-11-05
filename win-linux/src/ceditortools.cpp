@@ -204,6 +204,19 @@ namespace CEditorTools
                         if ( info.suffix() == "pdf" )
                             printer->setOutputFileName("");
                     }
+
+                    /* #1947: a landscape sheet never reaches a CUPS printer as landscape. Qt's CUPS
+                       engine marks the job with the option "landscape" and an EMPTY value, which
+                       CUPS encodes as the boolean false - the job log says "nolandscape" - and
+                       cups-filters then shrinks the 297x210 page onto the portrait sheet unrotated.
+                       Send the sheet portrait instead and let the page drawing turn landscape
+                       pages onto it (CPrintData::CheckPrintRotate), the way quick print and the
+                       landscape pages of a portrait document have always printed. */
+                    QPageLayout layout = printer->pageLayout();
+                    if ( layout.orientation() == QPageLayout::Landscape ) {
+                        layout.setOrientation(QPageLayout::Portrait);
+                        printer->setPageLayout(layout);
+                    }
                 }
 #endif
 
