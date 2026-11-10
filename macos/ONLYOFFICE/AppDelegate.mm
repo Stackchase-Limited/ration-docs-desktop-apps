@@ -857,9 +857,41 @@
 #pragma mark -
 #pragma mark Notification handlers
 
+// Views get the theme background when they are created; repaint the ones already open,
+// or their layers keep the old theme's color and show through when a tab is switched (#2528)
+- (void)updateCefViewsBackground {
+    NSColor * backColor = [ASCThemesController currentThemeColor:windowBackgroundColor];
+
+    for (NSWindow * window in [NSApp windows]) {
+        if ([window isKindOfClass:[ASCTitleWindow class]]) {
+            ASCCommonViewController * controller = (ASCCommonViewController *)window.contentViewController;
+            if (![controller isKindOfClass:[ASCCommonViewController class]]) {
+                continue;
+            }
+
+            if ([controller.tabView indexOfTabViewItemWithIdentifier:rootTabId] != NSNotFound) {
+                [[controller cefViewWithTab:nil] setBackgroundColor:backColor];
+            }
+
+            for (ASCTabView * tab in controller.tabsControl.tabs) {
+                if ([controller.tabView indexOfTabViewItemWithIdentifier:tab.uuid] != NSNotFound) {
+                    [[controller cefViewWithTab:tab] setBackgroundColor:backColor];
+                }
+            }
+        } else
+        if ([window isKindOfClass:[ASCEditorWindow class]]) {
+            NSView * webView = ((ASCEditorWindow *)window).webView;
+            if ([webView isKindOfClass:[NSCefView class]]) {
+                [(NSCefView *)webView setBackgroundColor:backColor];
+            }
+        }
+    }
+}
+
 - (void)onSystemThemeChanged:(NSNotification *)notification {
     if (notification && notification.userInfo) {
         [self updateAppAppearance];
+        [self updateCefViewsBackground];
         
         NSDictionary * info = (NSDictionary *)notification.userInfo;
         NSString * mode = info[@"mode"];
@@ -903,6 +935,7 @@
 - (void)onUIThemeChanged:(NSNotification *)notification {
     if (notification && notification.userInfo) {
         [self updateAppAppearance];
+        [self updateCefViewsBackground];
         
         NSDictionary * params = (NSDictionary *)notification.userInfo;
         std::wstring wtheme = [params[@"uitheme"] stdwstring];
