@@ -386,6 +386,19 @@ begin
     Result := ChlbAudio.Checked[1] or (ChlbAudio.Checked[2] and ChlbAudio.Checked[index + 3]);
 end;
 
+// ext is '.docx' etc.; False for an extension that is not on the association page
+function isAssociateExtensionByName(ext: String): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 to GetArrayLength(AudioExts) - 1 do
+    if CompareText('.' + AudioExts[i], ext) = 0 then begin
+      Result := isAssociateExtension(i);
+      Break;
+    end;
+end;
+
 //----------
 
 procedure AddToDefaultPrograms;
@@ -470,7 +483,9 @@ begin
        RegWriteStringValue(HKEY_LOCAL_MACHINE, regpath, 'MenuText', ExpandConstant('@{app}\{#iconsExe},-' + values[4]));
        RegWriteStringValue(HKEY_LOCAL_MACHINE, regpath, 'ItemName', ExpandConstant('@{app}\{#iconsExe},-' + values[5]));
      end;
-     if version.Major = 10 then begin
+     // Taking the default ProgID makes the ShellNew entry above visible on Windows 10/11,
+     // but it also associates the type, so only do it for types the user chose to associate
+     if (version.Major = 10) and isAssociateExtensionByName(values[1]) then begin
        RegWriteStringValue(HKEY_LOCAL_MACHINE, 'Software\Classes\' + values[1], '', '{#ASCC_REG_PREFIX}' + values[2]);
        if RegValueExists(HKEY_CURRENT_USER, 'Software\Classes\' + values[1], '') then
          RegWriteStringValue(HKEY_CURRENT_USER, 'Software\Classes\' + values[1], '', '{#ASCC_REG_PREFIX}' + values[2]);
