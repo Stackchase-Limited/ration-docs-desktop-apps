@@ -158,14 +158,30 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
             _filters.append(";;" + _sel_filter);
     }
 
+    /* The name without its extension. Only the file name's own extension goes: a dot
+     * in a folder name (/home/u/v1.2/README) used to crop the path itself, and the
+     * dialog then opened in the parent folder offering "v1". */
+    const int _name_start = qMax(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\')) + 1;
+    const int _ext_dot = fileName.lastIndexOf('.');
+    const QString _base_name = _ext_dot > _name_start ? fileName.left(_ext_dot) : fileName;
 #ifdef _WIN32
     // TODO: win 10 home doesn't crop file name by self. refactor for ver 7.5 with linux ver
 //    QString _croped_name = fileName;
-    QString _croped_name = WindowHelper::useNativeDialog() ? fileName.left(fileName.lastIndexOf('.')) : fileName;
+    QString _croped_name = WindowHelper::useNativeDialog() ? _base_name : fileName;
 #else
-    QString _croped_name = fileName.left(fileName.lastIndexOf("."));
+    QString _croped_name = _base_name;
 #endif
     reFilter.setPattern("\\(\\*(\\.\\w+)");
+
+    /* #706: a dialog that keeps the name's extension in step with the selected filter
+     * (KDE's, through xdg-desktop-portal, and Qt's own) takes whatever follows the
+     * last dot as the extension. Offered "foo(05.09.21)" it showed "foo(05.09.docx",
+     * and "report.v2" became "report.docx". Those dialogs are given the name with the
+     * selected format's extension, which they keep as it is. */
+    QString _named_offer = fileName;
+    match = reFilter.match(_sel_filter);
+    if ( match.hasMatch() )
+        _named_offer = _base_name + match.captured(1);
 
     auto _exec_dialog = [=] (QWidget * p, QString n, QString f, QString& sf) {
         QFileDialog::Options _opts{QFileDialog::DontConfirmOverwrite};
@@ -179,7 +195,7 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
                                                  n, "", f, &sf);
             } else {
                 result = Xdg::openXdgPortal(p, Xdg::Mode::SAVE, title,
-                                            n, "", f, &sf);
+                                            _named_offer, "", f, &sf);
             }
             return (result.size() > 0) ? result.at(0) : QString();
 #else
@@ -190,7 +206,10 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
             return (result.size() > 0) ? result.at(0) : QString();
 # endif
 #endif
-        } else _opts |= QFileDialog::DontUseNativeDialog;
+        } else {
+            _opts |= QFileDialog::DontUseNativeDialog;
+            n = _named_offer;
+        }
         return QFileDialog::getSaveFileName(p, title, n, f, &sf, _opts);
     };
 
@@ -225,6 +244,7 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
              * write then replaced the original presentation with a PDF. Do this
              * before the "already exists" prompt, so the user confirms the name we
              * will actually write. */
+            const QString _chosen_name = fileName;
             if ( !_ext.isEmpty() && !fileName.endsWith(_ext, Qt::CaseInsensitive) ) {
                 /* Drop a trailing extension when it is one of the formats this
                  * dialog offers, so test.pptx becomes test.pdf; otherwise only
@@ -238,10 +258,34 @@ bool CFileDialogWrapper::modalSaveAs(QString& fileName, int selected)
                         fileName.chop(_cur_suffix.length() + 1);
                 }
 
-                fileName.append(_ext);
+                /* a.docx.pdf saved as DOCX is a.docx, not a.docx.docx */
+                if ( !fileName.endsWith(_ext, Qt::CaseInsensitive) )
+                    fileName.append(_ext);
             }
 
             QFileInfo info(fileName);
+            /* The name typed ended in another format's extension - talk.pdf with
+             * PPTX chosen - and was changed to agree with the format. That is not
+             * the name the user gave, so ask instead of writing it quietly. Not
+             * when the name is the one the dialog was offered and only the format
+             * was changed: GTK's dialog and GNOME's portal leave the offered
+             * extension in the box when the filter changes. */
+            if ( fileName != _chosen_name && fileName != _chosen_name + _ext &&
+                    QFileInfo(_chosen_name).fileName() != QFileInfo(_named_offer).fileName() )
+            {
+                int _answ = CMessage::showMessage((QWidget *)parent(),
+                                                  tr("%1 does not end in %2, the extension of the chosen format.<br>Save it as %3?")
+                                                        .arg(QFileInfo(_chosen_name).fileName().toHtmlEscaped(), _ext, info.fileName().toHtmlEscaped()),
+                                                  MsgType::MSG_WARN, MsgBtns::mbYesNo);
+                if ( MODAL_RESULT_NO == _answ ) {
+                    continue;
+                } else
+                if ( MODAL_RESULT_YES != _answ ) {
+                    fileName.clear();
+                    break;
+                }
+            }
+
             if ( info.exists() ) {
                 QWidget * _mess_parent = (QWidget *)parent();
                 int _answ = CMessage::showMessage(_mess_parent,
