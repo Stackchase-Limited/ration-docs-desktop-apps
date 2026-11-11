@@ -761,6 +761,47 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
         AscAppManager::getInstance().Apply(pAnswer);
         return true; }
 
+    case ASC_MENU_EVENT_TYPE_SYSTEM_OPEN_LINK_CONFIRM: {
+        // Ration Docs #1664: a page wants to open a link that is not http/https/mailto (a local file,
+        // a share, another application's scheme). The library sends ONOPENLINK only after "Open".
+        // Plain text: the link comes from a document. "Cancel" is the default.
+        CAscExternalProcessConfirm * pData = (CAscExternalProcessConfirm *)event->m_pData;
+        QMessageBox box(QMessageBox::Warning, QString::fromStdWString(pData->get_Title()),
+                        QString::fromStdWString(pData->get_Text()), QMessageBox::NoButton, mainWindow());
+        box.setTextFormat(Qt::PlainText);
+        box.setTextInteractionFlags(Qt::TextSelectableByMouse);
+        QPushButton * btnCancel = box.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        QPushButton * btnOpen = box.addButton(QObject::tr("Open"), QMessageBox::AcceptRole);
+        box.setDefaultButton(btnCancel);
+        box.setEscapeButton(btnCancel);
+        box.exec();
+
+        CAscMenuEvent * pAnswer = new CAscMenuEvent(ASC_MENU_EVENT_TYPE_SYSTEM_OPEN_LINK_CONFIRM);
+        CAscExternalProcessConfirm * pAnswerData = new CAscExternalProcessConfirm();
+        pAnswerData->put_Id(pData->get_Id());
+        pAnswerData->put_Allowed(box.clickedButton() == btnOpen);
+        pAnswer->m_pData = pAnswerData;
+        AscAppManager::getInstance().Apply(pAnswer);
+        return true; }
+
+    case ASC_MENU_EVENT_TYPE_SYSTEM_OPEN_LINK_REFUSED: {
+        // Ration Docs #1664: a link to a program, script or installer was not opened; say which
+        CAscExternalProcessConfirm * pData = (CAscExternalProcessConfirm *)event->m_pData;
+        QMessageBox box(QMessageBox::Warning, QString::fromStdWString(pData->get_Title()),
+                        QString::fromStdWString(pData->get_Text()), QMessageBox::Ok, mainWindow());
+        box.setTextFormat(Qt::PlainText);
+        box.setTextInteractionFlags(Qt::TextSelectableByMouse);
+        box.exec();
+
+        // closed: the library shows the next link dialog only after this
+        CAscMenuEvent * pAnswer = new CAscMenuEvent(ASC_MENU_EVENT_TYPE_SYSTEM_OPEN_LINK_CONFIRM);
+        CAscExternalProcessConfirm * pAnswerData = new CAscExternalProcessConfirm();
+        pAnswerData->put_Id(pData->get_Id());
+        pAnswerData->put_Allowed(false);
+        pAnswer->m_pData = pAnswerData;
+        AscAppManager::getInstance().Apply(pAnswer);
+        return true; }
+
     case ASC_MENU_EVENT_TYPE_CEF_SAVEFILEDIALOG:{
         CAscSaveDialog * pData = (CAscSaveDialog *)event->m_pData;
         SKIP_EVENTS_QUEUE(std::bind(&CAscApplicationManagerWrapper::onDownloadSaveDialog, this, pData->get_FilePath(), pData->get_IdDownload()));
