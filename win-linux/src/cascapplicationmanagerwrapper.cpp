@@ -53,6 +53,7 @@
 #include <QScreen>
 #include <algorithm>
 #include <functional>
+#include <cwctype>
 
 #include "defines.h"
 #include "version.h"
@@ -1061,6 +1062,38 @@ CMainWindow * CAscApplicationManagerWrapper::prepareMainWindow(const QRect& r)
     return _window;
 }
 
+/* #1167: a Google Docs/Sheets/Slides document has no file behind it. On a GNOME Google Drive mount
+   gvfs shows it as a shortcut whose target is its docs.google.com page, so "Open with" passes that
+   https link to us, and an https argument is opened as a web page in a tab - Google's own editor
+   inside the app, which is the report. There is nothing we could open in our editors (exporting
+   needs the user's Google sign-in), so such a link goes to the system browser instead. */
+static bool isGoogleNativeDocumentUrl(const std::wstring& url)
+{
+    auto starts_with_nocase = [&url](const std::wstring& prefix, size_t from) {
+        if ( url.size() < from + prefix.size() )
+            return false;
+        for (size_t i = 0; i < prefix.size(); ++i)
+            if ( std::towlower(url[from + i]) != prefix[i] )
+                return false;
+        return true;
+    };
+
+    size_t pos;
+    if ( starts_with_nocase(L"https://", 0) )
+        pos = 8;
+    else if ( starts_with_nocase(L"http://", 0) )
+        pos = 7;
+    else return false;
+
+    const size_t end = url.find_first_of(L"/?#:", pos);
+    const std::wstring::size_type len = (end == std::wstring::npos ? url.size() : end) - pos;
+    for (const std::wstring host : {L"docs.google.com", L"drive.google.com"}) {
+        if ( len == host.size() && starts_with_nocase(host, pos) )
+            return true;
+    }
+    return false;
+}
+
 void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& vargs_in)
 {
     APP_CAST(_app);
@@ -1225,6 +1258,11 @@ void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& v
             } else
             if ( check_params(open_opts.wurl, open_scheme) < 0 )
                 continue;
+            else
+            if ( isGoogleNativeDocumentUrl(open_opts.wurl) ) {
+                Utils::openUrl(QString::fromStdWString(open_opts.wurl));
+                continue;
+            }
         }
 
         if ( open_in_new_window ) {
