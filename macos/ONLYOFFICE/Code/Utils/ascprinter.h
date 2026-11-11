@@ -359,12 +359,25 @@ public:
 		if ( pWOptions && [pWOptions objectForKey:@"nativeOptions"] ) {
 			NSDictionary * pNOptions = pWOptions[@"nativeOptions"];
 
+			// Size the sheet from the page's own w/h (mm). The preset is the caption web-apps
+			// shows ("US Letter", "Envelope #10", ...), which is not a macOS paper name:
+			// setPaperName: ignores it and the sheet stayed the printer's default (A4 or Letter),
+			// and a custom page has no preset at all. setPaperSize: picks the printer's named
+			// paper of that size (iso-a4, na-letter, Env10, ...) and makes a custom one only
+			// when there is none. #560, #281
 			NSDictionary * paperSize = pNOptions[@"paperSize"];
+			double paperW = 0, paperH = 0;
+			if ( [paperSize isKindOfClass:[NSDictionary class]] &&
+				 [paperSize[@"w"] isKindOfClass:[NSNumber class]] && [paperSize[@"h"] isKindOfClass:[NSNumber class]] ) {
+				paperW = [paperSize[@"w"] doubleValue];
+				paperH = [paperSize[@"h"] doubleValue];
+			}
+			if ( paperW > 0 && paperH > 0 )
+				// portrait: the orientation is set per page in knowsPageRange/rectForPage
+				[pPrintInfo setPaperSize:NSMakeSize(MIN(paperW, paperH) * 72 / 25.4, MAX(paperW, paperH) * 72 / 25.4)];
+			else
 			if ( [paperSize objectForKey:@"preset"] != nil )
 				[pPrintInfo setPaperName:paperSize[@"preset"]];
-			else {
-				//            [pPrintInfo setPaperSize:NSMakeSize(595, 842)];
-			}
 
 			PMPrintSettings printSettings = (PMPrintSettings)pPrintInfo.PMPrintSettings;
 			PMSetPageRange(printSettings, 1, m_oInfo.m_nPagesCount);
