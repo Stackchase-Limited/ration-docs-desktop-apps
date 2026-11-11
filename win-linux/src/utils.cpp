@@ -406,7 +406,9 @@ QRect Utils::getScreenGeometry(const QPoint& leftTop)
         }
     }
 
-    return QApplication::desktop()->screenGeometry(closestScreen);
+    // #661: the working area, as rcWork on Windows - a window started inside the full
+    // screen rect could be placed under a top panel, which a frameless window can't leave
+    return QApplication::desktop()->availableGeometry(closestScreen);
 #else
     POINT lt{leftTop.x(), leftTop.y()};
     MONITORINFO mi{sizeof(MONITORINFO)};
