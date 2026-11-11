@@ -54,6 +54,10 @@
 #else
 # include <unistd.h>
 # include <errno.h>
+# include <fcntl.h>
+# include <stdlib.h>
+# include <string.h>
+# include <sys/file.h>
 # include <sys/socket.h>
 # include <sys/un.h>
 # include <netinet/in.h>
@@ -92,6 +96,39 @@ static unsigned long inetAddrFromUserId()
     return inet_addr(addr);
 #endif
 }
+
+#ifndef _WIN32
+/* #1710: the single-instance socket (use_unique_addr) used to be UDP on loopback only.
+   A loopback address belongs to a network namespace, and Flatpak without the network
+   permission (--unshare=network) runs every `flatpak run` in a namespace of its own, so
+   each launch bound the port in its own namespace, called itself the primary instance
+   and opened a new window instead of a tab. The same holds for any sandbox that
+   unshares the network. A file-system socket is reachable from every process that sees
+   the file, so where a per-user runtime folder exists the instance socket lives there:
+   $XDG_RUNTIME_DIR, or under Flatpak $XDG_RUNTIME_DIR/app/$FLATPAK_ID, the folder Flatpak
+   shares between all instances of one app (the rest of the sandbox's runtime folder is
+   private to each instance). Without such a folder this returns "" and the UDP socket is
+   used as before. */
+static std::string instanceSocketPath(int port)
+{
+    const char *run_dir = getenv("XDG_RUNTIME_DIR");
+    if (!run_dir || !*run_dir)
+        return "";
+    std::string dir(run_dir);
+    const char *app_id = getenv("FLATPAK_ID");
+    if (app_id && *app_id) {
+        if (strchr(app_id, '/'))
+            return "";
+        dir += std::string("/app/") + app_id;
+    }
+    if (access(dir.c_str(), W_OK) != 0)
+        return "";
+    std::string path = dir + "/desktopeditors-instance-" + std::to_string(port);
+    if (path.size() >= sizeof(((struct sockaddr_un*)nullptr)->sun_path))
+        return "";
+    return path;
+}
+#endif
 
 static bool initSocket(u_short port, SOCKET &tmpd, SockAddr &addr, int &ret, std::string &error, bool use_unique_addr)
 {
@@ -148,6 +185,12 @@ public:
 
     bool createSocket(u_short port);
     bool connectToSocket(u_short port);
+#ifndef _WIN32
+    int  createInstanceSocket();
+    bool connectToInstanceSocket();
+    std::string instance_path;   // non-empty: the instance socket is this file-system socket
+    int lock_fd = -1;            // held by the primary instance for as long as it runs
+#endif
     void startReadMessages();
     void closeSocket(SOCKET &socket);
     void postError(const char*);
@@ -173,8 +216,75 @@ CSocket::CSocketPrv::CSocketPrv()
 CSocket::CSocketPrv::~CSocketPrv()
 {}
 
+#ifndef _WIN32
+/* 1 = primary (receiver_fd is bound), 0 = another instance is primary, -1 = could not use
+   the file-system socket at all (fall back to UDP). Being primary is holding the lock:
+   flock is released by the kernel when the process dies, so a crashed primary leaves no
+   instance behind, only a socket file the next primary replaces. */
+int CSocket::CSocketPrv::createInstanceSocket()
+{
+    int fd = open((instance_path + ".lock").c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    if (fd < 0)
+        return -1;
+    if (flock(fd, LOCK_EX | LOCK_NB) != 0) {
+        int err = errno;
+        close(fd);
+        return err == EWOULDBLOCK ? 0 : -1;
+    }
+    unlink(instance_path.c_str());
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, instance_path.c_str(), sizeof(addr.sun_path) - 1);
+    SOCKET tmpd = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+    if (tmpd < 0 || ::bind(tmpd, (struct sockaddr*)&addr, sizeof(addr)) != 0) {
+        if (tmpd >= 0)
+            close_socket(tmpd);
+        close(fd);
+        return -1;
+    }
+    receiver_fd = tmpd;
+    lock_fd = fd;
+    return 1;
+}
+
+bool CSocket::CSocketPrv::connectToInstanceSocket()
+{
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, instance_path.c_str(), sizeof(addr.sun_path) - 1);
+    SOCKET tmpd = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+    if (tmpd < 0)
+        return false;
+    // the primary takes the lock a moment before it binds: give a starting primary 2 s
+    for (int i = 0; i < 20; i++) {
+        if (::connect(tmpd, (struct sockaddr*)&addr, sizeof(addr)) == 0) {
+            sender_fd = tmpd;
+            return true;
+        }
+        if (errno != ENOENT && errno != ECONNREFUSED)
+            break;
+        sleep(100);
+    }
+    close_socket(tmpd);
+    return false;
+}
+#endif
+
 bool CSocket::CSocketPrv::createSocket(u_short port)
 {
+#ifndef _WIN32
+    if (!instance_path.empty()) {
+        int res = createInstanceSocket();
+        if (res >= 0) {
+            if (res == 0)
+                postError("Could not create socket!");
+            return res == 1;
+        }
+        instance_path.clear();
+    }
+#endif
     int ret;
     SOCKET tmpd;
     SockAddr addr;
@@ -195,6 +305,14 @@ bool CSocket::CSocketPrv::createSocket(u_short port)
 
 bool CSocket::CSocketPrv::connectToSocket(u_short port)
 {
+#ifndef _WIN32
+    if (!instance_path.empty()) {
+        if (connectToInstanceSocket())
+            return true;
+        postError("Could not connect to socket!");
+        return false;
+    }
+#endif
     int ret;
     SOCKET tmpd;
     SockAddr addr;
@@ -263,6 +381,10 @@ CSocket::CSocket(int sender_port, int receiver_port, bool retry_connect, bool us
 {
     pimpl->m_use_unique_addr = use_unique_addr;
     pimpl->m_sender_port = sender_port;
+#ifndef _WIN32
+    if (use_unique_addr)
+        pimpl->instance_path = instanceSocketPath(receiver_port > 0 ? receiver_port : sender_port);
+#endif
     if (receiver_port <= 0)
         return;
     pimpl->m_socket_created = pimpl->createSocket(receiver_port);
@@ -284,6 +406,12 @@ CSocket::~CSocket()
     pimpl->closeSocket(pimpl->receiver_fd);
     if (pimpl->m_future.valid())
         pimpl->m_future.wait();
+#ifndef _WIN32
+    if (pimpl->lock_fd >= 0) {
+        unlink(pimpl->instance_path.c_str());
+        close(pimpl->lock_fd);
+    }
+#endif
 
     delete pimpl;
 #ifdef _WIN32
@@ -309,7 +437,8 @@ bool CSocket::sendMessage(void *data, size_t size)
 #ifdef _WIN32
     int ret_data = send(pimpl->sender_fd, client_arg, BUFFSIZE, 0); // Send the string
 #else
-    int ret_data =(int)send(pimpl->sender_fd, client_arg, BUFFSIZE, MSG_CONFIRM);
+    // MSG_CONFIRM is for UDP only
+    int ret_data =(int)send(pimpl->sender_fd, client_arg, BUFFSIZE, pimpl->instance_path.empty() ? MSG_CONFIRM : 0);
 #endif
     if (ret_data != BUFFSIZE) {
         if (ret_data < 0) {
