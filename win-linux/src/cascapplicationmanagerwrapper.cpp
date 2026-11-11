@@ -48,6 +48,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QProcess>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QScreen>
 #include <algorithm>
 #include <functional>
@@ -734,6 +736,29 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
         else QProcess::execute(QString::fromStdWString(pData->get_Program()), arguments);
 
 //        RELEASEINTERFACE(event);
+        return true; }
+
+    case ASC_MENU_EVENT_TYPE_SYSTEM_EXTERNAL_PROCESS_CONFIRM: {
+        // Ration Docs #1664: the AI agent wants to start a command line (an MCP server). The library
+        // asks once per command line and environment and remembers a yes; the page cannot answer.
+        // Plain text: the command must be shown exactly as it will run. "Don't Allow" is the default.
+        CAscExternalProcessConfirm * pData = (CAscExternalProcessConfirm *)event->m_pData;
+        QMessageBox box(QMessageBox::Warning, QString::fromStdWString(pData->get_Title()),
+                        QString::fromStdWString(pData->get_Text()), QMessageBox::NoButton, mainWindow());
+        box.setTextFormat(Qt::PlainText);
+        box.setTextInteractionFlags(Qt::TextSelectableByMouse);
+        QPushButton * btnDeny = box.addButton(QObject::tr("Don't Allow"), QMessageBox::RejectRole);
+        QPushButton * btnAllow = box.addButton(QObject::tr("Allow"), QMessageBox::AcceptRole);
+        box.setDefaultButton(btnDeny);
+        box.setEscapeButton(btnDeny);
+        box.exec();
+
+        CAscMenuEvent * pAnswer = new CAscMenuEvent(ASC_MENU_EVENT_TYPE_SYSTEM_EXTERNAL_PROCESS_CONFIRM);
+        CAscExternalProcessConfirm * pAnswerData = new CAscExternalProcessConfirm();
+        pAnswerData->put_Id(pData->get_Id());
+        pAnswerData->put_Allowed(box.clickedButton() == btnAllow);
+        pAnswer->m_pData = pAnswerData;
+        AscAppManager::getInstance().Apply(pAnswer);
         return true; }
 
     case ASC_MENU_EVENT_TYPE_CEF_SAVEFILEDIALOG:{
