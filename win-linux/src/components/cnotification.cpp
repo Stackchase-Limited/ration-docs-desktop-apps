@@ -120,25 +120,37 @@ static void on_close(NotifyNotification *ntf, void *data)
     }
 }
 
+/* #1433: g_settings_new() and g_settings_get_value() do not fail softly - a schema or key
+   that is not installed is a GLib-GIO-ERROR that kills the process (trace trap). That is
+   the case wherever XDG_CURRENT_DESKTOP says GNOME or Cinnamon but the desktop's schemas are
+   not visible: an AppImage, a container or toolbox on a GNOME host, a minimal install.
+   Read the setting only when it exists; otherwise notifications count as enabled. */
+static bool readBoolSetting(const char *schema_id, const char *key)
+{
+    GSettingsSchemaSource *src = g_settings_schema_source_get_default();
+    GSettingsSchema *schema = src ? g_settings_schema_source_lookup(src, schema_id, TRUE) : nullptr;
+    if (!schema)
+        return true;
+    bool has_key = g_settings_schema_has_key(schema, key);
+    g_settings_schema_unref(schema);
+    if (!has_key)
+        return true;
+    GSettings *stn = g_settings_new(schema_id);
+    GVariant *var = g_settings_get_value(stn, key);
+    gboolean res = false;
+    g_variant_get(var, "b", &res);
+    g_variant_unref(var);
+    g_object_unref(stn);
+    return res;
+}
+
 static bool isNotificationsEnabled()
 {
     if (WindowHelper::getEnvInfo() == WindowHelper::GNOME) {
-        GSettings *stn = g_settings_new("org.gnome.desktop.notifications");
-        GVariant *var = g_settings_get_value(stn, "show-banners");
-        gboolean res = false;
-        g_variant_get(var, "b", &res);
-        g_object_unref(var);
-        g_object_unref(stn);
-        return res;
+        return readBoolSetting("org.gnome.desktop.notifications", "show-banners");
     } else
     if (WindowHelper::getEnvInfo() == WindowHelper::CINNAMON) {
-        GSettings *stn = g_settings_new("org.cinnamon.desktop.notifications");
-        GVariant *var = g_settings_get_value(stn, "display-notifications");
-        gboolean res = false;
-        g_variant_get(var, "b", &res);
-        g_object_unref(var);
-        g_object_unref(stn);
-        return res;
+        return readBoolSetting("org.cinnamon.desktop.notifications", "display-notifications");
     } else
     if (WindowHelper::getEnvInfo() == WindowHelper::KDE) {
         QDBusConnection conn = QDBusConnection::sessionBus();
