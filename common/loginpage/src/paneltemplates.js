@@ -376,10 +376,17 @@
                 }
             }
 
+            // No default gallery. This defaulted to ONLYOFFICE's (templates.onlyoffice.com),
+            // and because it runs from init, every launch fetched their catalogue and
+            // ~750 thumbnails from static-oforms.onlyoffice.com before the user did
+            // anything (ONLYOFFICE/DesktopEditors#2235). Only a gallery someone has set
+            // explicitly is loaded; the local templates are unaffected.
+            const _domain = localStorage.templatesdomain;
+            if ( !_domain ) return;
+
             page_num++;
             isCloudTmplsLoading = true;
 
-            const _domain = localStorage.templatesdomain ? localStorage.templatesdomain : 'https://templates.onlyoffice.com'; // https://oforms.teamlab.info
             const _url = `${_domain}/dashboard/api/oforms?populate=*&locale=${locale}&pagination[page]=${page_num}`;
             fetch(_url)
                 .then(r => r.json())
