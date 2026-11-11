@@ -2152,6 +2152,30 @@ sq.extVSDX =Vizatim Visio
 #if Ver >= EncodeVer(6,1,1)
 ur.extVSDX =ویزیو ڈرائنگ
 #endif
+
+en.extDOTM =Word Open XML Macro-Enabled Document Template
+en_GB.extDOTM =Word Open XML Macro-Enabled Document Template
+
+en.extXLTX =Excel Open XML Spreadsheet Template
+en_GB.extXLTX =Excel Open XML Spreadsheet Template
+
+en.extXLTM =Excel Open XML Macro-Enabled Spreadsheet Template
+en_GB.extXLTM =Excel Open XML Macro-Enabled Spreadsheet Template
+
+en.extPOTX =PowerPoint Open XML Presentation Template
+en_GB.extPOTX =PowerPoint Open XML Presentation Template
+
+en.extPOTM =PowerPoint Open XML Macro-Enabled Presentation Template
+en_GB.extPOTM =PowerPoint Open XML Macro-Enabled Presentation Template
+
+en.extOTT =OpenDocument Text Template
+en_GB.extOTT =OpenDocument Text Template
+
+en.extOTS =OpenDocument Spreadsheet Template
+en_GB.extOTS =OpenDocument Spreadsheet Template
+
+en.extOTP =OpenDocument Presentation Template
+en_GB.extOTP =OpenDocument Presentation Template
 ;======================================================================================================
 
 en.jumpDOCX =New document

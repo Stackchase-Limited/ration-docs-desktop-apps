@@ -180,9 +180,9 @@ var
   prefix: string;
 begin
 #ifdef _RATION
-  SetArrayLength(AudioExts, 28);
+  SetArrayLength(AudioExts, 36);
 #else
-  SetArrayLength(AudioExts, 27);
+  SetArrayLength(AudioExts, 35);
 #endif
   SetArrayLength(AudioExtEnabled,  GetArrayLength(AudioExts));
 
@@ -214,8 +214,17 @@ begin
   AudioExts[24] := 'FODT';
   AudioExts[25] := 'VSDX';
   AudioExts[26] := 'XLSM';
+  // #1004: the other templates, as the MSI (advinst) registers them; .dotx is [20]
+  AudioExts[27] := 'DOTM';
+  AudioExts[28] := 'XLTX';
+  AudioExts[29] := 'XLTM';
+  AudioExts[30] := 'POTX';
+  AudioExts[31] := 'POTM';
+  AudioExts[32] := 'OTT';
+  AudioExts[33] := 'OTS';
+  AudioExts[34] := 'OTP';
 #ifdef _RATION
-  AudioExts[27] := 'DOCXF';
+  AudioExts[35] := 'DOCXF';
 #endif
 
   SetArrayLength(ExtensionRegistryInfo,  GetArrayLength(AudioExts));
@@ -250,8 +259,17 @@ begin
   ExtensionRegistryInfo[24] := prefix + 'Fodt:'         + ExpandConstant('{cm:extFODT}')            + ':' + '35';
   ExtensionRegistryInfo[25] := prefix + 'Vsdx:'         + ExpandConstant('{cm:extVSDX}')            + ':' + '36';
   ExtensionRegistryInfo[26] := prefix + 'Xlsm:'         + ExpandConstant('{cm:extXLSM}')            + ':' + '37';
+  // no template icons in the exe: the template's nearest relative
+  ExtensionRegistryInfo[27] := prefix + 'Dotm:'         + ExpandConstant('{cm:extDOTM}')            + ':' + '30';
+  ExtensionRegistryInfo[28] := prefix + 'Xltx:'         + ExpandConstant('{cm:extXLTX}')            + ':' + '10';
+  ExtensionRegistryInfo[29] := prefix + 'Xltm:'         + ExpandConstant('{cm:extXLTM}')            + ':' + '37';
+  ExtensionRegistryInfo[30] := prefix + 'Potx:'         + ExpandConstant('{cm:extPOTX}')            + ':' + '26';
+  ExtensionRegistryInfo[31] := prefix + 'Potm:'         + ExpandConstant('{cm:extPOTM}')            + ':' + '26';
+  ExtensionRegistryInfo[32] := prefix + 'Ott:'          + ExpandConstant('{cm:extOTT}')             + ':' + '18';
+  ExtensionRegistryInfo[33] := prefix + 'Ots:'          + ExpandConstant('{cm:extOTS}')             + ':' + '23';
+  ExtensionRegistryInfo[34] := prefix + 'Otp:'          + ExpandConstant('{cm:extOTP}')             + ':' + '3';
 #ifdef _RATION
-  ExtensionRegistryInfo[27] := prefix + 'Docxf:'        + ExpandConstant('{cm:extDOCXF}')           + ':' + '13';
+  ExtensionRegistryInfo[35] := prefix + 'Docxf:'        + ExpandConstant('{cm:extDOCXF}')           + ':' + '13';
 #endif
 end;
 
