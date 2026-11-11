@@ -76,6 +76,26 @@
 //    g_list_free(list);
 //}
 
+// GTK 3 matches a filter pattern case-sensitively, so "*.jpg" hid "Photo.JPG" (cameras write
+// upper-case names) and "All Images" showed none of them. "*.jpg" becomes "*.[jJ][pP][gG]".
+static std::string caseInsensitivePattern(const char *pattern)
+{
+    std::string res;
+    if (strchr(pattern, '[')) // already a bracket expression - leave it alone
+        return pattern;
+    for (const char *c = pattern; *c; ++c) {
+        if (g_ascii_isalpha(*c)) {
+            res += '[';
+            res += g_ascii_tolower(*c);
+            res += g_ascii_toupper(*c);
+            res += ']';
+        } else {
+            res += *c;
+        }
+    }
+    return res;
+}
+
 static GSList* parseString(const char *str, const char *delim)
 {
     GSList *list = nullptr;
@@ -157,7 +177,7 @@ static void nativeFileDialog(const Window &parent_xid,
                 GSList *flt_list = parseString(fltrs.c_str(), " ");
                 for (GSList *p = flt_list; p; p = p->next) {
                     if (const char *pattern = (const char*)p->data)
-                        gtk_file_filter_add_pattern(filter, pattern);
+                        gtk_file_filter_add_pattern(filter, caseInsensitivePattern(pattern).c_str());
                 }
                 if (flt_list)
                     g_slist_free_full(flt_list, free);
