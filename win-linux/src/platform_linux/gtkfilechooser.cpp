@@ -213,19 +213,25 @@ QStringList Gtk::openGtkFileChooser(QWidget *parent,
     const QString _path = (path.isEmpty() && pos != -1) ?
                 file.mid(0, pos) : path;
 
+    /* #790: GTK takes UTF-8 - names, titles, filter names, and file names too, in
+       GLib's default filename encoding - and what comes back is read as UTF-8 below.
+       These went in as toLocal8Bit, so under a locale that is not UTF-8 (zh_CN.GB18030,
+       a Latin-1 locale) a Chinese document name reached GTK as bytes it rejects or
+       shows as mojibake, a name Latin-1 cannot hold became "??", and a translated
+       filter name came back garbled and no longer matched any format. */
     QStringList files;
     char **filenames = nullptr;
-    char *_sel_filter = (sel_filter) ? strdup(sel_filter->toLocal8Bit().data()) : nullptr;
+    char *_sel_filter = (sel_filter) ? strdup(sel_filter->toUtf8().data()) : nullptr;
     int files_count = 0;
     Window parent_xid = (parent) ? (Window)parent->winId() : 0L;
     nativeFileDialog(parent_xid,
                      mode,
                      &filenames,
                      &files_count,
-                     title.toLocal8Bit().data(),
-                     _file.toLocal8Bit().data(),
-                     _path.toLocal8Bit().data(),
-                     filter.toLocal8Bit().data(),
+                     title.toUtf8().data(),
+                     _file.toUtf8().data(),
+                     _path.toUtf8().data(),
+                     filter.toUtf8().data(),
                      &_sel_filter,
                      sel_multiple);
 

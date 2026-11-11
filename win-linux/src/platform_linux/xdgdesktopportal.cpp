@@ -1191,14 +1191,19 @@ QStringList Xdg::openXdgPortal(QWidget *parent,
 
     char* outPaths;
     XcbUtils::findWindowAsync("xdg-desktop-portal", (void*)parent, 3000, onWindowFound);
+    /* #790: current_name is a D-Bus string, which must be UTF-8, and the portal answers
+       with UTF-8 URIs, read back as UTF-8 below. These went in as toLocal8Bit: under a
+       locale that is not UTF-8 (zh_CN.GB18030, a Latin-1 locale) a document named in
+       Chinese, or just "café", made libdbus reject the message and abort the whole
+       application at Save As, taking unsaved documents with it. */
     Result result;
     result = openDialog(parentWid, mode, title.toUtf8().data(),
                         &outPaths,
                         filterItem,
                         filterSize,
                         &selFilterItem,
-                        _path.toLocal8Bit().data(),
-                        _file_name.toLocal8Bit().data(),
+                        _path.toUtf8().data(),
+                        _file_name.toUtf8().data(),
                         sel_multiple);
 
     QStringList files;
