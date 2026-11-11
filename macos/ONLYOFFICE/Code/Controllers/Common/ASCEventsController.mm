@@ -943,6 +943,10 @@ public:
                                                                                          @"viewId": [NSString stringWithFormat:@"%d", senderId],
                                                                                          @"info": [NSString stringWithstdwstring:param]
                                                                                          }];
+                        } else if (cmd.compare(L"edit:native") == 0) {
+                            // Edit > Undo/Redo (AppDelegate onMenuUndo:) handed back by an editor whose focus is in
+                            // a text field or a plugin's frame: the browser view's own undo, as the menu did before
+                            [NSApp sendAction:(param.compare(L"redo") == 0 ? @selector(redo:) : @selector(undo:)) to:nil from:nil];
                         }
 
                         break;

@@ -559,6 +559,8 @@
         return keyWindowSupportsDocumentOperations;
     } else if ([item action] == @selector(onMenuPrint:)) {
         return keyWindowSupportsDocumentOperations;
+    } else if ([item action] == @selector(onMenuUndo:) || [item action] == @selector(onMenuRedo:)) {
+        return [self editorViewForEditCommand] != nil || [NSApp targetForAction:([item action] == @selector(onMenuUndo:) ? @selector(undo:) : @selector(redo:))] != nil;
     } else if ([item action] == @selector(onShowHelp:)) {
         [item setTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ Help", nil), productName]];
         return YES;
@@ -662,6 +664,37 @@
 
         [cefView apply:pEvent];
     }
+}
+
+// Edit > Undo/Redo used to go to the first responder, which in an editor is the browser view: its
+// undo only knows the browser's own text fields, so the document never changed. An editor gets the
+// command and undoes the document as its toolbar button does (or hands it back, see "edit:native").
+- (IBAction)onMenuUndo:(NSMenuItem *)sender {
+    NSCefView * cefView = [self editorViewForEditCommand];
+    if (cefView) {
+        [cefView sendCommand:@"edit:undo" withParam:@""];
+    } else {
+        [NSApp sendAction:@selector(undo:) to:nil from:sender];
+    }
+}
+
+- (IBAction)onMenuRedo:(NSMenuItem *)sender {
+    NSCefView * cefView = [self editorViewForEditCommand];
+    if (cefView) {
+        [cefView sendCommand:@"edit:redo" withParam:@""];
+    } else {
+        [NSApp sendAction:@selector(redo:) to:nil from:sender];
+    }
+}
+
+- (NSCefView *)editorViewForEditCommand {
+    NSCefView * cefView = [self cefViewFromKeyWindow];
+    id firstResponder = [[NSApp keyWindow] firstResponder];
+    if (cefView && [cefView.data isViewType:cvwtEditor] &&
+        [firstResponder isKindOfClass:[NSView class]] && [(NSView *)firstResponder isDescendantOf:cefView]) {
+        return cefView;
+    }
+    return nil;
 }
 
 - (IBAction)onMenuAcknowledgments:(NSMenuItem *)sender {
