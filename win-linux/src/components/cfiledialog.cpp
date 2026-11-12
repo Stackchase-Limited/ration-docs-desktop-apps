@@ -395,10 +395,11 @@ QString CFileDialogWrapper::modalOpenSingle(const QString& path, const QString& 
 
 QStringList CFileDialogWrapper::modalOpenImage(const QString& path)
 {
-    QString selected = tr("All Images") + " (*.jpeg *.jpg *.png *.gif *.bmp *.tiff *.tif *.heif *.heic *.svg)";
+    QString selected = tr("All Images") + " (*.jpeg *.jpg *.png *.gif *.bmp *.tiff *.tif *.heif *.heic *.svg *.emf *.wmf)";
     QString filter = m_mapFilters[AVS_OFFICESTUDIO_FILE_UNKNOWN];
     filter.append(";;" + selected + ";;" + tr("Jpeg (*.jpeg *.jpg);;Png (*.png);;Gif (*.gif);;Bmp (*.bmp);;Tiff (*.tiff *.tif);;Heif (*.heif *.heic)"));
     filter.append(";;" + m_mapFilters[AVS_OFFICESTUDIO_FILE_CROSSPLATFORM_SVG]);
+    filter.append(";;" + tr("Windows Metafile (*.emf *.wmf)"));
 
     auto result = modalOpen(path, filter, &selected, false);
     checkForMimeTypes(result, IMAGE_TYPE);
@@ -407,10 +408,11 @@ QStringList CFileDialogWrapper::modalOpenImage(const QString& path)
 
 QStringList CFileDialogWrapper::modalOpenImages(const QString& path)
 {
-    QString selected = tr("All Images") + " (*.jpeg *.jpg *.png *.gif *.bmp *.heif *.heic *.svg)";
+    QString selected = tr("All Images") + " (*.jpeg *.jpg *.png *.gif *.bmp *.heif *.heic *.svg *.emf *.wmf)";
     QString filter = m_mapFilters[AVS_OFFICESTUDIO_FILE_UNKNOWN];
     filter.append(";;" + selected + ";;" + tr("Jpeg (*.jpeg *.jpg);;Png (*.png);;Gif (*.gif);;Bmp (*.bmp);;Heif (*.heif *.heic)"));
     filter.append(";;" + m_mapFilters[AVS_OFFICESTUDIO_FILE_CROSSPLATFORM_SVG]);
+    filter.append(";;" + tr("Windows Metafile (*.emf *.wmf)"));
 
     auto result = modalOpen(path, filter, &selected, true);
     checkForMimeTypes(result, IMAGE_TYPE);
