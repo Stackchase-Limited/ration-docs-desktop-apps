@@ -48,6 +48,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QScreen>
+#include <QWindow>
 #include <QStorageInfo>
 #include <QPrinterInfo>
 #include <QProcess>
@@ -1247,6 +1248,14 @@ namespace WindowHelper {
         int _scr_count = QApplication::screens().count();
         if ( _scr_count > 1 ) {
             QScreen * _screen = QApplication::screenAt(pt);
+            /* #1548: pt is not on any screen when the window hangs off the edge of the
+               desktop (or sits in a gap between screens of different sizes); the null
+               screen then aborted the app in QList::at (presenter mode) or was
+               dereferenced (normal mode). Take the window's own screen instead. */
+            if ( !_screen ) {
+                QWindow * _wnd = panelwidget->window()->windowHandle();
+                _screen = _wnd && _wnd->screen() ? _wnd->screen() : QApplication::primaryScreen();
+            }
             if ( _panel->reporterMode() ) {
                 int _scrNum = QApplication::screens().indexOf(_screen);
                 _scr_geometry = QApplication::screens().at(_scr_count - _scrNum - 1)->geometry();
