@@ -219,6 +219,7 @@ void CMainWindowImpl::refreshAboutVersion()
     _json_obj["tabtypecolors"] = AscAppManager::userSettings(L"tab-type-colors") == L"1";
     _json_obj["removebuiltinplugins"] = AscAppManager::userSettings(L"plugins-hide-builtin") == L"1";
     _json_obj["saveonclose"] = AscAppManager::userSettings(L"save-on-close") == L"1";
+    _json_obj["restoretabs"] = AscAppManager::userSettings(L"restore-tabs") == L"1";
 
 #ifdef Q_OS_LINUX
     // #2504: the title bar --system-title-bar/--custom-title-bar pick, offered unless

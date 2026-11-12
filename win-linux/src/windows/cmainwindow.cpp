@@ -343,8 +343,11 @@ void CMainWindow::onCloseEvent()
 
 void CMainWindow::closeEvent(QCloseEvent * e)
 {
-    if (isEnabled())
+    if (isEnabled()) {
+        // #1847: the main window's close button closes every tab; keep what was open
+        AscAppManager::rememberSessionDocuments();
         AscAppManager::getInstance().closeQueue().enter(sWinTag{CLOSE_QUEUE_WIN_TYPE_MAIN, size_t(this)});
+    }
     e->ignore();
 }
 

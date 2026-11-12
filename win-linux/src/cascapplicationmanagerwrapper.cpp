@@ -1178,6 +1178,57 @@ void CAscApplicationManagerWrapper::reopenClosedDocument()
     }
 }
 
+// "Reopen documents from the last session" (#1847, user setting restore-tabs, off by
+// default): the local documents open when the app (or its main window) is closed are
+// kept in the user registry and opened again at the next start that names no file
+void CAscApplicationManagerWrapper::rememberSessionDocuments()
+{
+    APP_CAST(_app);
+    if ( userSettings(L"restore-tabs") != L"1" )
+        return;
+
+    // a close already under way has closed some documents: the list taken at its start stands
+    if ( !_app.closeQueue().empty() || (_app.m_pMainWindow && _app.m_pMainWindow->isAboutToClose()) )
+        return;
+
+    QStringList files;
+    auto add = [&files](const CTabPanel * panel) {
+        const CAscTabData * data = panel ? panel->data() : nullptr;
+        if ( data && data->isLocal() && !data->url().empty() ) {
+            const QString path = QString::fromStdWString(data->url());
+            if ( QFileInfo(path).isAbsolute() && !files.contains(path) )
+                files.append(path);
+        }
+    };
+
+    if ( _app.m_pMainWindow && _app.m_pMainWindow->tabWidget() ) {
+        CAscTabWidget * tabs = _app.m_pMainWindow->tabWidget();
+        for (int i(0); i < tabs->count(); ++i)
+            add(tabs->panel(i));
+    }
+    for (auto const& w : _app.m_vecEditors)
+        add(reinterpret_cast<CEditorWindow *>(w)->mainView());
+
+    GET_REGISTRY_USER(reg_user);
+    reg_user.setValue("lastSessionFiles", files);
+}
+
+std::vector<std::wstring> CAscApplicationManagerWrapper::lastSessionDocuments()
+{
+    std::vector<std::wstring> out;
+    if ( userSettings(L"restore-tabs") != L"1" )
+        return out;
+
+    // a document deleted or moved since is skipped: handleInputCmd() would open a
+    // missing path as a new blank document
+    GET_REGISTRY_USER(reg_user);
+    for (const QString& path : reg_user.value("lastSessionFiles").toStringList()) {
+        if ( QFileInfo(path).isFile() )
+            out.push_back(path.toStdWString());
+    }
+    return out;
+}
+
 void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& vargs_in)
 {
     APP_CAST(_app);
@@ -1557,6 +1608,15 @@ void CAscApplicationManagerWrapper::startApp()
                                             return (arg.rfind(L"--review", 0) != std::string::npos) || (arg.rfind(L"--view", 0) != std::string::npos) ||
                                                         (arg.rfind(L"--edit", 0) != std::string::npos) || (arg.rfind(L"--new", 0) != std::string::npos);
                                         }) != std::end(in_args);
+    // #1847: a start that opens nothing reopens the documents of the last session (if chosen)
+    if ( !files_in_args && std::none_of(in_args.begin(), in_args.end(),
+                                    [](const std::wstring& arg){ return arg.rfind(L"--", 0) != 0; }) )
+    {
+        for (const auto& path : lastSessionDocuments()) {
+            in_args.push_back(path);
+            files_in_args = true;
+        }
+    }
     if ( !files_in_args && open_in_new_window ) {
         in_args.push_back(L"--new:word");
     }
@@ -1812,6 +1872,8 @@ void CAscApplicationManagerWrapper::gotoMainWindow(size_t src)
 void CAscApplicationManagerWrapper::closeAppWindows()
 {
     APP_CAST(_app)
+
+    rememberSessionDocuments();
 
     vector<size_t>::const_iterator it = _app.m_vecEditors.begin();
     while ( it != _app.m_vecEditors.end() ) {
@@ -2364,6 +2426,14 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
         if ( objRoot.contains("removebuiltinplugins") ) {
             // #2466: plugins installed with the app may be removed (desktop-sdk plugins.h); after restart
             setUserSettings(L"plugins-hide-builtin", objRoot["removebuiltinplugins"].toBool(false) ? L"1" : L"0");
+        }
+
+        if ( objRoot.contains("restoretabs") ) {
+            const bool restore = objRoot["restoretabs"].toBool(false);
+            setUserSettings(L"restore-tabs", restore ? L"1" : L"0");
+            // #1847: switched off, the list of the last session is not kept either
+            if ( !restore )
+                _reg_user.remove("lastSessionFiles");
         }
 
         if ( objRoot.contains("saveonclose") ) {

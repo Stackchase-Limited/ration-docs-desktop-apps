@@ -1118,6 +1118,7 @@
     tabtypecolors = appManager->GetUserSettings()->Get(L"tab-type-colors") == L"1",
     removebuiltinplugins = appManager->GetUserSettings()->Get(L"plugins-hide-builtin") == L"1",
     saveonclose = appManager->GetUserSettings()->Get(L"save-on-close") == L"1",
+    restoretabs = appManager->GetUserSettings()->Get(L"restore-tabs") == L"1",
     editorinwindow = appManager->GetUserSettings()->Get(L"editor-window-mode") == L"1",
     detectkeyboard = !(appManager->GetUserSettings()->Get(L"spell-check-input-mode") == L"0");
     [json_langs setValue:@(usegpu) forKey:@"usegpu"];
@@ -1127,6 +1128,7 @@
     [json_langs setValue:@(tabtypecolors) forKey:@"tabtypecolors"];
     [json_langs setValue:@(removebuiltinplugins) forKey:@"removebuiltinplugins"];
     [json_langs setValue:@(saveonclose) forKey:@"saveonclose"];
+    [json_langs setValue:@(restoretabs) forKey:@"restoretabs"];
     [json_langs setValue:detectkeyboard?@"auto":@"off" forKey:@"spellcheckdetect"];
     [json_langs setValue:@(editorinwindow) forKey:@"editorwindowmode"];
 

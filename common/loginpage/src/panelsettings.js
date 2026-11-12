@@ -357,6 +357,12 @@
                                                 <label for="sett-save-on-close" class='sett__caption' l10n>${_lang.settSaveOnClose}</label>
                                             </section>
                                         </div>
+                                        <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-restore-tabs'>
+                                                <input type="checkbox" class="checkbox" id="sett-restore-tabs">
+                                                <label for="sett-restore-tabs" class='sett__caption' l10n>${_lang.settRestoreTabs}</label>
+                                            </section>
+                                        </div>
                                         <!-- temporary elements section -->
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-preview-mode'>
@@ -416,7 +422,8 @@
             $chTabTypeColors,
             $chBuiltinPlugins,
             $chXdgPortal,
-            $chSaveOnClose;
+            $chSaveOnClose,
+            $chRestoreTabs;
         let appSettings;
 
         function _set_user_name(name) {
@@ -653,6 +660,10 @@
 
                 if ( $chSaveOnClose ) {
                     _new_settings.saveonclose = $chSaveOnClose.prop("checked");
+                }
+
+                if ( $chRestoreTabs ) {
+                    _new_settings.restoretabs = $chRestoreTabs.prop("checked");
                 }
 
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
@@ -981,6 +992,15 @@
                         // #1674: closing a modified local document saves it instead of asking
                         $chSaveOnClose = $('#sett-box-save-on-close', $panel).parent().show().find('#sett-save-on-close');
                         $chSaveOnClose.prop('checked', !!appSettings.saveonclose)
+                            .off('change').on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+                    }
+
+                    if ( appSettings && appSettings.restoretabs !== undefined ) {
+                        // #1847: the documents open at quit are opened again at the next start
+                        $chRestoreTabs = $('#sett-box-restore-tabs', $panel).parent().show().find('#sett-restore-tabs');
+                        $chRestoreTabs.prop('checked', !!appSettings.restoretabs)
                             .off('change').on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });

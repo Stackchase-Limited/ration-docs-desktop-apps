@@ -747,6 +747,16 @@ public:
                                     appManager->GetUserSettings()->Set(L"save-on-close", [json[@"saveonclose"] boolValue] ? L"1" : L"0");
                                 }
 
+                                if ( [json objectForKey:@"restoretabs"] != nil ) {
+                                    // #1847: switched off, the list of the last session is not kept either
+                                    CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+                                    BOOL restore = [json[@"restoretabs"] boolValue];
+                                    appManager->GetUserSettings()->Set(L"restore-tabs", restore ? L"1" : L"0");
+                                    if ( !restore ) {
+                                        [[NSUserDefaults standardUserDefaults] removeObjectForKey:ASCUserLastSessionFiles];
+                                    }
+                                }
+
                                 if ( [json objectForKey:@"tabtypecolors"] != nil ) {
                                     // #2436: strips in the document type's colour on the tabs
                                     BOOL show = [json[@"tabtypecolors"] boolValue];

@@ -46,6 +46,7 @@
 #import "ASCConstants.h"
 #import "ASCCommonViewController.h"
 #import "ASCHelper.h"
+#import "AppDelegate.h"
 
 @interface ASCTitleWindowController ()
 @property (nonatomic, assign) NSRect savedNormalFrame;
@@ -79,6 +80,9 @@
 - (BOOL)windowShouldClose:(id)sender {
     ASCTitleWindow * window = (ASCTitleWindow *)self.window;
     ASCCommonViewController * controller = (ASCCommonViewController *)window.contentViewController;
+
+    // #1847: closing the main window closes every tab; keep what was open
+    [(AppDelegate *)[NSApp delegate] rememberSessionDocuments];
 //    NSEvent * event = [window currentEvent];
 
 //    BOOL isCommandKey = ([event modifierFlags] & NSCommandKeyMask) != 0;

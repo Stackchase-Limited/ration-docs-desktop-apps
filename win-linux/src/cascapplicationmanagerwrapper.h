@@ -185,6 +185,8 @@ public:
     static void             handleInputCmd(const std::vector<std::wstring>&);
     static void             rememberClosedDocument(const CAscTabData *);
     static void             reopenClosedDocument();
+    static void             rememberSessionDocuments();
+    static std::vector<std::wstring> lastSessionDocuments();
     static void             closeEditorWindow(const size_t);
     static void             pinWindowToTab(CEditorWindow *editor, bool by_position = true);
 

@@ -50,6 +50,7 @@
 - (void)presentMainWindow;
 - (void)dragDetachedTab:(NSView *)cefView atScreenPoint:(NSPoint)screenPoint withEvent:(NSEvent *)event;
 - (void)rememberClosedDocument:(NSString *)path;
+- (void)rememberSessionDocuments;
 
 @property (nonatomic) BOOL waitingForTerminateApp;
 @property (nonatomic) NSWindowController *mainWindowController;

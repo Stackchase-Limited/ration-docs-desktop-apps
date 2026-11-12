@@ -186,6 +186,7 @@
     
     if (!self.hasFilesToOpenOnLaunch) {
         [self presentMainWindow];
+        [self reopenSessionDocuments];
     }
 }
 
@@ -357,6 +358,15 @@
         return NSTerminateCancel;
     }
     
+    // #1847: after the main window's close button (which already recorded them) nothing is
+    // open and the main window is gone, and while "Review Changes..." closes the documents
+    // one by one the list taken at its start stands; don't overwrite it with fewer
+    NSWindow * mainWindow = self.mainWindowController.window;
+    if (!self.waitingForTerminateApp &&
+        ([self openLocalDocumentPaths].count > 0 || [mainWindow isVisible] || [mainWindow isMiniaturized])) {
+        [self rememberSessionDocuments];
+    }
+
     if (![self shouldTerminateApplication])
         return NSTerminateCancel;
     
@@ -670,6 +680,78 @@
     }
 
     return nil;
+}
+
+// Settings > "Reopen documents from the last session at start" (#1847, user setting
+// restore-tabs, off by default): the local documents open when the app quits (or its main
+// window is closed) are kept and opened again at the next start that opens no file.
+- (BOOL)restoresSessionDocuments {
+    CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+    return appManager->GetUserSettings()->Get(L"restore-tabs") == L"1";
+}
+
+- (NSArray<NSString *> *)openLocalDocumentPaths {
+    NSMutableArray<NSString *> * paths = [NSMutableArray array];
+    void (^add)(NSString *) = ^(NSString * path) {
+        if ([path isKindOfClass:[NSString class]] && [path isAbsolutePath] && ![paths containsObject:path]) {
+            [paths addObject:path];
+        }
+    };
+
+    for (NSWindow * window in [NSApp windows]) {
+        if ([window isKindOfClass:[ASCTitleWindow class]]) {
+            ASCCommonViewController * controller = (ASCCommonViewController *)window.contentViewController;
+            for (ASCTabView * tab in controller.tabsControl.tabs) {
+                // a document made from a template still carries the template's path
+                if ([tab.params[@"action"] integerValue] != ASCTabActionCreateLocalFileFromTemplate) {
+                    add(tab.params[@"path"]);
+                }
+            }
+        } else if ([window isKindOfClass:[ASCEditorWindow class]]) {
+            NSCefView * cefView = (NSCefView *)((ASCEditorWindow *)window).webView;
+            if (cefView && cefView.data.isLocal) {
+                add(cefView.data.path);
+            }
+        }
+    }
+
+    return paths;
+}
+
+- (void)rememberSessionDocuments {
+    if ([self restoresSessionDocuments]) {
+        [[NSUserDefaults standardUserDefaults] setObject:[self openLocalDocumentPaths] forKey:ASCUserLastSessionFiles];
+    }
+}
+
+- (void)reopenSessionDocuments {
+    if (![self restoresSessionDocuments]) {
+        return;
+    }
+
+    NSMutableArray<NSString *> * paths = [NSMutableArray array];
+    for (NSString * path in [[NSUserDefaults standardUserDefaults] arrayForKey:ASCUserLastSessionFiles]) {
+        // a document deleted or moved since is skipped, not recreated
+        BOOL isDirectory = NO;
+        if ([path isKindOfClass:[NSString class]] &&
+            [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory) {
+            [paths addObject:path];
+        }
+    }
+
+    if (paths.count > 0) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+            for (NSString * path in paths) {
+                [[NSNotificationCenter defaultCenter] postNotificationName:CEFEventNameCreateTab
+                                                                    object:nil
+                                                                  userInfo:@{
+                                                                             @"action"  : @(ASCTabActionOpenLocalFile),
+                                                                             @"path"    : path,
+                                                                             @"active"  : @(YES)
+                                                                             }];
+            }
+        });
+    }
 }
 
 - (IBAction)onMenuReopenClosedTab:(NSMenuItem *)sender {
