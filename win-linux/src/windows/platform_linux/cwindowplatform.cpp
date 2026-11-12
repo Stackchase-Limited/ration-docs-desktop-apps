@@ -151,6 +151,18 @@ bool CWindowPlatform::event(QEvent * event)
     else
     if (event->type() == QEvent::WindowDeactivate) {
         onWindowActivate(false);
+    } else
+    if (event->type() == QEvent::ScreenChangeInternal) {
+        /* #2501: the window is now on another screen (dragged there, or the screen it was
+           on went away - a laptop switched to its external display). The editors re-zoom
+           themselves for the new screen on the next resize (CCefView_Private::CheckZoom),
+           but nothing re-scaled the window itself on Linux since the drag-release check was
+           dropped in 2022: tabs, title bar and buttons kept the old screen's size next to an
+           editor drawn at the new one. Windows does this on WM_DPICHANGED. Deferred, so the
+           screen change has finished before the scale is read. */
+        QTimer::singleShot(0, this, [=]() {
+            updateScaling();
+        });
     }
     return CWindowBase::event(event);
 }
