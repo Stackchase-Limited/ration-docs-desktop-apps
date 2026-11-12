@@ -81,6 +81,7 @@
 - (void)updateTab:(ASCTabView *)tab;
 - (void)selectNextTab;
 - (void)selectPreviouseTab;
+- (void)selectRecentTab:(BOOL)back;
 
 - (ASCTabView *)tabWithUUID:(NSString *)uuid;
 - (ASCTabView *)selectedTab;

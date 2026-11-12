@@ -118,6 +118,11 @@ static NSString * const kASCTabsMulticastDelegateKey = @"asctabsmulticastDelegat
 @property (nonatomic) NSView *tabsView;
 @property (nonatomic) NSButton *scrollLeftButton;
 @property (nonatomic) NSButton *scrollRightButton;
+// #2139: tab uuids, most recently selected first; @"" is the start page
+@property (nonatomic) NSMutableArray<NSString *> *recentOrder;
+@property (nonatomic) NSArray<NSString *> *recentCycle;
+@property (nonatomic) NSUInteger recentPos;
+@property (nonatomic) NSTimer *recentCtrlWatch;
 @end
 
 @implementation ASCTabsControl
@@ -496,6 +501,8 @@ static NSString * const kASCTabsMulticastDelegateKey = @"asctabsmulticastDelegat
 }
 
 - (void)selectTab:(ASCTabView *)selectedTab {
+    [self touchRecentTab:selectedTab];
+
     for (ASCTabView * tab in self.tabs) {
         [tab setState:(tab == selectedTab) ? NSControlStateValueOn : NSControlStateValueOff];
     }
@@ -855,6 +862,66 @@ static NSString * const kASCTabsMulticastDelegateKey = @"asctabsmulticastDelegat
         ASCTabView * tabToSelect = ++tabIndex < tabsCount ? [self.tabs objectAtIndex:tabIndex] : nil;
 
         [self selectTab:tabToSelect];
+    }
+}
+
+/* #2139: Ctrl+Tab in most-recently-used order, as browsers offer it (Settings >
+   "Ctrl+Tab goes to the most recently used tab", user setting tab-switch-mru; off by
+   default). While Ctrl is held the order is frozen, so repeated Tab presses walk
+   further back; letting Ctrl go makes the tab reached the most recent one. The key
+   release goes to the page, so Ctrl is watched instead. */
+- (void)touchRecentTab:(ASCTabView *)tab {
+    NSString * key = tab ? tab.uuid : @"";
+    if ( self.recentCycle || !key ) return;
+
+    if ( !self.recentOrder ) self.recentOrder = [NSMutableArray array];
+    [self.recentOrder removeObject:key];
+    [self.recentOrder insertObject:key atIndex:0];
+}
+
+- (void)selectRecentTab:(BOOL)back {
+    if ( !self.recentCycle ) {
+        NSMutableArray * open = [NSMutableArray arrayWithObject:@""];
+        for (ASCTabView * tab in self.tabs) {
+            if ( tab.uuid ) [open addObject:tab.uuid];
+        }
+
+        NSMutableArray * cycle = [NSMutableArray array];
+        for (NSString * key in self.recentOrder) {
+            if ( [open containsObject:key] ) [cycle addObject:key];
+        }
+        for (NSString * key in open) {
+            if ( ![cycle containsObject:key] ) [cycle addObject:key];
+        }
+        self.recentOrder = [cycle mutableCopy];
+
+        if ( [cycle count] < 2 ) return;
+        self.recentCycle = cycle;
+        self.recentPos = 0;
+    }
+
+    NSUInteger count = [self.recentCycle count];
+    self.recentPos = back ? (self.recentPos + count - 1) % count : (self.recentPos + 1) % count;
+    NSString * key = self.recentCycle[self.recentPos];
+    [self selectTab:[key length] ? [self tabWithUUID:key] : nil];
+
+    if ( !self.recentCtrlWatch ) {
+        __weak __typeof__(self) weakSelf = self;
+        self.recentCtrlWatch = [NSTimer scheduledTimerWithTimeInterval:0.05 repeats:YES block:^(NSTimer * timer) {
+            if ( !([NSEvent modifierFlags] & NSEventModifierFlagControl) ) {
+                [timer invalidate];
+                [weakSelf finishRecentCycle];
+            }
+        }];
+    }
+}
+
+- (void)finishRecentCycle {
+    self.recentCtrlWatch = nil;
+    if ( self.recentCycle ) {
+        NSString * key = self.recentCycle[self.recentPos];
+        self.recentCycle = nil;
+        [self touchRecentTab:[key length] ? [self tabWithUUID:key] : nil];
     }
 }
 

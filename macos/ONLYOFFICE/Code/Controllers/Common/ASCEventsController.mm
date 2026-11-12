@@ -733,6 +733,11 @@ public:
                                     appManager->GetUserSettings()->Set(L"disable-recents", [json[@"keeprecents"] boolValue] ? L"0" : L"1");
                                 }
 
+                                if ( [json objectForKey:@"tabswitchmru"] != nil ) {
+                                    CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+                                    appManager->GetUserSettings()->Set(L"tab-switch-mru", [json[@"tabswitchmru"] boolValue] ? L"1" : L"0");
+                                }
+
                                 if ( [json objectForKey:@"editorwindowmode"] != nil ) {
                                     CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
                                     appManager->GetUserSettings()->Set(L"editor-window-mode", [json[@"editorwindowmode"] boolValue] ? L"1" : L"0");

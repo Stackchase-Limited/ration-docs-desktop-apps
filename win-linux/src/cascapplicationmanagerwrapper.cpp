@@ -2333,6 +2333,10 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
         }
 #endif
 
+        if ( objRoot.contains("tabswitchmru") ) {
+            setUserSettings(L"tab-switch-mru", objRoot["tabswitchmru"].toBool(false) ? L"1" : L"0");
+        }
+
 #ifdef _UPDMODULE
         if ( objRoot.contains("autoupdatemode") ) {
             if (m_pUpdateManager)

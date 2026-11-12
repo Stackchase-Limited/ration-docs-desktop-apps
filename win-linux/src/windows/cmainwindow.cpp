@@ -53,6 +53,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMimeData>
+#include <QGuiApplication>
+#include <algorithm>
+#include <vector>
 
 #include <qtcomp/qpalette.h>
 
@@ -67,6 +70,52 @@
 
 using namespace std::placeholders;
 using namespace NSEditorApi;
+
+/* #2139: Ctrl+Tab in most-recently-used order, as browsers offer it (Settings >
+   "Ctrl+Tab goes to the most recently used tab", user setting tab-switch-mru; off
+   by default, when Ctrl+Tab keeps walking the tab bar left to right). Ids are view
+   ids, -1 is the start page. While Ctrl is held the order is frozen, so repeated
+   Tab presses walk further back; letting Ctrl go makes the tab reached the most
+   recent one. */
+struct CTabMruOrder
+{
+    std::vector<int> ids;       // most recent first
+    std::vector<int> cycle;     // frozen order while Ctrl is held
+    size_t pos = 0;
+
+    void touch(int id) {
+        if ( !cycle.empty() ) return;
+        ids.erase(std::remove(ids.begin(), ids.end(), id), ids.end());
+        ids.insert(ids.begin(), id);
+    }
+
+    // open: the start page and every tab, in tab-bar order; returns the id to show
+    int step(bool back, const std::vector<int>& open) {
+        if ( cycle.empty() ) {
+            for (int id : ids)
+                if ( std::find(open.begin(), open.end(), id) != open.end() ) cycle.push_back(id);
+            for (int id : open)
+                if ( std::find(cycle.begin(), cycle.end(), id) == cycle.end() ) cycle.push_back(id);
+            ids = cycle;
+            pos = 0;
+        }
+        if ( cycle.size() < 2 ) {
+            cycle.clear();
+            return ids.empty() ? -1 : ids.front();
+        }
+        pos = back ? (pos + cycle.size() - 1) % cycle.size() : (pos + 1) % cycle.size();
+        return cycle[pos];
+    }
+
+    void finish() {
+        if ( !cycle.empty() ) {
+            int id = cycle[pos];
+            cycle.clear();
+            touch(id);
+        }
+    }
+};
+static CTabMruOrder s_tabMru;
 
 CMainWindow::CMainWindow(const QRect &rect) :
     CWindowPlatform(rect),
@@ -635,6 +684,8 @@ void CMainWindow::onEditorAllowedClose(int uid)
 
 void CMainWindow::onTabChanged(int index)
 {
+    s_tabMru.touch(m_pTabs->isActiveWidget() && index > -1 ? m_pTabs->viewByIndex(index) : -1);
+
     QString title("");
 #ifdef __linux__
     if (WindowHelper::getEnvInfo() == WindowHelper::KDE)
@@ -1386,6 +1437,35 @@ void CMainWindow::onKeyDown(void * eventData)
         }
         break;
     case VK_TAB:
+        if (m_pTabs->count() && _is_ctrl && AscAppManager::userSettings(L"tab-switch-mru") == L"1") {
+            std::vector<int> _open{-1};
+            for (int i = 0; i < m_pTabs->count(); ++i)
+                _open.push_back(m_pTabs->viewByIndex(i));
+
+            int _id = s_tabMru.step(_is_shift, _open);
+            int _index = _id < 0 ? -1 : m_pTabs->tabIndexByView(_id);
+            if (_index < 0)
+                toggleButtonMain(true);
+            else {
+                toggleButtonMain(false);
+                m_pTabs->setCurrentIndex(_index);
+            }
+
+            // the key release goes to the page, not to us: watch Ctrl instead
+            QTimer * _ctrl_watch = findChild<QTimer *>("tabMruCtrlWatch", Qt::FindDirectChildrenOnly);
+            if ( !_ctrl_watch ) {
+                _ctrl_watch = new QTimer(this);
+                _ctrl_watch->setObjectName("tabMruCtrlWatch");
+                _ctrl_watch->setInterval(50);
+                connect(_ctrl_watch, &QTimer::timeout, this, [=] {
+                    if ( !(QGuiApplication::queryKeyboardModifiers() & Qt::ControlModifier) ) {
+                        _ctrl_watch->stop();
+                        s_tabMru.finish();
+                    }
+                });
+            }
+            _ctrl_watch->start();
+        } else
         if (m_pTabs->count()) {
             if (_is_ctrl) {
                 int _new_index = 0;

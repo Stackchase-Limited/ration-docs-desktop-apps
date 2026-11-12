@@ -313,6 +313,11 @@
                                             <div class='sett--label-lift-top hbox'>
                                                 <button class="btn btn--landing" id="sett-btn-file-assoc" l10n>${_lang.settBtnFileAssoc}</button>
                                             </div>
+                                        <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-tab-mru'>
+                                                <input type="checkbox" class="checkbox" id="sett-tab-mru">
+                                                <label for="sett-tab-mru" class='sett__caption' l10n>${_lang.settTabSwitchMru}</label>
+                                            </section>
                                         </div>
                                         <!-- temporary elements section -->
                                         <div class='settings-field' style='display:none;'>
@@ -367,7 +372,8 @@
             $optsAutoupdateMode;
         let $chGpu,
             $chUseAI,
-            $chKeepRecents;
+            $chKeepRecents,
+            $chTabMru;
         let appSettings;
 
         function _set_user_name(name) {
@@ -567,6 +573,10 @@
                     if ( appSettings.keeprecents && !_new_settings.keeprecents )
                         sdk.LocalFileRemoveAllRecents();
                     appSettings.keeprecents = _new_settings.keeprecents;
+                }
+
+                if ( $chTabMru ) {
+                    _new_settings.tabswitchmru = $chTabMru.prop("checked");
                 }
 
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
@@ -819,6 +829,12 @@
                         $('#sett-box-file-assoc', $panel).show().find('#sett-btn-file-assoc')
                             .off('click').on('click', e => {
                                 sdk.command("settings:fileassoc", "");
+                    if ( appSettings && appSettings.tabswitchmru !== undefined ) {
+                        // #2139: Ctrl+Tab in most-recently-used order instead of tab-bar order
+                        $chTabMru = $('#sett-box-tab-mru', $panel).parent().show().find('#sett-tab-mru');
+                        $chTabMru.prop('checked', !!appSettings.tabswitchmru)
+                            .off('change').on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
                             });
                     }
 

@@ -226,6 +226,7 @@ l10n.en = {
     settOptWindowButtonsClose: 'Close only',
     settFileAssoc: 'File types',
     settBtnFileAssoc: 'Make Ration Docs the default app for all supported files',
+    settTabSwitchMru: 'Ctrl+Tab goes to the most recently used tab',
 }
 
 

@@ -1697,6 +1697,11 @@
                     NSWindow *keyWindow = [NSApp keyWindow];
                     if (keyWindow && [keyWindow isKindOfClass:[ASCTitleWindow class]]) {
                         ASCCommonViewController * controller = (ASCCommonViewController *)keyWindow.contentViewController;
+                        CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+                        if ( appManager->GetUserSettings()->Get(L"tab-switch-mru") == L"1" ) {
+                            // #2139
+                            [controller.tabsControl selectRecentTab:pData->get_IsShift()];
+                        } else
                         if ( pData->get_IsShift() ) {
                             [controller.tabsControl selectPreviouseTab];
                         } else {
