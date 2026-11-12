@@ -231,6 +231,13 @@ void CMainWindowImpl::refreshAboutVersion()
     _json_obj["rtl"] = AscAppManager::isRtlEnabled();
 #endif
 
+#ifdef __linux__
+    /* #2321: the desktop's own file dialog (XDG portal) instead of the in-process GTK one.
+       Offered on X11 only - a Wayland session always gets the portal (#2168). */
+    if ( !WindowHelper::isWaylandSession() )
+        _json_obj["xdgportal"] = !WindowHelper::useGtkDialog();
+#endif
+
     // Read update settings
 #ifdef _UPDMODULE
     if ( Utils::updatesAllowed() ) {

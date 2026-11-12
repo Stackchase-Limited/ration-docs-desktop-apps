@@ -2335,6 +2335,11 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
             if ( _buttons == "close" || _buttons == "all" )
                 _reg_user.setValue("windowButtons", _buttons);
         }
+
+        if ( objRoot.contains("xdgportal") ) {
+            /* #2321: the preference useGtkDialog() already keeps for --xdg-desktop-portal */
+            _reg_user.setValue("--xdg-desktop-portal", objRoot["xdgportal"].toBool(false));
+        }
 #endif
 
         if ( objRoot.contains("tabswitchmru") ) {

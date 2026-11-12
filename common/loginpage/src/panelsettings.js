@@ -326,6 +326,12 @@
                                                 <label for="sett-tab-type-colors" class='sett__caption' l10n>${_lang.settTabTypeColors}</label>
                                             </section>
                                         </div>
+                                        <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-xdg-portal'>
+                                                <input type="checkbox" class="checkbox" id="sett-xdg-portal">
+                                                <label for="sett-xdg-portal" class='sett__caption' l10n>${_lang.settXdgPortal}</label>
+                                            </section>
+                                        </div>
                                         <!-- temporary elements section -->
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-preview-mode'>
@@ -381,7 +387,8 @@
             $chUseAI,
             $chKeepRecents,
             $chTabMru,
-            $chTabTypeColors;
+            $chTabTypeColors,
+            $chXdgPortal;
         let appSettings;
 
         function _set_user_name(name) {
@@ -589,6 +596,12 @@
 
                 if ( $chTabTypeColors ) {
                     _new_settings.tabtypecolors = $chTabTypeColors.prop("checked");
+                }
+
+                if ( $chXdgPortal ) {
+                    // #2321: Linux/X11 only; the app sends xdgportal when it applies
+                    _new_settings.xdgportal = $chXdgPortal.prop("checked");
+                    appSettings.xdgportal = _new_settings.xdgportal;
                 }
 
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
@@ -857,6 +870,15 @@
                         // #2436: a strip in the document type's colour on each tab
                         $chTabTypeColors = $('#sett-box-tab-type-colors', $panel).parent().show().find('#sett-tab-type-colors');
                         $chTabTypeColors.prop('checked', !!appSettings.tabtypecolors)
+                            .off('change').on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+                    }
+
+                    if ( appSettings && appSettings.xdgportal !== undefined ) {
+                        // #2321: the desktop's own file dialog; Linux/X11 only
+                        $chXdgPortal = $('#sett-box-xdg-portal', $panel).parent().show().find('#sett-xdg-portal');
+                        $chXdgPortal.prop('checked', !!appSettings.xdgportal)
                             .off('change').on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });

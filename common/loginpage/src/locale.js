@@ -228,6 +228,7 @@ l10n.en = {
     settBtnFileAssoc: 'Make Ration Docs the default app for all supported files',
     settTabSwitchMru: 'Ctrl+Tab goes to the most recently used tab',
     settTabTypeColors: 'Colour tabs by document type',
+    settXdgPortal: 'Use the desktop\'s file dialog (portal)',
 }
 
 
