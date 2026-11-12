@@ -180,6 +180,7 @@ l10n.en = {
     settOptDisabled: 'Disabled',
     settOptEnabled: 'Enabled',
     aboutChangelog: 'Changelog',
+    aboutReportIssue: 'Report an issue',
     updateNoUpdates: 'App is up to date',
     updateAvialable: 'Version $1 is available. Click to download.',
     settOptThemeSystem: 'Same as system',
