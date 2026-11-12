@@ -137,6 +137,19 @@
         
         // Copyright
         [self.copyrightText setStringValue:locCopyright];
+
+        // #670: where to report a problem - our support page (SUPPORT_URL in
+        // package/Makefile), not ONLYOFFICE's tracker
+        NSButton * reportButton = [[NSButton alloc] initWithFrame:NSZeroRect];
+        [reportButton setBordered:NO];
+        [reportButton setTarget:self];
+        [reportButton setAction:@selector(onReportIssueClick:)];
+        NSMutableAttributedString * reportTitle = [[NSMutableAttributedString alloc] initWithString:NSLocalizedString(@"Report an issue", nil)
+                                                                                         attributes:@{NSForegroundColorAttributeName: [NSColor linkColor],
+                                                                                                      NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]]}];
+        [reportButton setAttributedTitle:reportTitle];
+        [reportButton sizeToFit];
+        [self.infoStackView addArrangedSubview:reportButton];
         
         // Window
         [self setTitle:[NSString stringWithFormat:NSLocalizedString(@"About %@", nil), locProductName]];
@@ -172,6 +185,10 @@
 #elif _ARM_ONLY
     [self.versionText setStringValue:[NSString stringWithFormat:@"%@ Apple Silicon", [self.versionText stringValue]]];
 #endif
+}
+
+- (void)onReportIssueClick:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://ration.works/support"]];
 }
 
 - (IBAction)onLicenseButtonClick:(id)sender {
