@@ -517,9 +517,13 @@
             let _cl_rcbox = this.view.$boxRecent,
                 _cl_rvbox = this.view.$boxRecovery;
 
+            // #1513: only the list's own body. #box-recent also holds the search
+            // history's .file-list-body (#idx-history-body); with find() every row
+            // was inserted into both, and a pinned row was placed into the hidden one
+            // only - it vanished from Recent, or showed twice after pinning.
             collectionRecents = new Collection({
                 view: _cl_rcbox,
-                list: _cl_rcbox.find('.file-list-body')
+                list: _cl_rcbox.children('.file-list-body')
             });
 
             collectionRecents.events.erased.attach(collection => {
