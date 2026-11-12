@@ -701,7 +701,14 @@ static NSString * const kASCTabsMulticastDelegateKey = @"asctabsmulticastDelegat
 
 - (void)otherMouseDown:(NSEvent *)event {
 //    [super otherMouseDown:event];
-    
+
+    // Only the middle button (#766). otherMouseDown is sent for every button but
+    // left and right, so the back/forward side buttons of a mouse closed tabs too.
+    if (event.buttonNumber != 2) {
+        [super otherMouseDown:event];
+        return;
+    }
+
     NSPoint dragPoint = [self.tabsView convertPoint:event.locationInWindow fromView:nil];
     for (ASCTabView * tab in self.tabs) {
         if (NSPointInRect(dragPoint, [tab frame])) {
