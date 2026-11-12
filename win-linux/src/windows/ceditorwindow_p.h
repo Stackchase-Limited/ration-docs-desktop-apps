@@ -261,7 +261,11 @@ public:
     auto centerTitle(double dpiRatio)->void
     {
         int left_btns = m_mapTitleButtons.size() != 0 ? m_mapTitleButtons.size() : leftBtnsCount;
-        int right_btns = 3;
+        int right_btns = 0;
+        for (auto *btn : window->m_pTopButtons) {
+            if (btn && !btn->isHidden())    // #1899: minimize/maximize may be hidden
+                right_btns++;
+        }
         int spacing = window->m_boxTitleBtns->layout()->spacing();
         int left_offset = left_btns*TOOLBTN_WIDTH + 3*spacing; // added extra spacing
         int right_offset = right_btns*(TITLEBTN_WIDTH + spacing);

@@ -215,6 +215,9 @@ void CMainWindowImpl::refreshAboutVersion()
     GET_REGISTRY_SYSTEM(reg_system);
     if ( !(reg_system.value("titlebar") == "custom") )
         _json_obj["titlebar"] = reg_user.value("titlebar") == "system" ? "system" : "custom";
+
+    // #1899: buttons of the built-in title bar
+    _json_obj["windowbuttons"] = reg_user.value("windowButtons") == "close" ? "close" : "all";
 #endif
 
 #ifndef __OS_WIN_XP

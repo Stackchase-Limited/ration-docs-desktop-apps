@@ -220,6 +220,9 @@ l10n.en = {
     settTitleBar: 'Title bar',
     settOptTitleBarCustom: 'Built-in',
     settOptTitleBarSystem: 'System (window manager)',
+    settWindowButtons: 'Window buttons',
+    settOptWindowButtonsAll: 'Minimize, maximize and close',
+    settOptWindowButtonsClose: 'Close only',
 }
 
 

@@ -2317,6 +2317,14 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
             if ( _titlebar == "system" || _titlebar == "custom" )
                 _reg_user.setValue("titlebar", _titlebar);
         }
+
+        // #1899: "Window buttons" - all three, or close only; read when a window
+        // builds its title bar, so it too takes effect on the next start
+        if ( objRoot.contains("windowbuttons") ) {
+            const QString _buttons = objRoot["windowbuttons"].toString();
+            if ( _buttons == "close" || _buttons == "all" )
+                _reg_user.setValue("windowButtons", _buttons);
+        }
 #endif
 
 #ifdef _UPDMODULE

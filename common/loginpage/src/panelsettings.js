@@ -268,6 +268,17 @@
                                                 </section>
                                             </div>
                                         </div>
+                                        <div class='settings-field' id="opts-window-buttons" style='display:none;'>
+                                            <label class='sett__caption' l10n>${_lang.settWindowButtons}</label><label class='sett__caption'> *</label>
+                                            <div class='sett--label-lift-top hbox'>
+                                                <section class='box-cmp-select'>
+                                                    <select class='combobox'>
+                                                        <option value='all' l10n>${_lang.settOptWindowButtonsAll}</option>
+                                                        <option value='close' l10n>${_lang.settOptWindowButtonsClose}</option>
+                                                    </select>
+                                                </section>
+                                            </div>
+                                        </div>
                                         <div class='settings-field' id="opts-spellcheck-mode" style='display:none;'>
                                             <label class='sett__caption' l10n>${_lang.settSpellcheckDetection}</label>
                                             <div class='sett--label-lift-top hbox'>
@@ -346,6 +357,7 @@
             $optsSpellcheckMode,
             $optsLaunchMode,
             $optsTitleBar,
+            $optsWindowButtons,
             $optsAutoupdateMode;
         let $chGpu,
             $chUseAI,
@@ -499,6 +511,17 @@
                     if ( appSettings.titlebar != _new_settings.titlebar ) {
                         _new_settings.restart = true;
                         appSettings.titlebar = _new_settings.titlebar;
+                    }
+                }
+
+                if ( $optsWindowButtons ) {
+                    // #1899: the built-in title bar's buttons are made with the window
+                    _new_settings.windowbuttons = $optsWindowButtons.val();
+                    $optsWindowButtons.selectpicker('refresh');
+
+                    if ( appSettings.windowbuttons != _new_settings.windowbuttons ) {
+                        _new_settings.restart = true;
+                        appSettings.windowbuttons = _new_settings.windowbuttons;
                     }
                 }
 
@@ -719,6 +742,16 @@
                         if ( appSettings.titlebar !== undefined ) {
                             ($optsTitleBar = ($('#opts-title-bar', $panel).show().find('select')))
                             .val(appSettings.titlebar)
+                            .selectpicker().on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+
+                            $('#caption-restart', $panel).show();
+                        }
+
+                        if ( appSettings.windowbuttons !== undefined ) {
+                            ($optsWindowButtons = ($('#opts-window-buttons', $panel).show().find('select')))
+                            .val(appSettings.windowbuttons)
                             .selectpicker().on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });

@@ -60,12 +60,16 @@ public:
         {
             is_custom_window_ = true;
         }
+        // #1899: GNOME and others show only a close button; the start page's
+        // "Window buttons" setting hides minimize/maximize from the built-in title bar
+        close_button_only_ = reg_user.value("windowButtons") == "close";
 #else
         is_custom_window_ = true;
 #endif
     }
 
     bool is_custom_window_ = false;
+    bool close_button_only_ = false;
 };
 
 
@@ -191,6 +195,8 @@ QWidget* CWindowBase::createTopPanel(QWidget *parent)
             QObject::connect(btn, &QPushButton::clicked, btn_methods[i]);
             m_pTopButtons.push_back(btn);
             layoutBtns->addWidget(btn);
+            if (pimpl->close_button_only_ && i != BtnType::Btn_Close)
+                btn->hide();
         }
     }
     return _boxTitleBtns;
