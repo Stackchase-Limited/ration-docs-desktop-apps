@@ -281,41 +281,31 @@ namespace AppOptions {
 }
 
 namespace Scaling {
+    // #2342: the start page offers 100-150% in 5% steps (105%, 110%, ...), then the
+    // quarter steps up to 300% and half steps up to 500% as before. The factor is
+    // written the way it always was ("1", "1.25", "2.5"), now also "1.05", "1.1", ...
     auto scalingToFactor(const QString& scaling) -> std::wstring
     {
-        switch ( scaling.toInt() ) {
-        case 100: return L"1";
-        case 125: return L"1.25";
-        case 150: return L"1.5";
-        case 175: return L"1.75";
-        case 200: return L"2";
-        case 225: return L"2.25";
-        case 250: return L"2.5";
-        case 275: return L"2.75";
-        case 300: return L"3";
-        case 350: return L"3.5";
-        case 400: return L"4";
-        case 450: return L"4.5";
-        case 500: return L"5";
-        default: return L"0";
+        const int s = scaling.toInt();
+        if ( (s >= 100 && s <= 150 && s % 5 == 0) ||
+                (s > 150 && s <= 300 && s % 25 == 0) ||
+                    (s > 300 && s <= 500 && s % 50 == 0) )
+        {
+            return QString::number(s / 100.0).toStdWString();
         }
+        return L"0";
     }
 
     auto factorToScaling(const std::wstring& value) -> QString
     {
-        return value == L"1" ? "100" :
-               value == L"1.25" ? "125" :
-               value == L"1.5" ? "150" :
-               value == L"1.75" ? "175" :
-               value == L"2" ? "200" :
-               value == L"2.25" ? "225" :
-               value == L"2.5" ? "250" :
-               value == L"2.75" ? "275" :
-               value == L"3" ? "300" :
-               value == L"3.5" ? "350" :
-               value == L"4" ? "400" :
-               value == L"4.5" ? "450" :
-               value == L"5" ? "500" : "0";
+        bool ok = false;
+        const double factor = QString::fromStdWString(value).toDouble(&ok);
+        if ( ok ) {
+            const QString scaling = QString::number(qRound(factor * 100));
+            if ( scalingToFactor(scaling) == value )
+                return scaling;
+        }
+        return "0";
     }
 }
 

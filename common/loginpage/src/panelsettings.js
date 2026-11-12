@@ -1143,7 +1143,8 @@
 
                 this.view.render();
 
-                const _scaling = [100, 125, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500];
+                // #2342: 5% steps up to 150%, for monitors where 125% is too big and 100% too small
+                const _scaling = [100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500];
                 let _scaling_items = '';
                 _scaling.forEach(val => _scaling_items += `<option value="${val}">${val}%</option>`);
                 $('#opts-ui-scaling .combobox', this.view.$panel).append($(_scaling_items));
