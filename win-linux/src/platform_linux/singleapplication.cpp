@@ -165,7 +165,9 @@ SingleApplication::SingleApplication(int &argc, char *argv[]) :
     if (m_socket->isPrimaryInstance()) {
         m_isPrimary = true;
         m_socket->onMessageReceived([=](void *buff, size_t size) {
-            QString data = QString::fromLocal8Bit((const char*)buff, size);
+            // the secondary sends _out_args.toUtf8() (main.cpp); decoding with the locale codec
+            // garbled non-ASCII paths when this instance runs under a non-UTF-8 locale (RD-0019)
+            QString data = QString::fromUtf8((const char*)buff, size);
             QMetaObject::invokeMethod(this, "invokeSignal", Qt::QueuedConnection, Q_ARG(QString, data));
         });
         setupSessionManagement(this);
