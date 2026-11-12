@@ -200,15 +200,17 @@
             // here rather than on `info`, which is read back elsewhere.
             const escName = escapeHtml(info.name);
             const escExt = escapeHtml(info.ext);
-            const escFullName = escapeHtml(fullName);
             const escDescr = escapeHtml(info.descr);
+            // #1952: the name's tooltip gives the whole path, so files with the same
+            // or a cut-off name in long folders can be told apart on hover.
+            const escFullPath = escapeHtml((info.type === 'folder' ? info.full : info.path) || fullName);
 
             // todo: crypted icon
 
             //language=HTML
             let _tpl = `
                 <div ${id} class="row text-normal">
-                    <div class="col-name" title="${escFullName}">
+                    <div class="col-name" title="${escFullPath}">
                         <div class="icon">
                             <svg class="icon" data-iconname="${info.type === 'folder' ? 'folder' : `${info.format}`}"
                                  data-precls="tool-icon">
@@ -852,6 +854,7 @@
                     uid: 'hist-' + utils.fn.uuid(),
                     name: row.name,
                     descr: row.descr,
+                    path: row.path,
                     date: row.date || '',
                     type: row.type,
                     format: row.format,
