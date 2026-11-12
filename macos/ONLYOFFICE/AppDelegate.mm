@@ -82,6 +82,7 @@
 @property (nonatomic, assign) BOOL terminationAlreadyHandled;
 @property (nonatomic, assign) BOOL hasFilesToOpenOnLaunch;
 @property (nonatomic, assign) BOOL terminationDialogPending;
+@property (nonatomic) NSMutableArray<NSString *> *closedDocumentPaths;
 @end
 
 @implementation AppDelegate
@@ -553,6 +554,8 @@
         return hasKeyWindow;
     } else if ([item action] == @selector(onMenuOpen:)) {
         return hasKeyWindow;
+    } else if ([item action] == @selector(onMenuReopenClosedTab:)) {
+        return hasKeyWindow && self.closedDocumentPaths.count > 0;
     } else if ([item action] == @selector(onMenuSave:)) {
         return keyWindowSupportsDocumentOperations;
     } else if ([item action] == @selector(onMenuSaveAs:)) {
@@ -627,6 +630,55 @@
                                                       userInfo:@{
                                                                  @"directory": directiry
                                                                  }];
+}
+
+// File > Reopen Closed Tab (Shift+Cmd+T, #1847). The local documents closed in this
+// session, newest last, each path once; nothing is kept across launches.
+- (void)rememberClosedDocument:(NSString *)path {
+    if (!path || ![path isAbsolutePath]) {
+        return;
+    }
+
+    if (!self.closedDocumentPaths) {
+        self.closedDocumentPaths = [NSMutableArray array];
+    }
+
+    [self.closedDocumentPaths removeObject:path];
+    [self.closedDocumentPaths addObject:path];
+
+    if (self.closedDocumentPaths.count > 20) {
+        [self.closedDocumentPaths removeObjectAtIndex:0];
+    }
+}
+
+// The most recently closed document that is still there, taken off the list;
+// entries whose file was deleted or moved meanwhile are dropped on the way.
+- (NSString *)takeClosedDocumentToReopen {
+    while (self.closedDocumentPaths.count > 0) {
+        NSString * path = [self.closedDocumentPaths lastObject];
+        [self.closedDocumentPaths removeLastObject];
+
+        BOOL isDirectory = NO;
+        if ([[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory) {
+            return path;
+        }
+    }
+
+    return nil;
+}
+
+- (IBAction)onMenuReopenClosedTab:(NSMenuItem *)sender {
+    NSString * path = [self takeClosedDocumentToReopen];
+
+    if (path) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:CEFEventNameCreateTab
+                                                            object:nil
+                                                          userInfo:@{
+                                                                     @"action"  : @(ASCTabActionOpenLocalFile),
+                                                                     @"path"    : path,
+                                                                     @"active"  : @(YES)
+                                                                     }];
+    }
 }
 
 - (IBAction)onMenuSave:(NSMenuItem *)sender {

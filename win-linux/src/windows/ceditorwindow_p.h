@@ -639,6 +639,7 @@ public:
 
     void onEditorAllowedClose(int) override
     {
+        AscAppManager::rememberClosedDocument(m_panel->data());
         AscAppManager::closeEditorWindow(size_t(window));
 
         CInAppEventBase _event{CInAppEventBase::CEventType::etEditorClosed};

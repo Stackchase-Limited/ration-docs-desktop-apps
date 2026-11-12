@@ -607,6 +607,8 @@ void CMainWindow::onEditorAllowedClose(int uid)
     } else {
         int _index = m_pTabs->tabIndexByView(uid);
         if ( !(_index < 0) ) {
+            AscAppManager::rememberClosedDocument(m_pTabs->panel(_index)->data());
+
             QWidget * _view = m_pTabs->widget(_index);
             m_pTabs->removeWidget(_view);
             _view->deleteLater();

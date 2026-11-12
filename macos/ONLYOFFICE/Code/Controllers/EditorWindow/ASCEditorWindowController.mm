@@ -136,6 +136,8 @@
     
     NSCefView *cefView = (NSCefView *)window.webView;
     if (cefView) {
+        [(AppDelegate *)[NSApp delegate] rememberClosedDocument:cefView.data.path];
+
         CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
         appManager->DestroyCefView((int)cefView.uuid);
         [cefView internalClean];

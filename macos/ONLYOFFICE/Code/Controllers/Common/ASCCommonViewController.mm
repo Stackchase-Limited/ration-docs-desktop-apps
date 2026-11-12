@@ -1476,6 +1476,8 @@
     BOOL isDetached = [tab.params[@"detached"] boolValue];
 
     if (!isDetached) {
+        [(AppDelegate *)[NSApp delegate] rememberClosedDocument:tab.params[@"path"]];
+
         CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
         appManager->DestroyCefView([tab.uuid intValue]);
 

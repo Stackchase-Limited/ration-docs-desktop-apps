@@ -49,6 +49,7 @@
 - (void)safeCloseEditorWindows;
 - (void)presentMainWindow;
 - (void)dragDetachedTab:(NSView *)cefView atScreenPoint:(NSPoint)screenPoint withEvent:(NSEvent *)event;
+- (void)rememberClosedDocument:(NSString *)path;
 
 @property (nonatomic) BOOL waitingForTerminateApp;
 @property (nonatomic) NSWindowController *mainWindowController;

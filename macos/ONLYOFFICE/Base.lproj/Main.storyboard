@@ -116,6 +116,11 @@
                                                 </items>
                                             </menu>
                                         </menuItem>
+                                        <menuItem title="Reopen Closed Tab" keyEquivalent="T" id="rCT-Rd-Tab">
+                                            <connections>
+                                                <action selector="onMenuReopenClosedTab:" target="Voe-Tx-rLC" id="rCT-Ac-Tab"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="m54-Is-iLE"/>
                                         <menuItem title="Close" keyEquivalent="w" id="DVo-aG-piG">
                                             <connections>

@@ -956,6 +956,14 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
             }
             break;
 #endif
+        case 0x54:  // Key_T
+            if ( data->get_IsCtrl() && data->get_IsShift() && !data->get_IsAlt() ) {
+                QTimer::singleShot(0, this, [] {
+                    reopenClosedDocument();
+                });
+                return true;
+            }
+            break;
         default:
             break;
         }
@@ -1105,6 +1113,42 @@ static bool isGoogleNativeDocumentUrl(const std::wstring& url)
             return true;
     }
     return false;
+}
+
+// Ctrl+Shift+T reopens the most recently closed document (#1847): the local
+// documents closed in this session, newest last, each path once. Nothing is
+// kept across launches.
+static std::vector<std::wstring> g_closedDocuments;
+
+void CAscApplicationManagerWrapper::rememberClosedDocument(const CAscTabData * data)
+{
+    if ( !data || !data->isLocal() || data->url().empty() )
+        return;
+
+    const std::wstring path = data->url();
+    if ( !QFileInfo(QString::fromStdWString(path)).isAbsolute() )
+        return;
+
+    g_closedDocuments.erase(std::remove(g_closedDocuments.begin(), g_closedDocuments.end(), path), g_closedDocuments.end());
+    g_closedDocuments.push_back(path);
+
+    if ( g_closedDocuments.size() > 20 )
+        g_closedDocuments.erase(g_closedDocuments.begin());
+}
+
+void CAscApplicationManagerWrapper::reopenClosedDocument()
+{
+    // a document deleted or moved since it was closed is skipped, not recreated:
+    // handleInputCmd() would open a missing path as a new blank document
+    while ( !g_closedDocuments.empty() ) {
+        const std::wstring path = g_closedDocuments.back();
+        g_closedDocuments.pop_back();
+
+        if ( QFileInfo(QString::fromStdWString(path)).isFile() ) {
+            handleInputCmd({path});
+            return;
+        }
+    }
 }
 
 void CAscApplicationManagerWrapper::handleInputCmd(const std::vector<wstring>& vargs_in)
