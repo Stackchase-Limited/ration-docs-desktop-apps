@@ -212,6 +212,10 @@
                      @"description" : NSLocalizedString(@"Tab-Separated Values", nil),
                      @"extension"   : @"tsv"
                      },
+             @(AVS_OFFICESTUDIO_FILE_SPREADSHEET_SCSV): @{
+                     @"description" : NSLocalizedString(@"Semicolon-Separated Values", nil),
+                     @"extension"   : @"csv"
+                     },
              @(AVS_OFFICESTUDIO_FILE_SPREADSHEET_XLTX): @{
                      @"description" : NSLocalizedString(@"Spreadsheet template", nil),
                      @"extension"   : @"xltx"
