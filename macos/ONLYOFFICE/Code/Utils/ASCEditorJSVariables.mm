@@ -91,6 +91,13 @@
 
         [self setParameter:@"lang" withString:[ASCLinguist appLanguageCode]];
 
+        // #432: country of the Region setting, as the Windows/Linux apps send it; the editors take
+        // their default unit (inch for US/CA) and margin presets from it, not from the interface language
+        NSString * country = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
+        if ( country.length ) {
+            [self setParameter:@"location" withString:country];
+        }
+
         NSMutableDictionary * keybLangs = [NSMutableDictionary dictionary];
         [keybLangs setObject:[ASCLinguist keyboardLanguages] forKey:@"langs"];
         [_jsVariables setObject:keybLangs forKey:@"keyboard"];
