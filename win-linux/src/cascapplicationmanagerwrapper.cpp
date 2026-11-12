@@ -2351,6 +2351,11 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
             setUserSettings(L"tab-type-colors", objRoot["tabtypecolors"].toBool(false) ? L"1" : L"0");
         }
 
+        if ( objRoot.contains("removebuiltinplugins") ) {
+            // #2466: plugins installed with the app may be removed (desktop-sdk plugins.h); after restart
+            setUserSettings(L"plugins-hide-builtin", objRoot["removebuiltinplugins"].toBool(false) ? L"1" : L"0");
+        }
+
 #ifdef _UPDMODULE
         if ( objRoot.contains("autoupdatemode") ) {
             if (m_pUpdateManager)

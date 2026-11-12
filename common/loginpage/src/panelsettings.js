@@ -327,6 +327,12 @@
                                             </section>
                                         </div>
                                         <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-builtin-plugins'>
+                                                <input type="checkbox" class="checkbox" id="sett-builtin-plugins">
+                                                <label for="sett-builtin-plugins" class='sett__caption' l10n>${_lang.settRemoveBuiltinPlugins} *</label>
+                                            </section>
+                                        </div>
+                                        <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-xdg-portal'>
                                                 <input type="checkbox" class="checkbox" id="sett-xdg-portal">
                                                 <label for="sett-xdg-portal" class='sett__caption' l10n>${_lang.settXdgPortal}</label>
@@ -388,6 +394,7 @@
             $chKeepRecents,
             $chTabMru,
             $chTabTypeColors,
+            $chBuiltinPlugins,
             $chXdgPortal;
         let appSettings;
 
@@ -596,6 +603,16 @@
 
                 if ( $chTabTypeColors ) {
                     _new_settings.tabtypecolors = $chTabTypeColors.prop("checked");
+                }
+
+                if ( $chBuiltinPlugins ) {
+                    // #2466: the editors read it when they start
+                    _new_settings.removebuiltinplugins = $chBuiltinPlugins.prop("checked");
+
+                    if ( appSettings.removebuiltinplugins != _new_settings.removebuiltinplugins ) {
+                        _new_settings.restart = true;
+                        appSettings.removebuiltinplugins = _new_settings.removebuiltinplugins;
+                    }
                 }
 
                 if ( $chXdgPortal ) {
@@ -873,6 +890,16 @@
                             .off('change').on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });
+                    }
+
+                    if ( appSettings && appSettings.removebuiltinplugins !== undefined ) {
+                        // #2466: plugins installed with the app can be removed (and restored) in the Plugin Manager
+                        $chBuiltinPlugins = $('#sett-box-builtin-plugins', $panel).parent().show().find('#sett-builtin-plugins');
+                        $chBuiltinPlugins.prop('checked', !!appSettings.removebuiltinplugins)
+                            .off('change').on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+                        $('#caption-restart', $panel).show();
                     }
 
                     if ( appSettings && appSettings.xdgportal !== undefined ) {

@@ -757,6 +757,12 @@ public:
                                     }
                                 }
 
+                                if ( [json objectForKey:@"removebuiltinplugins"] != nil ) {
+                                    // #2466: plugins installed with the app may be removed (desktop-sdk plugins.h); after restart
+                                    CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+                                    appManager->GetUserSettings()->Set(L"plugins-hide-builtin", [json[@"removebuiltinplugins"] boolValue] ? L"1" : L"0");
+                                }
+
                                 if ( [json objectForKey:@"editorwindowmode"] != nil ) {
                                     CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
                                     appManager->GetUserSettings()->Set(L"editor-window-mode", [json[@"editorwindowmode"] boolValue] ? L"1" : L"0");
