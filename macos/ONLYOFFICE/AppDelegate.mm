@@ -71,7 +71,7 @@
     #import "PFMoveApplication.h"
 #endif
 
-@interface AppDelegate () {
+@interface AppDelegate () <NSMenuDelegate> {
     ASCPrinterContext * m_pContext;
     NSTimer *dropTimer;
     NSPoint lastCursorPos;
@@ -83,6 +83,7 @@
 @property (nonatomic, assign) BOOL hasFilesToOpenOnLaunch;
 @property (nonatomic, assign) BOOL terminationDialogPending;
 @property (nonatomic) NSMutableArray<NSString *> *closedDocumentPaths;
+@property (weak) IBOutlet NSMenu *openRecentMenu;
 @end
 
 @implementation AppDelegate
@@ -554,6 +555,8 @@
         return hasKeyWindow;
     } else if ([item action] == @selector(onMenuOpen:)) {
         return hasKeyWindow;
+    } else if ([item action] == @selector(onMenuOpenRecent:)) {
+        return YES;
     } else if ([item action] == @selector(onMenuReopenClosedTab:)) {
         return hasKeyWindow && self.closedDocumentPaths.count > 0;
     } else if ([item action] == @selector(onMenuSave:)) {
@@ -671,6 +674,94 @@
     NSString * path = [self takeClosedDocumentToReopen];
 
     if (path) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:CEFEventNameCreateTab
+                                                            object:nil
+                                                          userInfo:@{
+                                                                     @"action"  : @(ASCTabActionOpenLocalFile),
+                                                                     @"path"    : path,
+                                                                     @"active"  : @(YES)
+                                                                     }];
+    }
+}
+
+// File > Open Recent (#69). The submenu was hidden: it was AppKit's recent-documents
+// menu, which only lists what NSDocumentController is told about, and nothing told it.
+// It now lists the local documents of the start page's Recent list, newest first - the
+// library keeps that list in recents.xml beside the recovery folder and rewrites the
+// file on every change. Documents that no longer exist and cloud entries are left out.
+- (NSArray<NSString *> *)recentLocalDocuments:(NSUInteger)limit {
+    NSString * xmlPath = [[[ASCHelper recoveryDataPath] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"recents.xml"];
+    NSData * data = [NSData dataWithContentsOfFile:xmlPath];
+    NSMutableArray<NSString *> * paths = [NSMutableArray array];
+
+    if (data) {
+        NSXMLDocument * xml = [[NSXMLDocument alloc] initWithData:data options:0 error:nil];
+
+        for (NSXMLElement * file in [xml nodesForXPath:@"/recents/file" error:nil]) {
+            NSString * path = [[file attributeForName:@"path"] stringValue];
+            NSString * url = [[file attributeForName:@"url"] stringValue];
+            BOOL isDirectory = NO;
+
+            if (path && [path isAbsolutePath] && url.length == 0 && ![paths containsObject:path] &&
+                [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory)
+            {
+                [paths addObject:path];
+
+                if (paths.count == limit) {
+                    break;
+                }
+            }
+        }
+    }
+
+    return paths;
+}
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+    if (menu != self.openRecentMenu) {
+        return;
+    }
+
+    [menu removeAllItems];
+
+    NSArray<NSString *> * paths = [self recentLocalDocuments:10];
+    NSCountedSet * names = [NSCountedSet set];
+    for (NSString * path in paths) {
+        [names addObject:[[NSFileManager defaultManager] displayNameAtPath:path]];
+    }
+
+    for (NSString * path in paths) {
+        NSString * title = [[NSFileManager defaultManager] displayNameAtPath:path];
+
+        // two documents of the same name: say which folder each one is in, as Finder's menus do
+        if ([names countForObject:title] > 1) {
+            title = [NSString stringWithFormat:@"%@ \u2014 %@", title, [[NSFileManager defaultManager] displayNameAtPath:[path stringByDeletingLastPathComponent]]];
+        }
+
+        NSMenuItem * item = [[NSMenuItem alloc] initWithTitle:title action:@selector(onMenuOpenRecent:) keyEquivalent:@""];
+        item.target = self;
+        item.representedObject = path;
+        item.toolTip = path;
+
+        NSImage * icon = [[[NSWorkspace sharedWorkspace] iconForFile:path] copy];
+        icon.size = NSMakeSize(16, 16);
+        item.image = icon;
+
+        [menu addItem:item];
+    }
+
+    if (paths.count == 0) {
+        NSMenuItem * item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Recent Documents", nil) action:nil keyEquivalent:@""];
+        item.enabled = NO;
+        [menu addItem:item];
+    }
+}
+
+- (IBAction)onMenuOpenRecent:(NSMenuItem *)sender {
+    NSString * path = sender.representedObject;
+
+    if ([path isKindOfClass:[NSString class]]) {
+        // the same request as opening the file from Finder: an open copy is brought to the front
         [[NSNotificationCenter defaultCenter] postNotificationName:CEFEventNameCreateTab
                                                             object:nil
                                                           userInfo:@{
