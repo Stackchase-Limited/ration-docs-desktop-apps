@@ -137,8 +137,16 @@
 - (void)applyParameters {
     NSMutableString * str = [[NSMutableString alloc] init];
 
+    // #1829: the editors read these with decodeURIComponent, as Windows/Linux send them.
+    // Raw, a user name cut itself short at '&' or '#', turned '+' into a space, and a '%'
+    // stopped every editor from loading (URIError while parsing the page address).
+    NSCharacterSet * unreserved = [NSCharacterSet characterSetWithCharactersInString:
+        @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"];
+
     for(id key in _urlParams)
-        [str appendFormat:@"%@=%@&", key, [_urlParams objectForKey:key]];
+        [str appendFormat:@"%@=%@&",
+            [[key description] stringByAddingPercentEncodingWithAllowedCharacters:unreserved],
+            [[[_urlParams objectForKey:key] description] stringByAddingPercentEncodingWithAllowedCharacters:unreserved]];
 
     if ( [str hasSuffix:@"&"] )
         [str deleteCharactersInRange:NSMakeRange([str length] - 1, 1)];

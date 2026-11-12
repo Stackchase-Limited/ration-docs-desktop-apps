@@ -394,8 +394,12 @@
             *  we use chrome ver 49 on win xp,
             *  that version has no support for unicode in regexp
             */
+            /* #1829: the comma is allowed for "Lastname, Firstname", the form Word and
+            *  most directories put on comments and tracked changes, and the typographic
+            *  apostrophe for names like O’Brien typed with smart quotes
+            */
             if (window.utils.inParams.osver == 'winxp' || /windows nt 5/i.test(navigator.appVersion)) return true;
-            else return (new RegExp('^[\\p{L}\\p{M}\\p{N}\'"«»()_+=&^%$#@!~*\\/.\\- ]+$', 'iu')).test(name)
+            else return (new RegExp('^[\\p{L}\\p{M}\\p{N}\'’"«»()_+=&^%$#@!~*\\/.,\\- ]+$', 'iu')).test(name)
         };
 
         function _on_btn_apply(e) {
