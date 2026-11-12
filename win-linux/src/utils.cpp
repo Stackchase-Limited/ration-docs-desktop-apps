@@ -262,7 +262,13 @@ namespace EditorJSVariables {
 
 namespace AppOptions {
     auto packageType() -> AppPackageType {
-        QString _package = QSettings("./converter/package.config", QSettings::IniFormat).value("package").toString();
+        /* #2404: package.config is written by the installers (exe/msi/deb/rpm) and absent from the
+           portable ZIP, which is how a ZIP knows it is one. It was looked up relative to the current
+           directory, so an installed copy started from elsewhere - a document opened from Explorer,
+           a shortcut with another "Start in" - read nothing and took itself for the portable ZIP:
+           no file association prompt, and the portable updater. Read it beside the executable. */
+        QString _package = QSettings(QString::fromStdWString(NSFile::GetProcessDirectory()) + "/converter/package.config",
+                                     QSettings::IniFormat).value("package").toString();
 
         if ( _package == "exe" ) return AppPackageType::ISS; else
         if ( _package == "msi" ) return AppPackageType::MSI; else
