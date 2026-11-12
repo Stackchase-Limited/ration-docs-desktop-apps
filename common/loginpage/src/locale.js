@@ -215,6 +215,7 @@ l10n.en = {
     labelDropFile: 'Drag your files here or',
     labelSelectFile: 'Select file',
     settUseAI: 'Use AI functions',
+    settKeepRecents: 'Keep a list of recent files',
 }
 
 

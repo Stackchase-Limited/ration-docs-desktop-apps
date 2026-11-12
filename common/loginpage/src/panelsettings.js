@@ -280,6 +280,12 @@
                                                 <label for="sett-use-ai" class='sett__caption' l10n>${_lang.settUseAI} *</label>
                                             </section>
                                         </div>
+                                        <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-keep-recents'>
+                                                <input type="checkbox" class="checkbox" id="sett-keep-recents">
+                                                <label for="sett-keep-recents" class='sett__caption' l10n>${_lang.settKeepRecents}</label>
+                                            </section>
+                                        </div>
                                         <!-- temporary elements section -->
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-preview-mode'>
@@ -330,7 +336,8 @@
             $optsLaunchMode,
             $optsAutoupdateMode;
         let $chGpu,
-            $chUseAI;
+            $chUseAI,
+            $chKeepRecents;
         let appSettings;
 
         function _set_user_name(name) {
@@ -498,6 +505,16 @@
                         _new_settings.restart = true;
                         appSettings.useai = _new_settings.useai;
                     }
+                }
+
+                if ( $chKeepRecents ) {
+                    _new_settings.keeprecents = $chKeepRecents.prop("checked");
+
+                    // #1594: turning the list off also forgets what it already holds;
+                    // the app stops adding to it once it has the setting below
+                    if ( appSettings.keeprecents && !_new_settings.keeprecents )
+                        sdk.LocalFileRemoveAllRecents();
+                    appSettings.keeprecents = _new_settings.keeprecents;
                 }
 
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
@@ -723,6 +740,14 @@
                                     $btnApply.isdisabled() && $btnApply.disable(false);
                                 });
                         }
+                    }
+
+                    if ( appSettings && appSettings.keeprecents !== undefined ) {
+                        $chKeepRecents = $('#sett-box-keep-recents', $panel).parent().show().find('#sett-keep-recents');
+                        $chKeepRecents.prop('checked', !!appSettings.keeprecents)
+                            .on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
                     }
 
                     if ( appSettings.rtl !== undefined ) {

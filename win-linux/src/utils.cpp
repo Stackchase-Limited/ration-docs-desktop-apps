@@ -798,6 +798,11 @@ bool Utils::updatesAllowed()
 
 void Utils::addToRecent(const std::wstring &path)
 {
+    // #1594: with the start page's recent files list off, don't hand the file
+    // to the system's recent documents (jump list, GTK recent files) either
+    if ( AscAppManager::userSettings(L"disable-recents") == L"1" )
+        return;
+
 #ifdef _WIN32
     std::wstring _path(path);
     std::replace(_path.begin(), _path.end(), '/', '\\');
