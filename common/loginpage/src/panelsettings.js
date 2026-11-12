@@ -308,6 +308,12 @@
                                                 <label for="sett-keep-recents" class='sett__caption' l10n>${_lang.settKeepRecents}</label>
                                             </section>
                                         </div>
+                                        <div class='settings-field' id='sett-box-file-assoc' style='display:none;'>
+                                            <label class='sett__caption' l10n>${_lang.settFileAssoc}</label>
+                                            <div class='sett--label-lift-top hbox'>
+                                                <button class="btn btn--landing" id="sett-btn-file-assoc" l10n>${_lang.settBtnFileAssoc}</button>
+                                            </div>
+                                        </div>
                                         <!-- temporary elements section -->
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-preview-mode'>
@@ -806,6 +812,14 @@
                                     $btnApply.isdisabled() && $btnApply.disable(false);
                                 });
                         }
+                    }
+
+                    if ( appSettings && appSettings.fileassoc ) {
+                        // #1177: hand every supported file type back to the app (Windows)
+                        $('#sett-box-file-assoc', $panel).show().find('#sett-btn-file-assoc')
+                            .off('click').on('click', e => {
+                                sdk.command("settings:fileassoc", "");
+                            });
                     }
 
                     if ( appSettings && appSettings.keeprecents !== undefined ) {

@@ -45,6 +45,7 @@ public:
     static Association& instance();
 
     void chekForAssociations(int uid);    
+    void associateAll();
 
 private:
     Association();

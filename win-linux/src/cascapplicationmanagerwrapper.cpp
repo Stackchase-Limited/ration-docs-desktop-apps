@@ -418,6 +418,12 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
                 sendCommandTo(SEND_TO_ALL_START_PAGE, "panel:hide", "connect");
         } else
         if ( cmd.compare(0, 8, L"settings") == 0 ) {
+#ifdef _WIN32
+            if ( cmd.compare(L"settings:fileassoc") == 0 ) {
+                // #1177: the start page's "Make Ration Docs the default app" button
+                Association::instance().associateAll();
+            } else
+#endif
             if ( cmd.rfind(L"apply") != wstring::npos ) {
                 applySettings(pData->get_Param());
             } else

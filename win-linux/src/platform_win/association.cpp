@@ -414,6 +414,20 @@ Association& Association::instance()
     return inst;
 }
 
+/* #1177: Settings > "Make Ration Docs the default app" - the user asks for every
+   type the installer registered (Capabilities\FileAssociations) to open here again,
+   e.g. after another program took them over. Same path as a Yes to the startup
+   prompt, for all of them at once, and regardless of "Do not show this message
+   again", which is about the prompt, not about this explicit request. */
+void Association::associateAll()
+{
+    std::vector<std::wstring> exts;
+    for (const auto &it : pimpl->m_extMap)
+        exts.push_back(it.first);
+    if (!exts.empty())
+        pimpl->associate(exts);
+}
+
 void Association::chekForAssociations(int uid)
 {
     if (pimpl->m_ignoreAssocMsg || (time(nullptr) - pimpl->m_lastCheck) < DAY_TO_SEC)

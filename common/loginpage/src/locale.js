@@ -224,6 +224,8 @@ l10n.en = {
     settWindowButtons: 'Window buttons',
     settOptWindowButtonsAll: 'Minimize, maximize and close',
     settOptWindowButtonsClose: 'Close only',
+    settFileAssoc: 'File types',
+    settBtnFileAssoc: 'Make Ration Docs the default app for all supported files',
 }
 
 

@@ -208,6 +208,11 @@ void CMainWindowImpl::refreshAboutVersion()
     _json_obj["usegpu"] = !(AscAppManager::userSettings(L"disable-gpu") == L"1");
     _json_obj["useai"] = !(AscAppManager::userSettings(L"disable-ai") == L"1");
     _json_obj["keeprecents"] = !(AscAppManager::userSettings(L"disable-recents") == L"1");
+#ifdef _WIN32
+    // #1177: offer to take the file types back; a portable copy registers none
+    if ( !IsPackage(Portable) )
+        _json_obj["fileassoc"] = true;
+#endif
 
 #ifdef Q_OS_LINUX
     // #2504: the title bar --system-title-bar/--custom-title-bar pick, offered unless
