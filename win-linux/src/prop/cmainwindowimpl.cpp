@@ -49,6 +49,33 @@
 #define DEFAULT_LICENSE_URL     URL_AGPL
 #define LICENSE_FILE_NAME       "/EULA.txt"
 
+// The package kind About shows beside the version: package.config, written by the
+// deb/rpm/exe/msi packaging. Flatpak, Snap and AppImage builds are usually made
+// from the .deb, so their copy says "deb"; on Linux the sandbox the app runs in
+// is asked first (#669). Only markers of the app's own sandbox count, not
+// variables a parent process could pass on.
+static QString aboutPackageType()
+{
+#ifdef __linux__
+    const QString app_dir = qApp->applicationDirPath();
+    auto _app_is_under = [&app_dir](const QString& dir) {
+        return !dir.isEmpty() && (app_dir == dir || app_dir.startsWith(dir + "/"));
+    };
+
+    if ( QFileInfo::exists("/.flatpak-info") )
+        return "flatpak";
+
+    const QString snap_dir = QString::fromLocal8Bit(qgetenv("SNAP"));
+    if ( _app_is_under(snap_dir) )
+        return "snap";
+
+    const QString appimage_dir = QString::fromLocal8Bit(qgetenv("APPDIR"));
+    if ( !qEnvironmentVariableIsEmpty("APPIMAGE") && _app_is_under(appimage_dir) )
+        return "AppImage";
+#endif
+    return QSettings(qApp->applicationDirPath() + "/converter/package.config", QSettings::IniFormat).value("package").toString();
+}
+
 CMainWindowImpl::CMainWindowImpl(const QRect &rect) :
     CMainWindow(rect)
 {
@@ -152,7 +179,7 @@ void CMainWindowImpl::refreshAboutVersion()
     _json_obj["link"]       = URL_SITE;
 //    _json_obj["changelog"]  = "https://github.com/ONLYOFFICE/DesktopEditors/blob/master/CHANGELOG.md";
 
-    QString _package = QSettings(qApp->applicationDirPath() + "/converter/package.config", QSettings::IniFormat).value("package").toString();
+    QString _package = aboutPackageType();
     if ( !_package.isEmpty() )
         _json_obj["pkg"] = _package;
 
