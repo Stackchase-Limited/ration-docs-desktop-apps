@@ -55,6 +55,12 @@
 #include <QDir>
 #include <QRegularExpression>
 #include <cstdio>
+#ifdef __linux
+# include <vector>
+# include <QDBusConnection>
+# include <QDBusMessage>
+# include <QDBusVariant>
+#endif
 
 /* #2523: a second instance hands its arguments to the running one, which resolved a
    relative path against ITS OWN working directory - "onlyoffice-desktopeditors ../doc.docx"
@@ -75,6 +81,51 @@ static QString forwardablePath(const QString& arg)
     return QDir::toNativeSeparators(abs_path);
 }
 
+
+#ifdef __linux
+/* #1828: Orca saw nothing of the editors on Linux. Chromium keeps a page's accessibility
+   tree off until the embedder enables it (CefBrowserHost::SetAccessibilityState, or the
+   --force-renderer-accessibility switch), and on Linux it registers its ATK root with
+   AT-SPI only when the environment says so: ACCESSIBILITY_ENABLED, GNOME_ACCESSIBILITY
+   or QT_ACCESSIBILITY = 1, read once at start-up (atk_util_auralinux.cc). Neither
+   happened. macOS asks the application instead (#1872); here we ask the session.
+
+   When the AT-SPI bus reports a running screen reader (org.a11y.Status
+   ScreenReaderEnabled, the flag GNOME and KDE set for Orca), or the user passed
+   --force-renderer-accessibility, set ACCESSIBILITY_ENABLED=1 and make sure CEF gets the
+   switch. Nothing changes for anyone else: no screen reader and no switch, no change.
+   The bus is only asked, never started. A screen reader started after the editors needs
+   a restart of the editors - Chromium reads the environment once. */
+static bool screenReaderEnabled()
+{
+    QDBusConnection conn = QDBusConnection::sessionBus();
+    if ( !conn.isConnected() )
+        return false;
+
+    QDBusMessage msg = QDBusMessage::createMethodCall("org.a11y.Bus", "/org/a11y/bus",
+                                    "org.freedesktop.DBus.Properties", "Get");
+    msg << QString("org.a11y.Status") << QString("ScreenReaderEnabled");
+    msg.setAutoStartService(false);
+    QDBusMessage reply = conn.call(msg, QDBus::Block, 1000);
+    if ( reply.type() == QDBusMessage::ReplyMessage && reply.arguments().size() > 0 ) {
+        QVariant var = reply.arguments().at(0);
+        if ( var.canConvert<QDBusVariant>() )
+            return var.value<QDBusVariant>().variant().toBool();
+    }
+    return false;
+}
+
+static void prepareAccessibility(std::vector<char*>& cef_args)
+{
+    static char force_switch[] = "--force-renderer-accessibility";
+    const bool by_user = InputArgs::contains(L"--force-renderer-accessibility");
+    if ( by_user || screenReaderEnabled() ) {
+        qputenv("ACCESSIBILITY_ENABLED", "1");
+        if ( !by_user )
+            cef_args.insert(cef_args.end() - 1, force_switch);
+    }
+}
+#endif
 
 int main( int argc, char *argv[] )
 {
@@ -296,7 +347,15 @@ int main( int argc, char *argv[] )
     CApplicationCEF::Prepare(argc, argv);
     CApplicationCEF* application_cef = new CApplicationCEF();
     setup_paths(&AscAppManager::getInstance());
+#ifdef __linux
+    /* #1828: argv as given, plus the accessibility switch when a screen reader runs */
+    std::vector<char*> cef_args(argv, argv + argc);
+    cef_args.push_back(nullptr);
+    prepareAccessibility(cef_args);
+    application_cef->Init_CEF(&AscAppManager::getInstance(), int(cef_args.size()) - 1, cef_args.data());
+#else
     application_cef->Init_CEF(&AscAppManager::getInstance(), argc, argv);
+#endif
     /* ********************** */
 
 //    GET_REGISTRY_SYSTEM(reg_system)
