@@ -95,6 +95,8 @@ private:
     }
 
     bool postMsg(DWORD cmd) {
+        if (window()->isFullScreen())   // #858: a full screen window (F11) is not moved or resized from its title bar
+            return false;
         POINT pt;
         ::GetCursorPos(&pt);
         QPoint pos = mapFromGlobal(QPoint(int(pt.x), int(pt.y)));

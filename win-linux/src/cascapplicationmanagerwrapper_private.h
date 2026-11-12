@@ -50,6 +50,7 @@
 #include "common/File.h"
 #include <QApplication>
 #include <QJsonParseError>
+#include <QTimer>
 #ifdef _WIN32
 # define APP_LAUNCH_NAME "\\" REG_APP_NAME ".exe"
 # define RESTART_BATCH "/apprestart.bat"
@@ -224,6 +225,32 @@ public:
         ns_event->m_pData = pData;
         ns_event->m_nSenderId = id;
         m_appmanager.OnEvent(ns_event);
+        return true;
+    }
+
+    // #858: F11 puts the whole window that holds the view - tabs and title bar included -
+    // in full screen and back, as F11 does in browsers; Esc is left to the editors.
+    // A slide show has its own full screen widget (onFullScreen) and is left alone.
+    // Toggling the flag keeps a maximized window maximized when it leaves full screen.
+    auto toggleWindowFullScreen(int id) -> bool {
+        CWindowBase * window = nullptr;
+        if ( CEditorWindow * editor = m_appmanager.editorWindowFromViewId(id) ) {
+            if ( !editor->isSlideshowMode() )
+                window = editor;
+        } else
+        if ( mainWindow() && mainWindow()->holdView(id) ) {
+            if ( !mainWindow()->isSlideshowMode() )
+                window = mainWindow();
+        }
+
+        if ( !window || !window->isVisible() || window->isMinimized() )
+            return false;
+
+        QPointer<CWindowBase> target(window);
+        QTimer::singleShot(0, [target] {
+            if ( target )
+                target->setWindowState(target->windowState() ^ Qt::WindowFullScreen);
+        });
         return true;
     }
 

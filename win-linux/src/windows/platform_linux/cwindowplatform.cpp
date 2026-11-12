@@ -109,7 +109,8 @@ void CWindowPlatform::setWindowColors(const QColor& background, const QColor& bo
 
 void CWindowPlatform::adjustGeometry()
 {
-    int border = (CX11Decoration::isDecorated() || isMaximized()) ? 0 : qRound(CX11Decoration::customWindowBorderWith() * m_dpiRatio);
+    // #858: no resize border around a full screen window (F11)
+    int border = (CX11Decoration::isDecorated() || isMaximized() || isFullScreen()) ? 0 : qRound(CX11Decoration::customWindowBorderWith() * m_dpiRatio);
     setContentsMargins(border, border, border, border);
 }
 
@@ -222,7 +223,8 @@ void CWindowPlatform::paintEvent(QPaintEvent *event)
 
 void CWindowPlatform::mouseMoveEvent(QMouseEvent *e)
 {
-    if (!property("blocked").toBool())
+    // #858: a full screen window is not dragged by its title bar
+    if (!property("blocked").toBool() && !isFullScreen())
         CX11Decoration::dispatchMouseMove(e);
 }
 

@@ -313,7 +313,7 @@ void CWindowPlatform::setWindowColors(const QColor& background, const QColor& bo
 void CWindowPlatform::adjustGeometry()
 {
     QMargins mrg;
-    if (!m_borderless) {
+    if (!m_borderless || isFullScreen()) {  // #858: no border around a full screen window (F11)
         setContentsMargins(mrg);
         return;
     }
@@ -452,7 +452,10 @@ bool CWindowPlatform::nativeEvent(const QByteArray &eventType, void *message, lo
     }
 
     case WM_NCCALCSIZE: {
-        if (!m_borderless || !msg->wParam)
+        // #858: in full screen Qt gives the window a popup style without a frame, so the
+        // client area is the whole screen as it is; taking the caption off again would
+        // push the tab bar above the top of the screen
+        if (!m_borderless || !msg->wParam || isFullScreen())
             break;
         NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS*)msg->lParam;
         if (!m_isThemeActive) {
@@ -470,7 +473,7 @@ bool CWindowPlatform::nativeEvent(const QByteArray &eventType, void *message, lo
     }
 
     case WM_NCHITTEST: {
-        if (m_borderless && m_isResizeable) {
+        if (m_borderless && m_isResizeable && !isFullScreen()) {
             *result = 0;
             RECT rect;
             GetWindowRect(msg->hwnd, &rect);

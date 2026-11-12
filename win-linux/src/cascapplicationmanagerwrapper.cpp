@@ -952,6 +952,12 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
                 }
             }
             break;
+        case 0x7a:  // VK_F11
+            if ( !data->get_IsCtrl() && !data->get_IsShift() && !data->get_IsAlt() ) {
+                if ( m_private->toggleWindowFullScreen(event->get_SenderId()) )
+                    return true;
+            }
+            break;
         case 0x4e:  // Key_N
             if ( data->get_IsCtrl() && !data->get_IsShift() && !data->get_IsAlt() ) {
                 if ( m_private->sendCreateNewEvent(event->get_SenderId()) )
