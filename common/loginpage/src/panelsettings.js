@@ -313,10 +313,13 @@
                                             <div class='sett--label-lift-top hbox'>
                                                 <button class="btn btn--landing" id="sett-btn-file-assoc" l10n>${_lang.settBtnFileAssoc}</button>
                                             </div>
+                                        </div>
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-tab-mru'>
                                                 <input type="checkbox" class="checkbox" id="sett-tab-mru">
                                                 <label for="sett-tab-mru" class='sett__caption' l10n>${_lang.settTabSwitchMru}</label>
+                                            </section>
+                                        </div>
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-tab-type-colors'>
                                                 <input type="checkbox" class="checkbox" id="sett-tab-type-colors">
@@ -377,7 +380,7 @@
         let $chGpu,
             $chUseAI,
             $chKeepRecents,
-            $chTabMru;
+            $chTabMru,
             $chTabTypeColors;
         let appSettings;
 
@@ -582,6 +585,8 @@
 
                 if ( $chTabMru ) {
                     _new_settings.tabswitchmru = $chTabMru.prop("checked");
+                }
+
                 if ( $chTabTypeColors ) {
                     _new_settings.tabtypecolors = $chTabTypeColors.prop("checked");
                 }
@@ -836,10 +841,18 @@
                         $('#sett-box-file-assoc', $panel).show().find('#sett-btn-file-assoc')
                             .off('click').on('click', e => {
                                 sdk.command("settings:fileassoc", "");
+                            });
+                    }
+
                     if ( appSettings && appSettings.tabswitchmru !== undefined ) {
                         // #2139: Ctrl+Tab in most-recently-used order instead of tab-bar order
                         $chTabMru = $('#sett-box-tab-mru', $panel).parent().show().find('#sett-tab-mru');
                         $chTabMru.prop('checked', !!appSettings.tabswitchmru)
+                            .off('change').on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+                    }
+
                     if ( appSettings && appSettings.tabtypecolors !== undefined ) {
                         // #2436: a strip in the document type's colour on each tab
                         $chTabTypeColors = $('#sett-box-tab-type-colors', $panel).parent().show().find('#sett-tab-type-colors');

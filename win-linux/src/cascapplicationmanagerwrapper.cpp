@@ -426,6 +426,10 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
 #endif
             if ( cmd.rfind(L"apply") != wstring::npos ) {
                 applySettings(pData->get_Param());
+
+                // #2436: the open tab bar follows "Colour tabs by document type" at once
+                if ( mainWindow() )
+                    mainWindow()->tabWidget()->tabBar()->setTypeColorsVisible(userSettings(L"tab-type-colors") == L"1");
             } else
             if ( cmd.rfind(L"get") != wstring::npos ) {
                 sendSettings(pData->get_Param());
@@ -2335,12 +2339,11 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
 
         if ( objRoot.contains("tabswitchmru") ) {
             setUserSettings(L"tab-switch-mru", objRoot["tabswitchmru"].toBool(false) ? L"1" : L"0");
+        }
+
         if ( objRoot.contains("tabtypecolors") ) {
             // #2436: strips in the document type's colour on the tabs
-            bool _show = objRoot["tabtypecolors"].toBool(false);
-            setUserSettings(L"tab-type-colors", _show ? L"1" : L"0");
-            if ( mainWindow() )
-                mainWindow()->tabWidget()->tabBar()->setTypeColorsVisible(_show);
+            setUserSettings(L"tab-type-colors", objRoot["tabtypecolors"].toBool(false) ? L"1" : L"0");
         }
 
 #ifdef _UPDMODULE
