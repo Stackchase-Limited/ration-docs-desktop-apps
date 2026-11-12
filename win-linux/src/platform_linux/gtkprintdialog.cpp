@@ -43,6 +43,8 @@
 #include <algorithm>
 #include <gdk/gdkx.h>
 #include <gtk/gtkunixprint.h>
+#include <QPrintEngine>
+#include <QStringList>
 #include "components/cmessage.h"
 
 #define PDF_PRINTER_NAME "Print to File"
@@ -51,6 +53,40 @@
 typedef QPagedPaintDevice::PageSize PageSize;
 typedef QPrinter::Unit QUnit;
 typedef uint16_t WORD;
+
+/* The QPrintEngine property under which Qt's CUPS engine keeps extra job options
+   (qcups_p.h, PPK_CupsOptions; the same value from Qt 4 through 5.15). */
+#define PPK_CupsOptions QPrintEngine::PrintEnginePropertyKey(0xfe00)
+
+/* #1215: for a CUPS printer the GTK dialog shows "Pages per side" and "Page ordering"
+   (the CUPS backend reports it can do number-up itself), but the job is printed by
+   Qt, not by GTK, and the choice was never read back: every page came out on its
+   own sheet. Hand it to CUPS as the number-up / number-up-layout job options, which
+   Qt's CUPS engine adds to the job; a PDF file output ignores them. */
+static void applyNumberUp(QPrinter *printer, GtkPrintSettings *settings)
+{
+    QPrintEngine *engine = printer->printEngine();
+    if (!engine)
+        return;
+    QStringList options = engine->property(PPK_CupsOptions).toStringList();
+    for (int i = 0; i + 1 < options.size(); ) {
+        if (options[i] == "number-up" || options[i] == "number-up-layout") {
+            options.removeAt(i);
+            options.removeAt(i);
+        } else
+            i += 2;
+    }
+    const int number_up = gtk_print_settings_get_number_up(settings);
+    if (number_up > 1) {
+        // GtkNumberUpLayout, in its enum order, as IPP number-up-layout keywords
+        static const char *const layouts[] = {"lrtb", "lrbt", "rltb", "rlbt", "tblr", "tbrl", "btlr", "btrl"};
+        const int layout = (int)gtk_print_settings_get_number_up_layout(settings);
+        options << "number-up" << QString::number(number_up);
+        if (layout >= 0 && layout < 8)
+            options << "number-up-layout" << layouts[layout];
+    }
+    engine->setProperty(PPK_CupsOptions, options);
+}
 
 
 static gboolean on_entry_key_press(GtkWidget *wgt, GdkEventKey *event, gpointer) {
@@ -535,6 +571,8 @@ QDialog::DialogCode GtkPrintDialog::exec()
             gboolean reverse = gtk_print_settings_get_reverse(settings);
             m_printer->setPageOrder(reverse == TRUE ?
                         QPrinter::LastPageFirst : QPrinter::FirstPageFirst);
+
+            applyNumberUp(m_printer, settings);
 
             int n_copies = gtk_print_settings_get_n_copies(settings);
             m_printer->setNumCopies(n_copies);
