@@ -1482,7 +1482,9 @@
         NSOpenPanel * openPanel = [NSOpenPanel openPanel];
         
         openPanel.canChooseDirectories = NO;
-        openPanel.allowsMultipleSelection = NO;
+        // #617: the editors ask for several files at once (Insert > Image > From file,
+        // <input type=file multiple>); the panel used to allow only one
+        openPanel.allowsMultipleSelection = isMulti;
         openPanel.canChooseFiles = YES;
         openPanel.directoryURL = [NSURL fileURLWithPath:directory];
         
@@ -1507,6 +1509,13 @@
             
             if (isMulti) {
                 imageInfo->put_IsMultiselect(true);
+
+                if (result == NSFileHandlingPanelOKButton) {
+                    std::vector<std::wstring>& files = imageInfo->get_Files();
+                    for (NSURL * url in [openPanel URLs]) {
+                        files.push_back([[url path] stdwstring]);
+                    }
+                }
             }
             
             NSEditorApi::CAscMenuEvent* pEvent = new NSEditorApi::CAscMenuEvent(ASC_MENU_EVENT_TYPE_DOCUMENTEDITORS_OPENFILENAME_DIALOG);
