@@ -180,9 +180,9 @@ var
   prefix: string;
 begin
 #ifdef _RATION
-  SetArrayLength(AudioExts, 36);
+  SetArrayLength(AudioExts, 43);
 #else
-  SetArrayLength(AudioExts, 35);
+  SetArrayLength(AudioExts, 42);
 #endif
   SetArrayLength(AudioExtEnabled,  GetArrayLength(AudioExts));
 
@@ -223,8 +223,16 @@ begin
   AudioExts[32] := 'OTT';
   AudioExts[33] := 'OTS';
   AudioExts[34] := 'OTP';
+  // #2106: other types the app opens and the MSI registers (HWP/HWPX: macOS and the open dialog)
+  AudioExts[35] := 'DOT';
+  AudioExts[36] := 'DOCM';
+  AudioExts[37] := 'XLT';
+  AudioExts[38] := 'PPSM';
+  AudioExts[39] := 'FODP';
+  AudioExts[40] := 'HWP';
+  AudioExts[41] := 'HWPX';
 #ifdef _RATION
-  AudioExts[35] := 'DOCXF';
+  AudioExts[42] := 'DOCXF';
 #endif
 
   SetArrayLength(ExtensionRegistryInfo,  GetArrayLength(AudioExts));
@@ -268,8 +276,15 @@ begin
   ExtensionRegistryInfo[32] := prefix + 'Ott:'          + ExpandConstant('{cm:extOTT}')             + ':' + '18';
   ExtensionRegistryInfo[33] := prefix + 'Ots:'          + ExpandConstant('{cm:extOTS}')             + ':' + '23';
   ExtensionRegistryInfo[34] := prefix + 'Otp:'          + ExpandConstant('{cm:extOTP}')             + ':' + '3';
+  ExtensionRegistryInfo[35] := prefix + 'Dot:'          + ExpandConstant('{cm:extDOT}')             + ':' + '11';
+  ExtensionRegistryInfo[36] := prefix + 'Docm:'         + ExpandConstant('{cm:extDOCM}')            + ':' + '7';
+  ExtensionRegistryInfo[37] := prefix + 'Xlt:'          + ExpandConstant('{cm:extXLT}')             + ':' + '22';
+  ExtensionRegistryInfo[38] := prefix + 'Ppsm:'         + ExpandConstant('{cm:extPPSM}')            + ':' + '8';
+  ExtensionRegistryInfo[39] := prefix + 'Fodp:'         + ExpandConstant('{cm:extFODP}')            + ':' + '3';
+  ExtensionRegistryInfo[40] := prefix + 'Hwp:'          + ExpandConstant('{cm:extHWP}')             + ':' + '14';
+  ExtensionRegistryInfo[41] := prefix + 'Hwpx:'         + ExpandConstant('{cm:extHWPX}')            + ':' + '14';
 #ifdef _RATION
-  ExtensionRegistryInfo[35] := prefix + 'Docxf:'        + ExpandConstant('{cm:extDOCXF}')           + ':' + '13';
+  ExtensionRegistryInfo[42] := prefix + 'Docxf:'        + ExpandConstant('{cm:extDOCXF}')           + ':' + '13';
 #endif
 end;
 

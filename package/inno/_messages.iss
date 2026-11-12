@@ -2176,6 +2176,27 @@ en_GB.extOTS =OpenDocument Spreadsheet Template
 
 en.extOTP =OpenDocument Presentation Template
 en_GB.extOTP =OpenDocument Presentation Template
+
+en.extDOT =Word 97-2003 Template
+en_GB.extDOT =Word 97-2003 Template
+
+en.extDOCM =Word Open XML Macro-Enabled Document
+en_GB.extDOCM =Word Open XML Macro-Enabled Document
+
+en.extXLT =Excel 97-2003 Template
+en_GB.extXLT =Excel 97-2003 Template
+
+en.extPPSM =PowerPoint Open XML Macro-Enabled Slide Show
+en_GB.extPPSM =PowerPoint Open XML Macro-Enabled Slide Show
+
+en.extFODP =OpenDocument Flat XML Presentation
+en_GB.extFODP =OpenDocument Flat XML Presentation
+
+en.extHWP =Hangul Word Processor Document
+en_GB.extHWP =Hangul Word Processor Document
+
+en.extHWPX =Hangul Word Processor OWPML Document
+en_GB.extHWPX =Hangul Word Processor OWPML Document
 ;======================================================================================================
 
 en.jumpDOCX =New document
