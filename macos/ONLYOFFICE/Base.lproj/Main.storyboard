@@ -654,6 +654,13 @@
                                                 <action selector="toggleFullScreen:" target="Ady-hI-5gd" id="fUs-Ac-858"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="mTw-Sp-814"/>
+                                        <menuItem title="Move Tab to New Window" id="mTw-It-814">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="onMenuMoveTabToNewWindow:" target="Voe-Tx-rLC" id="mTw-Ac-814"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="eu3-7i-yIM"/>
                                         <menuItem title="Bring All to Front" id="LE2-aR-0XJ">
                                             <modifierMask key="keyEquivalentModifierMask"/>

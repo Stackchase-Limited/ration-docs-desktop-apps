@@ -557,6 +557,8 @@
         return hasKeyWindow;
     } else if ([item action] == @selector(onMenuOpenRecent:)) {
         return YES;
+    } else if ([item action] == @selector(onMenuMoveTabToNewWindow:)) {
+        return [self tabToMoveToNewWindow] != nil;
     } else if ([item action] == @selector(onMenuReopenClosedTab:)) {
         return hasKeyWindow && self.closedDocumentPaths.count > 0;
     } else if ([item action] == @selector(onMenuSave:)) {
@@ -1999,13 +2001,23 @@
     }
     NSCefView *webView = (NSCefView *)cefView;
     
-    NSDictionary *widgetInfo = @{@"widgetType": @"window", @"captionHeight": TOOLBTN_HEIGHT};
-    [webView setParentWidgetInfoWithJson:[widgetInfo jsonString]];
-    
     ASCTitleWindowController *mainWindowController = (ASCTitleWindowController *)self.mainWindowController;
     NSSize size = [mainWindowController normalFrame].size;
     NSRect windowFrame = NSMakeRect(screenPoint.x - 200, screenPoint.y - size.height + 11, size.width, size.height);
-        
+
+    ASCEditorWindow *editorWindow = [self presentDetachedEditor:webView inWindowWithFrame:windowFrame];
+
+    // Let the event loop process before starting drag to prevent window jerking
+    [editorWindow performSelector:@selector(performWindowDragWithEvent:)
+                       withObject:event
+                       afterDelay:0.016];
+}
+
+// A document view taken out of the tab bar, in an editor window of its own.
+- (ASCEditorWindow *)presentDetachedEditor:(NSCefView *)webView inWindowWithFrame:(NSRect)windowFrame {
+    NSDictionary *widgetInfo = @{@"widgetType": @"window", @"captionHeight": TOOLBTN_HEIGHT};
+    [webView setParentWidgetInfoWithJson:[widgetInfo jsonString]];
+
     ASCEditorWindowController *windowController = [ASCEditorWindowController initWithFrame:windowFrame];
     [self.editorWindowControllers addObject:windowController];
     
@@ -2028,10 +2040,53 @@
     [webView sendCommand:@"window:features" withParam:[windowFeatures jsonString]];
     [webView focus];
 
-    // Let the event loop process before starting drag to prevent window jerking
-    [editorWindow performSelector:@selector(performWindowDragWithEvent:)
-                       withObject:event
-                       afterDelay:0.016];
+    return editorWindow;
+}
+
+// Window > Move Tab to New Window (#1814), as Safari and Finder have it: the same
+// as dragging the current document tab out of the tab bar, without the drag. The
+// new window opens where an editor window opens with "Open file: in window".
+- (ASCTabView *)tabToMoveToNewWindow {
+    NSWindow * keyWindow = [self effectiveKeyWindow];
+
+    if (![keyWindow isKindOfClass:[ASCTitleWindow class]] || keyWindow.windowController != self.mainWindowController) {
+        return nil;
+    }
+
+    ASCCommonViewController * controller = (ASCCommonViewController *)keyWindow.contentViewController;
+    ASCTabView * tab = [controller.tabsControl selectedTab];
+    NSCefView * webView = (NSCefView *)tab.webView;
+
+    return (webView && [webView.data isViewType:cvwtEditor]) ? tab : nil;
+}
+
+- (IBAction)onMenuMoveTabToNewWindow:(NSMenuItem *)sender {
+    ASCTabView * tab = [self tabToMoveToNewWindow];
+
+    if (!tab) {
+        return;
+    }
+
+    ASCTitleWindowController * mainWindowController = (ASCTitleWindowController *)self.mainWindowController;
+    ASCCommonViewController * controller = (ASCCommonViewController *)mainWindowController.window.contentViewController;
+    NSCefView * webView = (NSCefView *)tab.webView;
+
+    // what -[ASCTitleBarController tabs:didDetachTab:...] does when the tab is dragged out
+    [webView removeFromSuperview];
+    tab.webView = nil;
+    tab.params[@"detached"] = @YES;
+    [controller.tabsControl removeTab:tab animated:NO];
+    webView.data.url = tab.params[@"url"];
+    webView.data.path = tab.params[@"path"];
+
+    NSRect windowFrame = [mainWindowController normalFrame];
+    windowFrame.origin.x += 30;
+    windowFrame.origin.y -= 30;
+
+    ASCEditorWindow * editorWindow = [self presentDetachedEditor:webView inWindowWithFrame:windowFrame];
+    if ([mainWindowController.window isZoomed] && ![editorWindow isZoomed]) {
+        [editorWindow zoom:nil];
+    }
 }
 
 @end
