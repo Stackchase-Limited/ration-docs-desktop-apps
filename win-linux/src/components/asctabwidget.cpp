@@ -44,6 +44,23 @@
 #include "ceditortools.h"
 #include "ctabundockevent.h"
 
+/* #2436: the colour of a tab's top strip by document type (Settings > "Colour tabs
+   by document type", user setting tab-type-colors, off by default). The themes'
+   brand colours are the same grey for every type in the default themes, so the
+   strip has fixed colours of its own; macOS uses the same ones (ASCTabView). */
+static QString tabTypeColor(AscEditorType type)
+{
+    switch (type) {
+    case AscEditorType::etDocument:             return "#3f7ec5";
+    case AscEditorType::etSpreadsheet:          return "#3a8a56";
+    case AscEditorType::etPresentation:         return "#e0823a";
+    case AscEditorType::etDocumentMasterForm:
+    case AscEditorType::etPdf:                  return "#d04545";
+    case AscEditorType::etDraw:                 return "#6e5bbf";
+    default:                                    return QString();
+    }
+}
+
 #define indexIsValid(i) (!(i < 0) && i < count())
 
 using namespace std;
@@ -142,6 +159,7 @@ CAscTabWidget::CAscTabWidget(QWidget *parent, CTabBar *_pBar)
     , m_pBar(_pBar)
 {
     m_pBar->setObjectName("asc_editors_tabbar");
+    m_pBar->setTypeColorsVisible(AscAppManager::userSettings(L"tab-type-colors") == L"1");
     setProperty("active", false);
     // setProperty("empty", true);
     m_pBar->setProperty("active", false);
@@ -537,6 +555,7 @@ int CAscTabWidget::insertPanel(QWidget * panel, int index)
         }
 
         m_pBar->setActiveTabColor(tabindex, tabcolor);
+        m_pBar->setTabTypeColor(tabindex, tabTypeColor(tab_type));
 
         const char *icon_name = tabindex == m_pBar->currentIndex() ? m_mapTabIcons.at(tab_type).second : m_mapTabIcons.at(tab_type).first;
         m_pBar->setTabIcon(tabindex, QIcon(icon_name));
@@ -886,6 +905,7 @@ void CAscTabWidget::applyDocumentChanging(int id, int type)
 
         m_pBar->setTabThemeType(tabIndex,
             ui_theme.value(CTheme::ColorRole::ecrTabThemeType, L"dark") == L"dark" ? CTabBar::DarkTab : CTabBar::LightTab);
+        m_pBar->setTabTypeColor(tabIndex, tabTypeColor(AscEditorType(type)));
 
         const char *icon_name = tabIndex == m_pBar->currentIndex() ?
                                     m_mapTabIcons.at(AscEditorType(type)).second : m_mapTabIcons.at(AscEditorType(type)).first;

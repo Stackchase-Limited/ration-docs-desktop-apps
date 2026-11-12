@@ -55,6 +55,9 @@
 #import "NSApplication+Extensions.h"
 #import "ASCEditorJSVariables.h"
 #import "ASCThemesController.h"
+#import "ASCCommonViewController.h"
+#import "ASCTabView.h"
+#import "ASCTabsControl.h"
 
 #pragma mark -
 #pragma mark ========================================================
@@ -736,6 +739,20 @@ public:
                                 if ( [json objectForKey:@"tabswitchmru"] != nil ) {
                                     CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
                                     appManager->GetUserSettings()->Set(L"tab-switch-mru", [json[@"tabswitchmru"] boolValue] ? L"1" : L"0");
+                                if ( [json objectForKey:@"tabtypecolors"] != nil ) {
+                                    // #2436: strips in the document type's colour on the tabs
+                                    BOOL show = [json[@"tabtypecolors"] boolValue];
+                                    CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+                                    appManager->GetUserSettings()->Set(L"tab-type-colors", show ? L"1" : L"0");
+
+                                    [ASCTabView setShowTypeColors:show];
+                                    for (NSWindow * window in [NSApp windows]) {
+                                        if ( [window.contentViewController isKindOfClass:[ASCCommonViewController class]] ) {
+                                            for (ASCTabView * tab in ((ASCCommonViewController *)window.contentViewController).tabsControl.tabs) {
+                                                [tab setNeedsDisplay:YES];
+                                            }
+                                        }
+                                    }
                                 }
 
                                 if ( [json objectForKey:@"editorwindowmode"] != nil ) {

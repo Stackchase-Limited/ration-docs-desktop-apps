@@ -56,5 +56,6 @@
 @property (nonatomic, weak) NSButton * closeButton;
 @property (nonatomic) BOOL isProcessing;
 @property (nonatomic) BOOL isLight;
+@property (nonatomic) NSColor * typeColor;
 
 @end

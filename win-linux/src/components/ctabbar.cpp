@@ -87,6 +87,7 @@ public:
     CMenu *menu = nullptr;
     QString text;
     QString tabcolor;
+    QString typecolor;
     int tab_width = -1;
     int index = -1;
 
@@ -303,6 +304,12 @@ void Tab::paintEvent(QPaintEvent *ev)
         }
     } else {
         QFrame::paintEvent(ev);
+    }
+
+    // #2436: a strip in the document type's colour across the top
+    if (!typecolor.isEmpty() && tabBar && tabBar->property("typecolors").toBool()) {
+        QPainter p(this);
+        p.fillRect(QRect(0, 0, width(), qMax(2, qRound(height() / 12.0))), QColor(typecolor));
     }
 }
 
@@ -989,6 +996,23 @@ void CTabBar::setActiveTabColor(int index, const QString& color)
     if (d->tabList[index]->tabcolor != color) {
         d->tabList[index]->tabcolor = color;
         d->tabList[index]->polish();
+    }
+}
+
+void CTabBar::setTabTypeColor(int index, const QString& color)
+{
+    if (d->indexIsValid(index) && d->tabList[index]->typecolor != color) {
+        d->tabList[index]->typecolor = color;
+        d->tabList[index]->update();
+    }
+}
+
+void CTabBar::setTypeColorsVisible(bool visible)
+{
+    if (property("typecolors").toBool() != visible) {
+        setProperty("typecolors", visible);
+        for (int i = 0; i < count(); ++i)
+            tabAtIndex(i)->update();
     }
 }
 

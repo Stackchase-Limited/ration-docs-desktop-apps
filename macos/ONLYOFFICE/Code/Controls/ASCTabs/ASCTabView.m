@@ -216,8 +216,34 @@ static NSUInteger const kASTabViewCloseButtonSize = 12;
     }
 }
 
+/* #2436: a strip in the colour of the document type across the top of every tab
+   (Settings > "Colour tabs by document type", user setting tab-type-colors, off by
+   default). The themes' own tab colours are the same grey for every type in the
+   default themes, so the strip has fixed colours of its own. */
+static BOOL s_showTypeColors = NO;
+
++ (void)setShowTypeColors:(BOOL)show {
+    s_showTypeColors = show;
+}
+
++ (BOOL)showTypeColors {
+    return s_showTypeColors;
+}
+
++ (NSColor *)colorForType:(ASCTabViewType)type {
+    switch (type) {
+        case ASCTabViewTypeDocument:        return UIColorFromRGB(0x3f7ec5);
+        case ASCTabViewTypeSpreadsheet:     return UIColorFromRGB(0x3a8a56);
+        case ASCTabViewTypePresentation:    return UIColorFromRGB(0xe0823a);
+        case ASCTabViewTypePdf:             return UIColorFromRGB(0xd04545);
+        case ASCTabViewTypeDraw:            return UIColorFromRGB(0x6e5bbf);
+        default:                            return nil;
+    }
+}
+
 - (void)setType:(ASCTabViewType)type {
     _type = type;
+    ((ASCTabViewCell *)self.cell).typeColor = [ASCTabView colorForType:type];
     
     if (type > ASCTabViewTypeUnknown && type < [_icons count]) {
         [self refreshPortalTabIconset];

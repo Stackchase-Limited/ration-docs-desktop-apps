@@ -317,6 +317,10 @@
                                             <section class='switch-labeled hbox' id='sett-box-tab-mru'>
                                                 <input type="checkbox" class="checkbox" id="sett-tab-mru">
                                                 <label for="sett-tab-mru" class='sett__caption' l10n>${_lang.settTabSwitchMru}</label>
+                                        <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-tab-type-colors'>
+                                                <input type="checkbox" class="checkbox" id="sett-tab-type-colors">
+                                                <label for="sett-tab-type-colors" class='sett__caption' l10n>${_lang.settTabTypeColors}</label>
                                             </section>
                                         </div>
                                         <!-- temporary elements section -->
@@ -374,6 +378,7 @@
             $chUseAI,
             $chKeepRecents,
             $chTabMru;
+            $chTabTypeColors;
         let appSettings;
 
         function _set_user_name(name) {
@@ -577,6 +582,8 @@
 
                 if ( $chTabMru ) {
                     _new_settings.tabswitchmru = $chTabMru.prop("checked");
+                if ( $chTabTypeColors ) {
+                    _new_settings.tabtypecolors = $chTabTypeColors.prop("checked");
                 }
 
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
@@ -833,6 +840,10 @@
                         // #2139: Ctrl+Tab in most-recently-used order instead of tab-bar order
                         $chTabMru = $('#sett-box-tab-mru', $panel).parent().show().find('#sett-tab-mru');
                         $chTabMru.prop('checked', !!appSettings.tabswitchmru)
+                    if ( appSettings && appSettings.tabtypecolors !== undefined ) {
+                        // #2436: a strip in the document type's colour on each tab
+                        $chTabTypeColors = $('#sett-box-tab-type-colors', $panel).parent().show().find('#sett-tab-type-colors');
+                        $chTabTypeColors.prop('checked', !!appSettings.tabtypecolors)
                             .off('change').on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });

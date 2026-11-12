@@ -65,4 +65,8 @@
 @property (nonatomic, weak) NSView *webView;
 
 @property (nonatomic, assign) id <ASCTabViewDelegate> delegate;
+
++ (NSColor *)colorForType:(ASCTabViewType)type;
++ (void)setShowTypeColors:(BOOL)show;
++ (BOOL)showTypeColors;
 @end

@@ -2335,6 +2335,12 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
 
         if ( objRoot.contains("tabswitchmru") ) {
             setUserSettings(L"tab-switch-mru", objRoot["tabswitchmru"].toBool(false) ? L"1" : L"0");
+        if ( objRoot.contains("tabtypecolors") ) {
+            // #2436: strips in the document type's colour on the tabs
+            bool _show = objRoot["tabtypecolors"].toBool(false);
+            setUserSettings(L"tab-type-colors", _show ? L"1" : L"0");
+            if ( mainWindow() )
+                mainWindow()->tabWidget()->tabBar()->setTypeColorsVisible(_show);
         }
 
 #ifdef _UPDMODULE

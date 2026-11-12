@@ -48,6 +48,7 @@
 #import "ASCButtonCell.h"
 #import "NSApplication+Extensions.h"
 #import "ASCThemesController.h"
+#import "ASCTabView.h"
 
 @interface ASCTabViewCell()
 @property (nonatomic) NSImageView * animatedImageView;
@@ -241,6 +242,14 @@
         [lineColor setFill];
         [leftRectanglePath fill];
         [rightRectanglePath fill];
+    }
+
+    if (self.typeColor && [ASCTabView showTypeColors]) {
+        // #2436: the document type's strip across the top
+        CGFloat stripHeight = 3;
+        CGFloat stripY = [controlView isFlipped] ? NSMinY(rectangleRect) : NSMaxY(rectangleRect) - stripHeight;
+        [self.typeColor setFill];
+        NSRectFill(NSMakeRect(NSMinX(rectangleRect), stripY, NSWidth(rectangleRect), stripHeight));
     }
 
     if (self.title) {
