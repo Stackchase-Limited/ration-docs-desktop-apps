@@ -85,6 +85,8 @@
 
     utils.fn.extend(ControllerFolders.prototype, (function() {
         var _on_update = function(params) {
+            this.params = params;
+
             var _dirs = utils.fn.parseRecent(params, 'folders'), $item;
             _dirs.sort((a, b) => {
                 if (a.pinned && !b.pinned) return -1;
@@ -121,6 +123,15 @@
                         return false;
                 });
 
+                $item.on('contextmenu', e=>{
+                        this.ppmenu.hideItem(dir.pinned ? 'folders:pin' : 'folders:unpin', true);
+                        this.ppmenu.hideItem(dir.pinned ? 'folders:unpin' : 'folders:pin', false);
+                        this.ppmenu.show({left: e.clientX, top: e.clientY}, dir);
+
+                        e.preventDefault();
+                        return false;
+                });
+
                     $listRecentDirs.append($item);
                 }
             }
@@ -131,11 +142,51 @@
             }
         };
 
+        var _init_ppmenu = function() {
+            if ( this.ppmenu ) {
+                Menu.closeAll();
+                $('#pp-menu-folders').remove();
+            }
+
+            this.ppmenu = new Menu({
+                id: 'pp-menu-folders',
+                className: 'with-icons',
+                bottomlimitoffset: 10,
+                items: [
+                    {caption: utils.Lang.menuFileOpen, action: 'folders:open', icon: '#folder'},
+                    {caption: utils.Lang.menuFilePin, action: 'folders:pin', icon: '#pin20'},
+                    {caption: utils.Lang.menuFileUnpin, action: 'folders:unpin', icon: '#unpin20'},
+                    {caption: utils.Lang.menuRemoveModel, action: 'folders:forget', icon: '#remove'}
+                ]
+            });
+            this.ppmenu.init('#placeholder');
+            this.ppmenu.events.itemclick.attach(_on_context_menu.bind(this));
+        };
+
+        var _on_context_menu = function(menu, action, dir) {
+            if ( /\:open/.test(action) ) {
+                openFile(OPEN_FILE_FOLDER, dir.full);
+            } else
+            if ( /\:(un)?pin/.test(action) ) {
+                utils.fn.pinnedFolders(dir.full, 'toggle');
+            } else
+            if ( /\:forget/.test(action) ) {
+                // #201: take the folder off the list; its files stay in Recent
+                dir.pinned && utils.fn.pinnedFolders(dir.full, 'toggle');
+                dir.top !== undefined && utils.fn.hiddenFolders(dir.full, 'add', dir.top);
+            } else return;
+
+            this.params && _on_update.call(this, this.params);
+        };
+
         return {
             init: function() {
                 baseController.prototype.init.apply(this, arguments);
 
                 this.view.render();
+
+                _init_ppmenu.call(this);
+                CommonEvents.on('lang:changed', _init_ppmenu.bind(this));
 
                 this.dndZone = new DnDFileZone();
                 this.dndZone.render(this.view.$panel.find("#area-dnd-file"));

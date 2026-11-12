@@ -402,12 +402,32 @@ utils.fn.pinnedFolders = function(path, action) {
     localStorage.setItem(key, JSON.stringify(pinned));
 };
 
+// #201: folders removed from "Recent folders". That list is made of the folders
+// of the recent files, so an entry cannot go without taking its files out of
+// Recent too; it is hidden instead. Kept as path -> position in the recent list
+// of the newest file in that folder. Opening anything else moves that file down,
+// opening a file from the folder again moves one up - which brings the folder back.
+utils.fn.hiddenFolders = function(path, action, top) {
+    const key = 'hiddenFolders';
+    let hidden;
+    try { hidden = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) { hidden = {}; }
+
+    if (action === 'list') return hidden;
+    if (action === 'check') return Object.prototype.hasOwnProperty.call(hidden, path);
+
+    if (action === 'add') hidden[path] = top;
+    else if (action === 'set') hidden = path;
+
+    localStorage.setItem(key, JSON.stringify(hidden));
+};
+
 utils.fn.parseRecent = function(arr, out = 'files') {
-    var _files_arr = [], _dirs_arr = [];
+    var _files_arr = [], _dirs_arr = [], _dirs_top = {}, _index = -1;
 
     const _is_win = /Win/.test(navigator.platform);
     const _re_name = !_is_win ? /([^/]+\.[a-zA-Z0-9]{1,})$/ : /([^\\/]+\.[a-zA-Z0-9]{1,})$/;
     for (let _f_ of arr) {
+        _index++;
         if ( _is_win && /^\w:[\\\/]/.test(_f_.path) && /(?:\\{2,})+/.test(_f_.path) )
             _f_.path = _f_.path.replace(/(?:\\{2,})+/g,"\\");
 
@@ -429,11 +449,31 @@ utils.fn.parseRecent = function(arr, out = 'files') {
                 pinned: _f_.pin,
             });
 
-            _dirs_arr.indexOf(path) < 0 && _dirs_arr.push(path);
+            if ( _dirs_arr.indexOf(path) < 0 ) {
+                _dirs_arr.push(path);
+                _dirs_top[path] = _index;
+            }
         }
     }
 
     if (out == 'files') return _files_arr;
+
+    const hidden = utils.fn.hiddenFolders(null, 'list');
+    let hiddenChanged = false;
+    for (const _d_ in hidden) {
+        const top = _dirs_top[_d_];
+        if ( top === undefined ) continue;
+        if ( top < hidden[_d_] ) {
+            // a file from it was opened again
+            delete hidden[_d_];
+            hiddenChanged = true;
+        } else
+        if ( top > hidden[_d_] ) {
+            hidden[_d_] = top;
+            hiddenChanged = true;
+        }
+    }
+    hiddenChanged && utils.fn.hiddenFolders(hidden, 'set');
 
     const pinned = JSON.parse(localStorage.getItem('pinnedFolders') || '[]');
     for (const pinnedPath of pinned) {
@@ -444,6 +484,8 @@ utils.fn.parseRecent = function(arr, out = 'files') {
 
     var out_dirs_arr = [];
     for (let _d_ of _dirs_arr) {
+        if ( _d_ in hidden ) continue;
+
         let name = (!_is_win ? /([^/]+)$/ : /([^\\/]+)$/).exec(_d_)[1],
                 parent;
         if (!name) {
@@ -462,6 +504,7 @@ utils.fn.parseRecent = function(arr, out = 'files') {
                 descr: parent,
                 pinid: !pinned ? id : -id,
                 pinned: pinned,
+                top: _dirs_top[_d_],
                 uid: `folder-${id}`
         });
     }
