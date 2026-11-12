@@ -663,12 +663,6 @@ public:
                             if (NSDictionary * json = [[NSString stringWithstdwstring:param] dictionary]) {
                                 id <ASCExternalDelegate> externalDelegate = [[ASCExternalController shared] delegate];
 
-                                if (externalDelegate && [externalDelegate respondsToSelector:@selector(onAppPreferredLanguage)]) {
-                                    [[ASCEditorJSVariables instance] setParameter:@"lang" withString:[externalDelegate onAppPreferredLanguage]];
-                                } else {
-                                    [[ASCEditorJSVariables instance] setParameter:@"lang" withString:[[[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode] lowercaseString]];
-                                }
-                                
                                 if (NSString * langId = json[@"langid"]) {
                                     if ( [ASCLinguist appLanguageCode] != langId ) {
                                         [ASCLinguist setAppLanguageCode:langId];
@@ -677,6 +671,16 @@ public:
                                         CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
                                         appManager->UpdatePlugins([[json jsonString] stdwstring]);
                                     }
+                                }
+
+                                // #1230: editors opened from now on take the language just chosen. It used to be
+                                // [NSLocale currentLocale], read before the new language was stored - and that
+                                // locale is cached for the life of the process, so new documents kept the old
+                                // language until the app was restarted.
+                                if (externalDelegate && [externalDelegate respondsToSelector:@selector(onAppPreferredLanguage)]) {
+                                    [[ASCEditorJSVariables instance] setParameter:@"lang" withString:[externalDelegate onAppPreferredLanguage]];
+                                } else {
+                                    [[ASCEditorJSVariables instance] setParameter:@"lang" withString:[ASCLinguist appLanguageCode]];
                                 }
 
                                 if (NSString * userName = json[@"username"]) {
