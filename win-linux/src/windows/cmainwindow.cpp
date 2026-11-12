@@ -53,6 +53,11 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMimeData>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFileInfo>
+#include <QSet>
+#include <QUrl>
 #include <QGuiApplication>
 #include <algorithm>
 #include <vector>
@@ -130,10 +135,12 @@ CMainWindow::CMainWindow(const QRect &rect) :
     m_pMainPanel = createMainPanel(this);
     setCentralWidget(m_pMainPanel);
     QString css{AscAppManager::getWindowStylesheets(m_dpiRatio)};
+    // #34: a document dropped on the tab bar or title bar opens (Windows too; the start
+    // page and the editors take their own drops in CEF)
+    setAcceptDrops(true);
 #ifdef __linux__
     if (WindowHelper::getEnvInfo() == WindowHelper::KDE)
         setWindowTitle(tr("Main Window"));
-    setAcceptDrops(true);
     if (isCustomWindowStyle()) {
         CX11Decoration::setTitleWidget(m_boxTitleBtns);
         m_pMainPanel->setMouseTracking(true);
@@ -417,11 +424,10 @@ void CMainWindow::close()
 //    }
 //}
 
-#ifdef __linux__
 void CMainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     QList<QUrl> urls = event->mimeData()->urls();
-    if (urls.length() != 1)
+    if (urls.length() != 1 || !urls[0].isLocalFile())
         return;
 
     QSet<QString> _exts;
@@ -433,23 +439,28 @@ void CMainWindow::dragEnterEvent(QDragEnterEvent *event)
     _exts << "pptx" << "ppt" << "odp" << "ppsx" << "pptt" << "potx" << "otp";
     _exts << "xlsx" << "xls" << "ods" << "csv" << "xlst" << "xltx" << "ots";
     _exts << "pdf" << "djvu" << "xps";
+    // #34: the macro-enabled, template, legacy and flat types the Open dialog offers too
+    _exts << "docm" << "dotm" << "dot" << "fodt" << "xlsm" << "xlsb" << "xltm" << "xlt" << "fods";
+    _exts << "pptm" << "potm" << "pot" << "pps" << "ppsm" << "fodp" << "oxps";
     _exts << "plugin";
 
-    QFileInfo oInfo(urls[0].toString());
+    // #34: Windows names often come in capitals (REPORT.DOCX)
+    QFileInfo oInfo(urls[0].toLocalFile());
 
-    if (_exts.contains(oInfo.suffix()))
+    if (_exts.contains(oInfo.suffix().toLower()))
         event->acceptProposedAction();
 }
 
 void CMainWindow::dropEvent(QDropEvent *event)
 {
     QList<QUrl> urls = event->mimeData()->urls();
-    if (urls.length() != 1)
+    if (urls.length() != 1 || !urls[0].isLocalFile())
         return;
 
-    QString _path = urls[0].path();
+    // #34: toLocalFile, not path(): path() is "/C:/..." on Windows
+    QString _path = urls[0].toLocalFile();
 
-    Utils::keepLastPath(LOCAL_PATH_OPEN, _path);
+    Utils::keepLastPath(LOCAL_PATH_OPEN, QFileInfo(_path).absolutePath());
     COpenOptions opts = {"", etLocalFile, _path};
     opts.wurl = _path.toStdWString();
 
@@ -472,7 +483,6 @@ void CMainWindow::dropEvent(QDropEvent *event)
     }
     event->acceptProposedAction();
 }
-#endif
 
 /** MainPanel **/
 
