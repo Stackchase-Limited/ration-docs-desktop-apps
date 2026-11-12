@@ -42,6 +42,9 @@
 
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QApplication>
+#include <QScreen>
 #include <QDir>
 #include <QFile>
 
@@ -220,6 +223,19 @@ void CMainWindowImpl::refreshAboutVersion()
     _json_obj["removebuiltinplugins"] = AscAppManager::userSettings(L"plugins-hide-builtin") == L"1";
     _json_obj["saveonclose"] = AscAppManager::userSettings(L"save-on-close") == L"1";
     _json_obj["restoretabs"] = AscAppManager::userSettings(L"restore-tabs") == L"1";
+
+    /* #1548: "Slideshow screen" - "auto" (the default) or the name of a screen; the
+       start page lists the screens connected now, numbered in Qt's order */
+    QJsonArray _screens;
+    for (QScreen * _screen : QApplication::screens()) {
+        _screens.append(QJsonObject({{"name", _screen->name()},
+                                     {"width", _screen->geometry().width()},
+                                     {"height", _screen->geometry().height()},
+                                     {"primary", _screen == QApplication::primaryScreen()}}));
+    }
+    _json_obj["screens"] = _screens;
+    const QString _slideshow_screen = reg_user.value("slideshowScreen").toString();
+    _json_obj["slideshowscreen"] = _slideshow_screen.isEmpty() ? "auto" : _slideshow_screen;
 
 #ifdef Q_OS_LINUX
     // #2504: the title bar --system-title-bar/--custom-title-bar pick, offered unless

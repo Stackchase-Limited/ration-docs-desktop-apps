@@ -279,6 +279,15 @@
                                                 </section>
                                             </div>
                                         </div>
+                                        <div class='settings-field' id="opts-slideshow-screen" style='display:none;'>
+                                            <label class='sett__caption' l10n>${_lang.settSlideshowScreen}</label>
+                                            <div class='sett--label-lift-top hbox'>
+                                                <section class='box-cmp-select'>
+                                                    <select class='combobox'>
+                                                    </select>
+                                                </section>
+                                            </div>
+                                        </div>
                                         <div class='settings-field' id="opts-spellcheck-mode" style='display:none;'>
                                             <label class='sett__caption' l10n>${_lang.settSpellcheckDetection}</label>
                                             <div class='sett--label-lift-top hbox'>
@@ -413,6 +422,7 @@
             $optsLaunchMode,
             $optsTitleBar,
             $optsWindowButtons,
+            $optsSlideshowScreen,
             $optsAutoupdateMode;
         let $chGpu,
             $chPinchZoom,
@@ -585,6 +595,12 @@
                         _new_settings.restart = true;
                         appSettings.windowbuttons = _new_settings.windowbuttons;
                     }
+                }
+
+                if ( $optsSlideshowScreen ) {
+                    // #1548: read when a slideshow starts, no restart needed
+                    _new_settings.slideshowscreen = $optsSlideshowScreen.val();
+                    $optsSlideshowScreen.selectpicker('refresh');
                 }
 
                 if ( $optsAutoupdateMode ) {
@@ -860,6 +876,34 @@
                             });
 
                             $('#caption-restart', $panel).show();
+                        }
+
+                        if ( appSettings.slideshowscreen !== undefined && Array.isArray(appSettings.screens) &&
+                                (appSettings.screens.length > 1 || appSettings.slideshowscreen != 'auto') )
+                        {
+                            // #1548: "Automatic" keeps the screen the app picks by itself
+                            const _combo = $('#opts-slideshow-screen select', $panel).empty();
+                            const _option = (value, text) => $('<option>').attr('value', value).text(text);
+                            _combo.append(_option('auto', utils.Lang.settOptSlideshowScreenAuto));
+                            appSettings.screens.forEach((scr, i) => {
+                                let _text = `${utils.Lang.settOptSlideshowScreenN.replace('%1', i + 1)}: ${scr.name} (${scr.width}\u00d7${scr.height}`;
+                                _combo.append(_option(scr.name, _text + (scr.primary ? `, ${utils.Lang.settOptScreenPrimary})` : ')')));
+                            });
+                            if ( appSettings.slideshowscreen != 'auto' &&
+                                    !appSettings.screens.some(scr => scr.name == appSettings.slideshowscreen) )
+                                _combo.append(_option(appSettings.slideshowscreen, `${appSettings.slideshowscreen} (${utils.Lang.settOptScreenNotConnected})`));
+
+                            if ( !$optsSlideshowScreen ) {
+                                ($optsSlideshowScreen = _combo)
+                                .val(appSettings.slideshowscreen)
+                                .selectpicker().on('change', e => {
+                                    $btnApply.isdisabled() && $btnApply.disable(false);
+                                })
+                                .parents('.settings-field').show();
+                            } else {
+                                $optsSlideshowScreen.val(appSettings.slideshowscreen)
+                                                    .selectpicker('refresh');
+                            }
                         }
 
                         if ( appSettings.spellcheckdetect !== undefined ) {

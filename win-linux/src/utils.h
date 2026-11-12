@@ -108,6 +108,7 @@ public:
     static double getScreenDpiRatioByHWND(int);
     static double getScreenDpiRatioByWidget(QWidget*);
     static QScreen * screenAt(const QPoint&);
+    static QScreen * slideshowScreen();
     static QString replaceBackslash(const QString&);
     static std::wstring normalizeAppProtocolUrl(const std::wstring &url);
     static void replaceAll(std::wstring& subject, const std::wstring& search, const std::wstring& replace);

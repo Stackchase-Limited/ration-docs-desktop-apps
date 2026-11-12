@@ -676,6 +676,22 @@ double Utils::getScreenDpiRatioByWidget(QWidget* wid)
     return wid->devicePixelRatio();
 }
 
+/* #1548: the screen named by Settings > "Slideshow screen" (QScreen::name, stored
+   as "slideshowScreen"), or nullptr for "Automatic" and for a screen that is not
+   connected now. */
+QScreen * Utils::slideshowScreen()
+{
+    GET_REGISTRY_USER(reg_user);
+    const QString _name = reg_user.value("slideshowScreen").toString();
+    if ( !_name.isEmpty() && _name != "auto" ) {
+        for (QScreen * _screen : QApplication::screens()) {
+            if ( _screen->name() == _name )
+                return _screen;
+        }
+    }
+    return nullptr;
+}
+
 QScreen * Utils::screenAt(const QPoint& pt)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
@@ -1239,6 +1255,14 @@ namespace WindowHelper {
             _scr_geometry = QApplication::primaryScreen()->geometry();
         }
 #endif
+
+        /* #1548: with three or more screens the slideshow's screen above is no one's
+           choice (in presenter mode it is the screen at the mirrored index), and there
+           was no way to pick another. Settings > "Slideshow screen" can now name one; it
+           is used while that screen is connected, and "Automatic" (the default, nothing
+           stored) keeps the choice above. */
+        if ( QScreen * _chosen = Utils::slideshowScreen() )
+            _scr_geometry = _chosen->geometry();
 
         _parent->setGeometry(_scr_geometry);
         _parent->showFullScreen();

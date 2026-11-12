@@ -2390,6 +2390,15 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
             setUserSettings(L"disable-recents", objRoot["keeprecents"].toBool(true) ? L"0" : L"1");
         }
 
+        // #1548: "Slideshow screen" - a screen's name, or "auto" for the screen picked
+        // as before; read each time a slideshow starts (Utils::slideshowScreen)
+        if ( objRoot.contains("slideshowscreen") ) {
+            const QString _screen = objRoot["slideshowscreen"].toString();
+            if ( _screen.isEmpty() || _screen == "auto" )
+                _reg_user.remove("slideshowScreen");
+            else _reg_user.setValue("slideshowScreen", _screen);
+        }
+
 #ifdef Q_OS_LINUX
         // #2504: the start page's "Title bar" setting stores the same value the
         // --system-title-bar/--custom-title-bar switches do; windows read it when
