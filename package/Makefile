@@ -86,6 +86,16 @@ LINUX_DEPS += $(patsubst $(BRANDING_DIR)/common/linux/icons/%.png, \
 	build/main/usr/share/icons/hicolor/%/apps/$(DESKTOPEDITORS_EXEC).png, \
 	$(wildcard $(BRANDING_DIR)/common/linux/icons/*.png))
 LINUX_DEPS += build/main/usr/share/licenses/$(PACKAGE_NAME)/LICENSE
+# #591: EDITOR_LAUNCHERS=1 adds one menu entry per editor (ration-docs-word.desktop
+# etc., each starting the same application with --new:<editor>) and their icons.
+# Off by default: the package then has the single entry it always had.
+EDITOR_LAUNCHERS ?= 0
+ifeq ($(EDITOR_LAUNCHERS), 1)
+EDITORS := word cell slide form
+EDITOR_DESKTOP_FILES := $(foreach e,$(EDITORS),build/main/usr/share/applications/$(DESKTOPEDITORS_EXEC)-$(e).desktop)
+LINUX_DEPS += $(EDITOR_DESKTOP_FILES)
+LINUX_DEPS += $(foreach e,$(EDITORS),build/main/usr/share/icons/hicolor/256x256/apps/$(DESKTOPEDITORS_EXEC)-$(e).png)
+endif
 LINUX_DEPS += build/main/usr/share/licenses/$(PACKAGE_NAME)/3DPARTYLICENSE
 
 DEB_DEPS += $(CHANGELOG_DEB)
@@ -385,6 +395,12 @@ build/main/usr/share/applications/$(DESKTOPEDITORS_EXEC).desktop : common/linux/
 
 $(BIN_FILES) $(DESKTOP_FILES) :
 	mkdir -p $(@D) && m4 -I "$(BRANDING_DIR)/common/linux" $(M4_PARAMS) $< > $@
+
+build/main/usr/share/applications/$(DESKTOPEDITORS_EXEC)-%.desktop : common/linux/desktopeditors-editor.desktop.m4
+	mkdir -p $(@D) && m4 -I "$(BRANDING_DIR)/common/linux" $(M4_PARAMS) -D M4_EDITOR='$*' $< > $@
+
+build/main/usr/share/icons/hicolor/256x256/apps/$(DESKTOPEDITORS_EXEC)-%.png : common/linux/icons/editors/%.png
+	install -m 644 -D $< $@
 
 % : %.m4
 	m4 $(M4_PARAMS)	$< > $@
