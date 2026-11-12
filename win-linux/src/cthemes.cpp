@@ -143,7 +143,7 @@ namespace NSTheme {
             {"brand-slide", "toolbar-header-presentation"},
             {"brand-cell", "toolbar-header-spreadsheet"},
             {"brand-pdf", "toolbar-header-pdf"},
-            {"brand-draw", "toolbar-header-draw"},
+            {"brand-draw", "toolbar-header-visio"},
 
             {"window-background", "background-toolbar"},
             // {"window-border", ""},
