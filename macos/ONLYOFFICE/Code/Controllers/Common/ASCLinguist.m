@@ -187,7 +187,12 @@ static BOOL uiLayoutDirectionRTL = NO;
         @"ar-SA": @{@"name": @"اَلْعَرَبِيَّة", @"enname": @"Arabic"},
         @"sq-AL": @{@"name": @"Shqip", @"enname": @"Albanian"},
         @"he-IL": @{@"name": @"עברית", @"enname": @"Hebrew"},
-        @"ur-PK": @{@"name": @"اردو", @"enname": @"Urdu"}
+        @"ur-PK": @{@"name": @"اردو", @"enname": @"Urdu"},
+        // #1355: the editors are translated into these (web-apps locale az, eu, ms) and new documents
+        // have templates for them; the start page and the menus stay English
+        @"az-Latn-AZ": @{@"name": @"Azərbaycan dili", @"enname": @"Azerbaijani"},
+        @"eu-ES": @{@"name": @"Euskara", @"enname": @"Basque"},
+        @"ms-MY": @{@"name": @"Bahasa Melayu", @"enname": @"Malay"}
     };
 }
 

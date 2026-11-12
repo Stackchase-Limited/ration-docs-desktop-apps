@@ -197,6 +197,7 @@
     </qresource>
     <qresource prefix="/i18n">
         <file alias="ar-SA.qm">langs/ar_SA.qm</file>
+        <file alias="az-Latn-AZ.qm">langs/en.qm</file>
         <file alias="be-BY.qm">langs/be.qm</file>
         <file alias="bg-BG.qm">langs/bg.qm</file>
         <file alias="ca-ES.qm">langs/ca.qm</file>
@@ -207,6 +208,7 @@
         <file alias="en-US.qm">langs/en.qm</file>
         <file alias="en-GB.qm">langs/en_GB.qm</file>
         <file alias="es-ES.qm">langs/es.qm</file>
+        <file alias="eu-ES.qm">langs/en.qm</file>
         <file alias="et-EE.qm">langs/et.qm</file>
         <file alias="fi-FI.qm">langs/fi.qm</file>
         <file alias="fr-FR.qm">langs/fr.qm</file>
@@ -224,6 +226,7 @@
         <file alias="lo-LA.qm">langs/lo.qm</file>
         <file alias="lt-LT.qm">langs/lt.qm</file>
         <file alias="lv-LV.qm">langs/lv.qm</file>
+        <file alias="ms-MY.qm">langs/en.qm</file>
         <file alias="nl-NL.qm">langs/nl.qm</file>
         <file alias="no-NO.qm">langs/no.qm</file>
         <file alias="pl-PL.qm">langs/pl.qm</file>

@@ -306,6 +306,11 @@ private:
         ,{"ar-SA", {"اَلْعَرَبِيَّة", "Arabic"}}
         ,{"sr-Latn-RS", {"Srpski (Latin)", "Serbian (Latin)"}}
         ,{"sr-Cyrl-RS", {"Српски (Ћирилица)", "Serbian (Cyrillic)"}}
+        // #1355: the editors are translated into these (web-apps locale az, eu, ms) and new documents
+        // have templates for them; no native translation yet, resources.qrc gives them the English one
+        ,{"az-Latn-AZ", {"Azərbaycan dili", "Azerbaijani"}}
+        ,{"eu-ES", {"Euskara", "Basque"}}
+        ,{"ms-MY", {"Bahasa Melayu", "Malay"}}
     };
 };
 
