@@ -257,6 +257,17 @@
                                                 </section>
                                             </div>
                                         </div>
+                                        <div class='settings-field' id="opts-title-bar" style='display:none;'>
+                                            <label class='sett__caption' l10n>${_lang.settTitleBar}</label><label class='sett__caption'> *</label>
+                                            <div class='sett--label-lift-top hbox'>
+                                                <section class='box-cmp-select'>
+                                                    <select class='combobox'>
+                                                        <option value='custom' l10n>${_lang.settOptTitleBarCustom}</option>
+                                                        <option value='system' l10n>${_lang.settOptTitleBarSystem}</option>
+                                                    </select>
+                                                </section>
+                                            </div>
+                                        </div>
                                         <div class='settings-field' id="opts-spellcheck-mode" style='display:none;'>
                                             <label class='sett__caption' l10n>${_lang.settSpellcheckDetection}</label>
                                             <div class='sett--label-lift-top hbox'>
@@ -334,6 +345,7 @@
             $optsUITheme,
             $optsSpellcheckMode,
             $optsLaunchMode,
+            $optsTitleBar,
             $optsAutoupdateMode;
         let $chGpu,
             $chUseAI,
@@ -477,6 +489,17 @@
                 if ( $optsLaunchMode ) {
                     _new_settings.editorwindowmode = $optsLaunchMode.val() == 'inwindow';
                     $optsLaunchMode.selectpicker('refresh');
+                }
+
+                if ( $optsTitleBar ) {
+                    // #2504: windows pick their title bar when they are created
+                    _new_settings.titlebar = $optsTitleBar.val();
+                    $optsTitleBar.selectpicker('refresh');
+
+                    if ( appSettings.titlebar != _new_settings.titlebar ) {
+                        _new_settings.restart = true;
+                        appSettings.titlebar = _new_settings.titlebar;
+                    }
                 }
 
                 if ( $optsAutoupdateMode ) {
@@ -691,6 +714,16 @@
                             .selectpicker().on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });
+                        }
+
+                        if ( appSettings.titlebar !== undefined ) {
+                            ($optsTitleBar = ($('#opts-title-bar', $panel).show().find('select')))
+                            .val(appSettings.titlebar)
+                            .selectpicker().on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+
+                            $('#caption-restart', $panel).show();
                         }
 
                         if ( appSettings.spellcheckdetect !== undefined ) {

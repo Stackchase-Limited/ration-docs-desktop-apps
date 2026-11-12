@@ -217,6 +217,9 @@ l10n.en = {
     labelSelectFile: 'Select file',
     settUseAI: 'Use AI functions',
     settKeepRecents: 'Keep a list of recent files',
+    settTitleBar: 'Title bar',
+    settOptTitleBarCustom: 'Built-in',
+    settOptTitleBarSystem: 'System (window manager)',
 }
 
 

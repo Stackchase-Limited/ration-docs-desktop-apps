@@ -209,6 +209,14 @@ void CMainWindowImpl::refreshAboutVersion()
     _json_obj["useai"] = !(AscAppManager::userSettings(L"disable-ai") == L"1");
     _json_obj["keeprecents"] = !(AscAppManager::userSettings(L"disable-recents") == L"1");
 
+#ifdef Q_OS_LINUX
+    // #2504: the title bar --system-title-bar/--custom-title-bar pick, offered unless
+    // the system-wide config forces the custom one (CWindowBase reads both)
+    GET_REGISTRY_SYSTEM(reg_system);
+    if ( !(reg_system.value("titlebar") == "custom") )
+        _json_obj["titlebar"] = reg_user.value("titlebar") == "system" ? "system" : "custom";
+#endif
+
 #ifndef __OS_WIN_XP
     _json_obj["rtl"] = AscAppManager::isRtlEnabled();
 #endif

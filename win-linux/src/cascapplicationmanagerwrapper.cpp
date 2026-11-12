@@ -350,7 +350,12 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
                     sendCommandTo(ptr, L"window:features", Utils::stringifyJson(json).toStdWString());
                 }
 
-                if ( InputArgs::contains(L"--system-title-bar") ) {
+                // #2504: the title bar can now be chosen in the settings as well as
+                // with --system-title-bar, so ask the window that holds the editor
+                // (its own, or the main window's tab) whether it has the system one
+                CWindowBase * _holder = editor ? static_cast<CWindowBase *>(editor) :
+                                                 static_cast<CWindowBase *>(mainWindow());
+                if ( _holder && !_holder->isCustomWindowStyle() ) {
                     QJsonObject json{{"element","body"},
                                         {"action", "merge"},
                                         {"style","#title-doc-name{display:none}"}};
@@ -2302,6 +2307,17 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
         if ( objRoot.contains("keeprecents") ) {
             setUserSettings(L"disable-recents", objRoot["keeprecents"].toBool(true) ? L"0" : L"1");
         }
+
+#ifdef Q_OS_LINUX
+        // #2504: the start page's "Title bar" setting stores the same value the
+        // --system-title-bar/--custom-title-bar switches do; windows read it when
+        // they are created, so it takes effect on the next start
+        if ( objRoot.contains("titlebar") ) {
+            const QString _titlebar = objRoot["titlebar"].toString();
+            if ( _titlebar == "system" || _titlebar == "custom" )
+                _reg_user.setValue("titlebar", _titlebar);
+        }
+#endif
 
 #ifdef _UPDMODULE
         if ( objRoot.contains("autoupdatemode") ) {
