@@ -308,6 +308,13 @@
                                                 <label for="sett-keep-recents" class='sett__caption' l10n>${_lang.settKeepRecents}</label>
                                             </section>
                                         </div>
+                                        <div class='settings-field' id='sett-box-dictionaries' style='display:none;'>
+                                            <label class='sett__caption' l10n>${_lang.settDictionaries}</label>
+                                            <div class='sett--label-lift-top hbox'>
+                                                <button class="btn btn--landing" id="sett-btn-add-dictionary" l10n>${_lang.settBtnAddDictionary}</button>
+                                            </div>
+                                            <label class='sett__caption' id='sett-dictionary-result' style='display:none;'></label>
+                                        </div>
                                         <div class='settings-field' id='sett-box-file-assoc' style='display:none;'>
                                             <label class='sett__caption' l10n>${_lang.settFileAssoc}</label>
                                             <div class='sett--label-lift-top hbox'>
@@ -864,6 +871,29 @@
                                     $btnApply.isdisabled() && $btnApply.disable(false);
                                 });
                         }
+                    }
+
+                    if ( !!window.AscDesktopEditor && !!window.AscDesktopEditor.InstallSpellCheckDictionary &&
+                            !!window.AscDesktopEditor.OpenFilenameDialog ) {
+                        // #1438: add a Hunspell dictionary (.dic + .aff) for a language the app has none for
+                        const $result = $('#sett-dictionary-result', $panel);
+                        $('#sett-box-dictionaries', $panel).show().find('#sett-btn-add-dictionary')
+                            .off('click').on('click', e => {
+                                window.AscDesktopEditor.OpenFilenameDialog('*.dic *.aff', false, path => {
+                                    if ( Array.isArray(path) ) path = path[0];
+                                    if ( !path ) return;
+
+                                    const answer = window.AscDesktopEditor.InstallSpellCheckDictionary(path) || '';
+                                    const messages = {
+                                        'error:pair': _lang.settDictionaryErrPair,
+                                        'error:name': _lang.settDictionaryErrName,
+                                        'error:encoding': _lang.settDictionaryErrEncoding,
+                                    };
+                                    const text = answer.startsWith('ok:') ? _lang.settDictionaryAdded.replace('%1', answer.substring(3)) :
+                                                                messages[answer] || _lang.settDictionaryErrCopy;
+                                    $result.text(text).show();
+                                });
+                            });
                     }
 
                     if ( appSettings && appSettings.fileassoc ) {
