@@ -181,6 +181,7 @@ l10n.en = {
     settOptEnabled: 'Enabled',
     aboutChangelog: 'Changelog',
     aboutReportIssue: 'Report an issue',
+    tipOpensInBrowser: 'Opens in your web browser',
     updateNoUpdates: 'App is up to date',
     updateAvialable: 'Version $1 is available. Click to download.',
     settOptThemeSystem: 'Same as system',

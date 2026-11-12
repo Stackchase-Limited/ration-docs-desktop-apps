@@ -65,6 +65,16 @@
         return commercial === true ? utils.Lang.strVersionCommercial : utils.Lang.strVersionCommunity;
     };
 
+    // #1363: these links leave the app - the system's web browser opens them - and
+    // nothing said so. Their tooltip now gives the address and says where it opens.
+    const markWebLinks = function($body) {
+        $body.find('a[target="popup"]').each(function() {
+            const href = this.getAttribute('href') || '';
+            if ( /^https?:\/\//i.test(href) )
+                this.setAttribute('title', `${utils.Lang.tipOpensInBrowser}\n${href}`);
+        });
+    };
+
     ViewAbout.prototype = Object.create(baseView.prototype);
     ViewAbout.prototype.constructor = ViewAbout;
     ViewAbout.prototype.paneltemplate = function(args) {
@@ -206,6 +216,7 @@
                     this.view.args = args;
                     this.view.$menuitem && this.view.$menuitem.removeClass('extra');
                     this.view.$body = $(this.view.paneltemplate(args));
+                    markWebLinks(this.view.$body);
                     this.view.$dialog = new AboutDialog();
                 } else {
                     if ( !!args.opts && !!args.opts.edition ) {
@@ -351,6 +362,7 @@
                     if (this.view) {
                         this.view.$dialog.titleText = utils.Lang.actAbout;
                         $('#idx-about-version span', this.view.$body).text(version(this.view.args.opts.commercial));
+                        markWebLinks(this.view.$body);
                     }
                 });
 
