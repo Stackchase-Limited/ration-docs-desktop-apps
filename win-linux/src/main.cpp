@@ -109,6 +109,15 @@ int main( int argc, char *argv[] )
     }
     qputenv("QT_QPA_PLATFORM", "xcb");
     qputenv("GDK_BACKEND", "x11");
+    /* #1522: with GDK forced to X11, the document view (CEF, through GTK) finds an input
+       method only through GTK_IM_MODULE. fcitx5's advice for Plasma 6 Wayland is to set
+       XMODIFIERS=@im=fcitx and leave GTK_IM_MODULE unset (native Wayland apps use the
+       compositor's text-input), which left this XWayland app without fcitx: Ctrl+Space did
+       nothing and only Latin text could be typed. When fcitx is the input method the
+       session names and GTK_IM_MODULE is not set at all, point GTK at fcitx's module. A
+       GTK_IM_MODULE set by the user - to anything - is left alone. */
+    if ( qgetenv("XMODIFIERS").contains("@im=fcitx") && !qEnvironmentVariableIsSet("GTK_IM_MODULE") )
+        qputenv("GTK_IM_MODULE", "fcitx");
     InputArgs::init(argc, argv);
     if (geteuid() == 0) {
         CMessage::warning(nullptr, WARNING_LAUNCH_WITH_ADMIN_RIGHTS);
