@@ -1258,7 +1258,16 @@ namespace WindowHelper {
             }
             if ( _panel->reporterMode() ) {
                 int _scrNum = QApplication::screens().indexOf(_screen);
-                _scr_geometry = QApplication::screens().at(_scr_count - _scrNum - 1)->geometry();
+                QScreen * _target = QApplication::screens().at(_scr_count - _scrNum - 1);
+                /* #1548: with an odd number of screens the mirrored index of the middle
+                   one is itself, and the slideshow covered the presenter view on its own
+                   screen. Use the primary screen then, or the next one if the presenter
+                   is on the primary. */
+                if ( _target == _screen ) {
+                    _target = QApplication::primaryScreen() != _screen ? QApplication::primaryScreen() :
+                                    QApplication::screens().at((_scrNum + 1) % _scr_count);
+                }
+                _scr_geometry = _target->geometry();
             } else _scr_geometry = _screen->geometry();
         } else {
             _scr_geometry = QApplication::primaryScreen()->geometry();
