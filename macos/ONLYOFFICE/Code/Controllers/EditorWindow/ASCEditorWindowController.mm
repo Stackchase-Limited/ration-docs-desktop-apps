@@ -191,6 +191,12 @@
     if (hasUnsaved) {
         [window makeKeyAndOrderFront:nil];
         
+        NSInteger returnCode;
+        CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+        if ( appManager->GetUserSettings()->Get(L"save-on-close") == L"1" && [NSCefData canSaveInPlace:cefView.data.path] ) {
+            // #1674: Settings > "Save changes automatically when closing a document"
+            returnCode = NSAlertFirstButtonReturn;
+        } else {
         NSAlert *alert = [[NSAlert alloc] init];
         [alert addButtonWithTitle:NSLocalizedString(@"Save", nil)];
         [alert addButtonWithTitle:NSLocalizedString(@"Don't Save", nil)];
@@ -199,7 +205,8 @@
         [alert setInformativeText:NSLocalizedString(@"Your changes will be lost if you don't save them.", nil)];
         [alert setAlertStyle:NSAlertStyleWarning];
 
-        NSInteger returnCode = [alert runModal];
+        returnCode = [alert runModal];
+        }
         if (returnCode == NSAlertFirstButtonReturn) {
             // Save
             self.waitingForClose = YES;

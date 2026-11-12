@@ -741,6 +741,12 @@ public:
                                     appManager->GetUserSettings()->Set(L"tab-switch-mru", [json[@"tabswitchmru"] boolValue] ? L"1" : L"0");
                                 }
 
+                                if ( [json objectForKey:@"saveonclose"] != nil ) {
+                                    // #1674
+                                    CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+                                    appManager->GetUserSettings()->Set(L"save-on-close", [json[@"saveonclose"] boolValue] ? L"1" : L"0");
+                                }
+
                                 if ( [json objectForKey:@"tabtypecolors"] != nil ) {
                                     // #2436: strips in the document type's colour on the tabs
                                     BOOL show = [json[@"tabtypecolors"] boolValue];

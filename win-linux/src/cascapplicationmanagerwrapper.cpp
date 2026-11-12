@@ -2356,6 +2356,10 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
             setUserSettings(L"plugins-hide-builtin", objRoot["removebuiltinplugins"].toBool(false) ? L"1" : L"0");
         }
 
+        if ( objRoot.contains("saveonclose") ) {
+            setUserSettings(L"save-on-close", objRoot["saveonclose"].toBool(false) ? L"1" : L"0");
+        }
+
 #ifdef _UPDMODULE
         if ( objRoot.contains("autoupdatemode") ) {
             if (m_pUpdateManager)

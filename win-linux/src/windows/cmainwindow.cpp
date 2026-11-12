@@ -777,6 +777,10 @@ int CMainWindow::trySaveDocument(int index)
         toggleButtonMain(false);
         m_pTabs->setCurrentIndex(index);
 
+        // #1674: Settings > "Save changes automatically when closing a document"
+        if ( AscAppManager::userSettings(L"save-on-close") == L"1" && m_pTabs->panel(index)->data()->canSaveInPlace() )
+            modal_res = MODAL_RESULT_YES;
+        else
         modal_res = CMessage::showMessage(this, getSaveMessage().arg(m_pTabs->titleByIndex(index).toHtmlEscaped()),
                                           MsgType::MSG_WARN, MsgBtns::mbYesDefNoCancel);
         switch (modal_res) {

@@ -237,6 +237,7 @@ l10n.en = {
     settTabTypeColors: 'Colour tabs by document type',
     settRemoveBuiltinPlugins: 'Built-in plugins can be removed in the Plugin Manager',
     settXdgPortal: 'Use the desktop\'s file dialog (portal)',
+    settSaveOnClose: 'Save changes automatically when closing a document',
 }
 
 

@@ -59,6 +59,7 @@
 -(void)setChanged:(BOOL)changed;
 -(void)close;
 -(void)reuse;
++(BOOL)canSaveInPlace:(NSString *)path;
 
 @property (nonatomic, copy) NSString *title;
 @property (nonatomic, copy) NSString *url;

@@ -160,4 +160,20 @@
     _isClosed = NO;
 }
 
+/* #1674: a document that is already a file we are allowed to write, so that "Save"
+   puts it back there with no dialog. Used by Settings > "Save changes automatically
+   when closing a document" to take "Save" without asking; anything else (new
+   documents, cloud documents, read-only files) keeps the question. The save itself
+   is the ordinary one (desktop-sdk decides whether it needs Save As and writes
+   through its safe-save path). */
++(BOOL)canSaveInPlace:(NSString *)path {
+    if ( ![path isKindOfClass:[NSString class]] || ![path isAbsolutePath] )
+        return NO;
+
+    BOOL isFolder = NO;
+    NSFileManager * fileManager = [NSFileManager defaultManager];
+    return [fileManager fileExistsAtPath:path isDirectory:&isFolder] && !isFolder &&
+            [fileManager isWritableFileAtPath:path];
+}
+
 @end

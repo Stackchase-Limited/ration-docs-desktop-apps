@@ -37,6 +37,7 @@
 #include "cproviders.h"
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QFileInfo>
 
 using namespace std;
 
@@ -251,4 +252,19 @@ bool CAscTabData::hasFrame() const
 bool CAscTabData::hasError() const
 {
     return _has_error;
+}
+
+/* #1674: a local document that is already a file we are allowed to write, so that
+   "Save" puts it back there with no dialog. Used by Settings > "Save changes
+   automatically when closing a document" to take "Save" without asking; anything
+   else (new or recovered documents, cloud documents, read-only files)
+   keeps the question. The save itself is the ordinary one (desktop-sdk decides
+   whether it needs Save As and writes through its safe-save path). */
+bool CAscTabData::canSaveInPlace() const
+{
+    if ( !_is_local || _is_readonly || _url.empty() )
+        return false;
+
+    QFileInfo info(QString::fromStdWString(_url));
+    return info.isAbsolute() && info.isFile() && info.isWritable();
 }

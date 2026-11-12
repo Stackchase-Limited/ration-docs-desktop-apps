@@ -345,6 +345,12 @@
                                                 <label for="sett-xdg-portal" class='sett__caption' l10n>${_lang.settXdgPortal}</label>
                                             </section>
                                         </div>
+                                        <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-save-on-close'>
+                                                <input type="checkbox" class="checkbox" id="sett-save-on-close">
+                                                <label for="sett-save-on-close" class='sett__caption' l10n>${_lang.settSaveOnClose}</label>
+                                            </section>
+                                        </div>
                                         <!-- temporary elements section -->
                                         <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-preview-mode'>
@@ -402,7 +408,8 @@
             $chTabMru,
             $chTabTypeColors,
             $chBuiltinPlugins,
-            $chXdgPortal;
+            $chXdgPortal,
+            $chSaveOnClose;
         let appSettings;
 
         function _set_user_name(name) {
@@ -626,6 +633,10 @@
                     // #2321: Linux/X11 only; the app sends xdgportal when it applies
                     _new_settings.xdgportal = $chXdgPortal.prop("checked");
                     appSettings.xdgportal = _new_settings.xdgportal;
+                }
+
+                if ( $chSaveOnClose ) {
+                    _new_settings.saveonclose = $chSaveOnClose.prop("checked");
                 }
 
                 sdk.command("settings:apply", JSON.stringify(_new_settings));
@@ -936,6 +947,15 @@
                         // #2321: the desktop's own file dialog; Linux/X11 only
                         $chXdgPortal = $('#sett-box-xdg-portal', $panel).parent().show().find('#sett-xdg-portal');
                         $chXdgPortal.prop('checked', !!appSettings.xdgportal)
+                            .off('change').on('change', e => {
+                                $btnApply.isdisabled() && $btnApply.disable(false);
+                            });
+                    }
+
+                    if ( appSettings && appSettings.saveonclose !== undefined ) {
+                        // #1674: closing a modified local document saves it instead of asking
+                        $chSaveOnClose = $('#sett-box-save-on-close', $panel).parent().show().find('#sett-save-on-close');
+                        $chSaveOnClose.prop('checked', !!appSettings.saveonclose)
                             .off('change').on('change', e => {
                                 $btnApply.isdisabled() && $btnApply.disable(false);
                             });

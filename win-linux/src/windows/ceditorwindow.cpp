@@ -122,6 +122,10 @@ int CEditorWindow::closeWindow()
 
     int _reply = MODAL_RESULT_YES;
     if ( (panel->data()->hasChanges() || panel->hasUncommittedChanges()) && !panel->data()->closed() ) {
+        // #1674: Settings > "Save changes automatically when closing a document"
+        if ( AscAppManager::userSettings(L"save-on-close") == L"1" && panel->data()->canSaveInPlace() )
+            _reply = MODAL_RESULT_YES;
+        else {
         if (windowState() == Qt::WindowMinimized)
             showNormal();
 
@@ -131,6 +135,7 @@ int CEditorWindow::closeWindow()
                                        tr("%1 has been changed. Save changes?").arg(panel->data()->title(true)),
                                        MsgType::MSG_WARN, MsgBtns::mbYesDefNoCancel);
 //            modal_res = mess.warning(getSaveMessage().arg(m_pTabs->titleByIndex(index)));
+        }
         switch (_reply) {
         case MODAL_RESULT_NO:
             _reply = MODAL_RESULT_YES;

@@ -73,6 +73,7 @@ public:
     bool    hasFeature(const std::wstring&) const;
     bool    hasFrame() const;
     bool    hasError() const;
+    bool    canSaveInPlace() const;
 
     AscEditorType   contentType() const;
     void            setContentType(AscEditorType);

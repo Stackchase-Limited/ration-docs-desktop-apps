@@ -633,6 +633,15 @@
         if (cefView && ([cefView.data hasChanges] || [cefView isSaveLocked])) {
             [self.view.window makeKeyAndOrderFront:nil];
 
+            NSInteger returnCode;
+            CAscApplicationManager * appManager = [NSAscApplicationWorker getAppManager];
+            if ( appManager->GetUserSettings()->Get(L"save-on-close") == L"1" &&
+                    [tab.params[@"action"] integerValue] != ASCTabActionCreateLocalFileFromTemplate &&
+                    [NSCefData canSaveInPlace:tab.params[@"path"]] )
+            {
+                // #1674: Settings > "Save changes automatically when closing a document"
+                returnCode = NSAlertFirstButtonReturn;
+            } else {
             NSAlert *alert = [[NSAlert alloc] init];
             [alert addButtonWithTitle:NSLocalizedString(@"Save", nil)];
             [alert addButtonWithTitle:NSLocalizedString(@"Don't Save", nil)];
@@ -643,7 +652,8 @@
             
             [self.tabsControl selectTab:tab];
             
-            NSInteger returnCode = [alert runModalSheet];
+            returnCode = [alert runModalSheet];
+            }
             
             if(returnCode == NSAlertFirstButtonReturn) {
                 tab.params[@"shouldClose"] = @(YES);
@@ -1107,6 +1117,7 @@
     tabswitchmru = appManager->GetUserSettings()->Get(L"tab-switch-mru") == L"1",
     tabtypecolors = appManager->GetUserSettings()->Get(L"tab-type-colors") == L"1",
     removebuiltinplugins = appManager->GetUserSettings()->Get(L"plugins-hide-builtin") == L"1",
+    saveonclose = appManager->GetUserSettings()->Get(L"save-on-close") == L"1",
     editorinwindow = appManager->GetUserSettings()->Get(L"editor-window-mode") == L"1",
     detectkeyboard = !(appManager->GetUserSettings()->Get(L"spell-check-input-mode") == L"0");
     [json_langs setValue:@(usegpu) forKey:@"usegpu"];
@@ -1115,6 +1126,7 @@
     [json_langs setValue:@(tabswitchmru) forKey:@"tabswitchmru"];
     [json_langs setValue:@(tabtypecolors) forKey:@"tabtypecolors"];
     [json_langs setValue:@(removebuiltinplugins) forKey:@"removebuiltinplugins"];
+    [json_langs setValue:@(saveonclose) forKey:@"saveonclose"];
     [json_langs setValue:detectkeyboard?@"auto":@"off" forKey:@"spellcheckdetect"];
     [json_langs setValue:@(editorinwindow) forKey:@"editorwindowmode"];
 
