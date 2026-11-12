@@ -195,6 +195,38 @@ public:
         }
     }
 
+    // #200: Ctrl+N in an editor creates a new document of that editor's type, as the
+    // editor's File > Create New does ("create:new"). Not for the start page and
+    // for editors with nothing to create (PDF, diagrams).
+    auto sendCreateNewEvent(int id) -> bool {
+        CAscTabData * doc = nullptr;
+        if ( CEditorWindow * editor = m_appmanager.editorWindowFromViewId(id) ) {
+            doc = editor->mainView()->data();
+        } else
+        if ( mainWindow() && mainWindow()->holdView(id) ) {
+            int index = mainWindow()->tabWidget()->tabIndexByView(id);
+            if ( !(index < 0) )
+                doc = mainWindow()->tabWidget()->panel(index)->data();
+        }
+
+        std::wstring type;
+        switch ( doc ? doc->contentType() : AscEditorType::etUndefined ) {
+        case AscEditorType::etDocument: type = L"word"; break;
+        case AscEditorType::etSpreadsheet: type = L"cell"; break;
+        case AscEditorType::etPresentation: type = L"slide"; break;
+        default: return false;
+        }
+
+        NSEditorApi::CAscCefMenuEvent * ns_event = new NSEditorApi::CAscCefMenuEvent(ASC_MENU_EVENT_TYPE_CEF_EXECUTE_COMMAND);
+        NSEditorApi::CAscExecCommand * pData = new NSEditorApi::CAscExecCommand;
+        pData->put_Command(L"create:new");
+        pData->put_Param(type);
+        ns_event->m_pData = pData;
+        ns_event->m_nSenderId = id;
+        m_appmanager.OnEvent(ns_event);
+        return true;
+    }
+
     auto handleAppKeyPress(QKeyEvent * e) -> bool
     {
         if (e->key() == Qt::Key_O && (e->modifiers() & Qt::ControlModifier)) {
