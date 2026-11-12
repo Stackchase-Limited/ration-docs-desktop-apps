@@ -206,6 +206,8 @@ void CMainWindowImpl::refreshAboutVersion()
     GET_REGISTRY_USER(reg_user);
     _json_obj["editorwindowmode"] = reg_user.value("editorWindowMode",false).toBool();
     _json_obj["usegpu"] = !(AscAppManager::userSettings(L"disable-gpu") == L"1");
+    // #1611: desktop-sdk passes --disable-pinch unless enable-pinch is 1 (read at start)
+    _json_obj["pinchzoom"] = AscAppManager::userSettings(L"enable-pinch") == L"1";
     _json_obj["useai"] = !(AscAppManager::userSettings(L"disable-ai") == L"1");
     _json_obj["keeprecents"] = !(AscAppManager::userSettings(L"disable-recents") == L"1");
 #ifdef _WIN32

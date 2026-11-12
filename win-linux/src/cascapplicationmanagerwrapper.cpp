@@ -2316,6 +2316,10 @@ bool CAscApplicationManagerWrapper::applySettings(const wstring& wstrjson)
             setUserSettings(L"disable-gpu", use_gpu ? L"0" : L"1");
         }
 
+        if ( objRoot.contains("pinchzoom") ) {
+            setUserSettings(L"enable-pinch", objRoot["pinchzoom"].toBool(false) ? L"1" : L"0");
+        }
+
         if ( objRoot.contains("useai") ) {
             setUserSettings(L"disable-ai", objRoot["useai"].toBool(true) ? L"0" : L"1");
         }

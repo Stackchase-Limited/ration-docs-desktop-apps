@@ -297,6 +297,12 @@
                                             </section>
                                         </div>
                                         <div class='settings-field' style='display:none;'>
+                                            <section class='switch-labeled hbox' id='sett-box-pinch-zoom'>
+                                                <input type="checkbox" class="checkbox" id="sett-pinch-zoom">
+                                                <label for="sett-pinch-zoom" class='sett__caption' l10n>${_lang.settPinchZoom} *</label>
+                                            </section>
+                                        </div>
+                                        <div class='settings-field' style='display:none;'>
                                             <section class='switch-labeled hbox' id='sett-box-use-ai'>
                                                 <input type="checkbox" class="checkbox" id="sett-use-ai">
                                                 <label for="sett-use-ai" class='sett__caption' l10n>${_lang.settUseAI} *</label>
@@ -403,6 +409,7 @@
             $optsWindowButtons,
             $optsAutoupdateMode;
         let $chGpu,
+            $chPinchZoom,
             $chUseAI,
             $chKeepRecents,
             $chTabMru,
@@ -589,6 +596,15 @@
                     if ( appSettings.usegpu != _new_settings.usegpu ) {
                         _new_settings.restart = true;
                         appSettings.usegpu = _new_settings.usegpu;
+                    }
+                }
+
+                if ( $chPinchZoom ) {
+                    _new_settings.pinchzoom = $chPinchZoom.prop("checked");
+
+                    if ( appSettings.pinchzoom != _new_settings.pinchzoom ) {
+                        _new_settings.restart = true;
+                        appSettings.pinchzoom = _new_settings.pinchzoom;
                     }
                 }
 
@@ -870,6 +886,15 @@
                         if ( appSettings.usegpu !== undefined ) {
                             $chGpu = $('#sett-box-gpu-mode', $panel).parent().show().find('#sett-gpu-mode');
                             $chGpu.prop('checked', !!appSettings.usegpu)
+                                .on('change', e => {
+                                    $btnApply.isdisabled() && $btnApply.disable(false);
+                                });
+                        }
+
+                        // #1611: sent by Windows/Linux only; macOS handles pinch itself
+                        if ( appSettings.pinchzoom !== undefined ) {
+                            $chPinchZoom = $('#sett-box-pinch-zoom', $panel).parent().show().find('#sett-pinch-zoom');
+                            $chPinchZoom.prop('checked', !!appSettings.pinchzoom)
                                 .on('change', e => {
                                     $btnApply.isdisabled() && $btnApply.disable(false);
                                 });
