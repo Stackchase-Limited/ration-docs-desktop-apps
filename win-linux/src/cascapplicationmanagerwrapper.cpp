@@ -943,6 +943,19 @@ bool CAscApplicationManagerWrapper::processCommonEvent(NSEditorApi::CAscCefMenuE
                 return true;
             }
             break;
+#ifdef __linux
+        case 0x51:  // Key_Q
+            // #1270: Ctrl+Q quits on Linux desktops, as every other app there does: close all
+            // windows as the window manager's quit would, asking about unsaved documents.
+            // The editors bind Alt+Q (chat), never plain Ctrl+Q, off macOS.
+            if ( data->get_IsCtrl() && !data->get_IsAlt() && !data->get_IsShift() ) {
+                CMainWindow * w = mainWindow();
+                if ( closeQueue().empty() && !(w && w->isAboutToClose()) )
+                    AscAppManager::closeAppWindows();
+                return true;
+            }
+            break;
+#endif
         default:
             break;
         }
