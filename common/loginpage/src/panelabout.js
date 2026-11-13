@@ -159,6 +159,7 @@
                                        carries its own attribution requirement, so it is named
                                        and linked rather than folded into the AGPL line. -->
                                   <p class="oss-line oss-muted" l10n>${_lang.ossNonCode}</p>
+                                  <p class="oss-line oss-muted" l10n>${_lang.ossFontInter}</p>
                                   <p class="oss-line oss-muted" l10n>${_lang.ossTrademark}</p>
                                   <h4 class="oss-title" l10n>${_lang.ossTechnical}</h4>
                                   <dl class="oss-tech">

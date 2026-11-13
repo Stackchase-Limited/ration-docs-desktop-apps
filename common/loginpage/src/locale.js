@@ -67,6 +67,7 @@ l10n.en = {
     ossWarranty: 'Provided without warranty except where separately agreed with Stackchase Limited.',
     ossViewLicence: 'View Licence',
     ossViewSource: 'View Corresponding Source',
+    ossFontInter: 'The start page uses the Inter typeface, copyright 2020 The Inter Project Authors, under the SIL Open Font License 1.1.',
     ossTrademark: 'ONLYOFFICE is a trademark of Ascensio System SIA. Ration Docs is not produced by, endorsed by, or affiliated with Ascensio System SIA.',
     ossNonCode: 'Illustrations, icon sets and documentation content are licensed under CC BY-SA 4.0.',
     ossViewCC: 'View CC BY-SA 4.0',

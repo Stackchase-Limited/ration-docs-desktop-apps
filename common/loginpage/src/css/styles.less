@@ -14,6 +14,7 @@
 @import 'colors_night';
 @import 'colors_white';
 @import 'colors_gray';
+@import 'inter';
 @import 'variables';
 @import 'component';
 @import 'window';
@@ -1039,7 +1040,7 @@ li.menu-item {
 
   // Match highlight inside the file list.
   mark.search-hit {
-    background: @ration-petrol-ring;
+    background: @rd-ring;
     color: inherit;
     padding: 0 1px;
   }
@@ -1233,120 +1234,117 @@ li.menu-item {
   }
 }
 
-// Ration Docs home design.
+// Ration Docs home design ("rationDocs Desktop - Light & Dark").
 //
-// The design is deliberately square: no radius anywhere except the traffic
-// lights the OS draws. Emphasis comes from the petrol accent, a 2px inset
-// underline on the active tab, and solid fills on the active segment -- not
-// from rounding or shadow. Keep it that way when extending this block.
+// The design is square: no radius anywhere except the traffic lights the OS
+// draws. Emphasis comes from the accent colour, a 2px underline on the active
+// filter, the petrol fill of the pressed list button and the selected menu
+// wash -- not from rounding or shadow. Keep it that way when extending this.
+//
+// Every colour comes from the --rd-* tokens in colors.less, which carry a light
+// and a dark value; nothing here may name a hex colour that differs by theme.
 //
 // Scope note: the window title bar and its tabs are drawn natively by the
-// desktop shell, so this stylesheet covers the rail and the content area only.
+// desktop shell, so this stylesheet covers the left menu and the content area.
 
-// ---- rail ----------------------------------------------------------------
+@rd-font: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Open Sans', sans-serif;
+
+// ---- left menu -----------------------------------------------------------
 .ration-sidebar {
   // ViewPortals.render() does $('#idx-sidebar-portals').html(tpl_sidebar), and that
   // template opens with its own "Clouds" heading and "+" button, so the branded
   // .rd-grp heading just above it was followed by a second one. Hide the injected
   // heading rather than editing panelconnect.js, which serves other views that
-  // still want it.
-  //
-  // This rule used to sit inside the `> li.menu-item ... a` block below, where it
-  // compiled to
-  //   .ration-sidebar>li.menu-item:not(...) a #idx-sidebar-portals .sidebar-block-title
-  // and matched nothing at all: the section is a sibling of the menu items, not a
-  // descendant of an anchor. It had no effect on any platform, and the duplicate
-  // was simply never looked for again. Reading the compiled CSS is what settles
-  // this - grepping the built page for the id finds the selector's tail and looks
-  // like a hit.
+  // still want it. (It must sit here, at this level: nested inside the anchor
+  // block it compiled to a descendant selector that matched nothing.)
   #idx-sidebar-portals .sidebar-block-title {
     display: none;
   }
 
   display: flex;
   flex-direction: column;
+  min-width: 232px;
+  max-width: 232px;
   min-height: 0;
-  padding: 0;
-  gap: 0;
-  background: @rd-navy;
-  color: @rd-side-ink;
-  border-right: 1px solid @rd-side-edge;
+  box-sizing: border-box;
+  padding: 24px 12px 16px;
+  gap: 2px;
+  background: @rd-rail;
+  color: @rd-ink;
+  border-right: 1px solid @rd-line;
+  font-family: @rd-font;
+  -webkit-font-smoothing: antialiased;
 
   .ration-brand {
-    padding: 24px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 12px 24px;
   }
 
-  .ration-wordmark {
+  .ration-logo {
     display: block;
-    width: auto;
-    height: 28px;
+    width: 104px;
+    height: 31px;
+
+    .rl-mark { fill: var(--rd-logo-mark); }
+    .rl-text { fill: var(--rd-logo-ink); }
+  }
+
+  .ration-brand-name {
+    color: @rd-muted;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
   }
 
   > li.menu-item:not(.separator):not(.devider):not(.rd-spacer) {
-    margin: 0 14px;
+    margin: 0;
 
     a {
       display: flex;
       align-items: center;
-      gap: 13px;
-      height: 44px;
+      gap: 12px;
+      height: 40px;
       padding: 0 12px;
       border: 0;
-      border-left: 2px solid transparent;
       border-radius: 0;
       background: none;
-      color: @rd-side-mut;
-      font-size: 15px;
+      color: @rd-ink;
+      font-size: 14px;
       font-weight: 500;
       text-decoration: none;
 
       .icon-box {
-        width: 21px;
-        height: 21px;
+        width: 18px;
+        height: 18px;
         padding: 0;
         // The generic `.tool-menu .menu-item .icon-box` rule draws a 1px border
-        // around every icon box. This block outranks it and resets the radius and
-        // the background, but never named `border` - so that one property leaked
-        // through and put a square outline around each icon in the left menu.
+        // around every icon box; reset it here or each icon gets a square outline.
         border: 0;
         border-radius: 0;
         background: none;
       }
 
       svg.icon {
-        width: 21px;
-        height: 21px;
+        width: 18px;
+        height: 18px;
         fill: none;
         stroke: currentColor;
-        stroke-width: 1.75;
+        stroke-width: 1.6;
         stroke-linecap: round;
         stroke-linejoin: round;
         color: inherit;
       }
     }
 
-    // Hover changes the background only. Brightening the label and icon as well
-    // made hover read as a second selected state, and meant the text moved every
-    // time the pointer crossed the rail; the colour the item has at rest is the
-    // colour it keeps.
     a:hover {
-      background: @rd-side-hover;
+      background: @rd-hover;
     }
 
-    // The active item is a petrol left accent, a faint wash, and white text - see
-    // the block below. But the generic rule
-    //
-    //   .tool-menu>li.menu-item:not(.separator):not(.devider).selected {
-    //       background: var(--highlight-sidebar-item-pressed);
-    //       outline: 1px solid var(--border-sidebar-item); outline-offset: -1px; ... }
-    //
-    // styles the LI while ours styles the A inside it, so the two never competed on
-    // specificity - both simply applied. On this dark sidebar that painted a
-    // near-white filled box with a 1px outline behind the item, and our own
-    // `color: #fff` then put white text on top of it, so "Home" read as an empty
-    // white rectangle rather than as the selected item.
-    //
-    // Neutralise the LI-level treatment here; (0,6,1) against the generic (0,5,1).
+    // The generic `.tool-menu>li.menu-item...selected` rule styles the LI with a
+    // filled box and an outline, while ours styles the A inside it, so both used to
+    // apply. Neutralise the LI-level treatment; (0,6,1) against the generic (0,5,1).
     &.selected {
       background: none;
       outline: 0;
@@ -1355,16 +1353,12 @@ li.menu-item {
 
     &.selected a,
     a.selected {
-      border-left-color: @ration-petrol;
-      background: @rd-side-active;
-      color: #fff;
+      background: @rd-sel;
+      color: @rd-accent;
+      font-weight: 600;
       outline: none;
       box-shadow: none;
     }
-
-    // The agent entry is the one violet accent in an otherwise petrol rail. It
-    // does not brighten on hover either, for the same reason as above.
-    a.rd-ai svg.icon { color: @rd-violet; }
   }
 
   > li.menu-item.separator,
@@ -1374,65 +1368,70 @@ li.menu-item {
     background: none;
   }
 
-  // Pushes the agent and settings entries to the foot of the rail.
+  // Pushes Settings to the foot of the menu.
   > li.menu-item.rd-spacer {
     flex: 1 1 auto;
-    min-height: 8px;
+    min-height: 24px;
     margin: 0;
     border: 0;
     background: none;
     pointer-events: none;
   }
 
-  > li.menu-item.rd-foot:first-of-type,
-  > li.menu-item.rd-spacer + li.menu-item.rd-foot {
-    padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  > li.menu-item.rd-spacer + li.menu-item {
+    padding-top: 12px;
+    border-top: 1px solid @rd-line;
+    // The generic menu-item rule rounds the LI, which bent the ends of this rule.
+    border-radius: 0;
   }
 }
 
+// "Clouds" group heading: the design's section-label style.
 .rd-grp {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 20px 14px 4px;
-  color: @rd-side-mut;
-  font-size: 12px;
+  margin: 20px 0 4px;
+  padding: 0 4px 0 12px;
+  color: @rd-muted;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 
   .rd-grp-add {
     display: grid;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border: 0;
     border-radius: 0;
     background: none;
-    color: @rd-side-mut;
+    color: @rd-muted;
     cursor: pointer;
     place-items: center;
 
     svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       fill: none;
       stroke: currentColor;
-      stroke-width: 1.75;
+      stroke-width: 1.6;
       stroke-linecap: round;
     }
 
     &:hover {
-      background: @rd-side-hover;
+      background: @rd-hover;
+      color: @rd-ink;
     }
   }
 }
 
 .rd-cloud-empty {
   margin: 0;
-  padding: 6px 26px;
-  color: @rd-side-mut;
-  font-size: 13.5px;
+  padding: 6px 12px;
+  color: @rd-muted;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -1442,51 +1441,67 @@ li.menu-item {
   min-width: 0;
   flex-direction: column;
   background: @rd-canvas;
+  color: @rd-ink;
+  font-family: @rd-font;
+  -webkit-font-smoothing: antialiased;
 
   .action-panel.recents {
     display: flex;
     min-height: 0;
     flex: 1;
     flex-direction: column;
+    background: @rd-canvas;
   }
 }
 
+// Title row: "Home" on the left, the search field on the right.
 .rd-topbar {
   display: flex;
-  height: 78px;
+  flex-wrap: wrap;
   align-items: center;
   flex: 0 0 auto;
-  gap: 20px;
-  padding: 0 32px;
-  border-bottom: 1px solid @rd-line;
-  background: @rd-surface;
+  gap: 24px;
+  padding: 28px 36px 0;
+  background: @rd-canvas;
+}
+
+.rd-title {
+  margin: 0;
+  color: @rd-ink;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.01em;
 }
 
 .rd-search {
   display: flex;
-  height: 50px;
-  flex: 1;
-  max-width: 640px;
+  align-items: center;
+  flex: 1 1 320px;
+  max-width: 560px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0 12px;
+  gap: 10px;
+  box-sizing: border-box;
   border: 1px solid @rd-line;
-  background: @rd-surface;
+  background: @rd-field;
+  color: @rd-muted;
 
   &:focus-within {
-    border-color: @ration-petrol;
-    box-shadow: 0 0 0 3px @ration-petrol-ring;
+    border-color: @rd-accent;
+    box-shadow: 0 0 0 3px @rd-ring;
   }
 
   .rd-search-lead {
     display: grid;
-    width: 50px;
-    color: @rd-faint;
     place-items: center;
 
     svg {
-      width: 22px;
-      height: 22px;
+      width: 18px;
+      height: 18px;
       fill: none;
       stroke: currentColor;
-      stroke-width: 1.75;
+      stroke-width: 1.6;
       stroke-linecap: round;
     }
   }
@@ -1494,246 +1509,261 @@ li.menu-item {
   input {
     min-width: 0;
     flex: 1;
+    height: 100%;
     border: 0;
     outline: 0;
     background: transparent;
     color: @rd-ink;
-    font-size: 16px;
-    font-weight: 500;
+    font: inherit;
+    font-size: 14px;
 
     &::placeholder {
-      color: @rd-faint;
-      font-weight: 400;
+      color: @rd-muted;
     }
 
     &:focus-visible { outline: 0; }
   }
 
-  .rd-search-go {
-    display: grid;
-    width: 50px;
-    height: auto;
-    flex: 0 0 50px;
-    align-self: stretch;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: @ration-petrol;
-    color: #fff;
-    cursor: pointer;
-    place-items: center;
-
-    svg {
-      width: 22px;
-      height: 22px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.75;
-      stroke-linecap: round;
-    }
-
-    &:hover { background: @ration-petrol-dark; }
-  }
+  // The design has no separate search button; Enter and typing already search.
+  .rd-search-go { display: none; }
 }
 
 .rd-kbd {
   display: flex;
-  align-self: center;
-  margin-right: 8px;
-  gap: 4px;
+  flex: none;
 
   span {
-    min-width: 22px;
-    padding: 3px 7px;
+    padding: 2px 6px;
     border: 1px solid @rd-line;
+    background: @rd-kbd;
     color: @rd-muted;
     font-size: 12px;
-    font-weight: 600;
-    text-align: center;
+    font-weight: 500;
+    white-space: nowrap;
   }
 }
 
 .rd-right {
   display: flex;
   align-items: center;
-  margin-left: auto;
+
+  &:empty { display: none; }
 }
 
 .rd-avatar {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   background: @ration-petrol;
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   place-items: center;
+
+  &:empty { display: none; }
 }
 
 .rd-work {
   min-height: 0;
   flex: 1;
   overflow: auto;
-  padding: 30px 32px 44px;
+  padding: 28px 36px 32px;
 }
 
 .rd-sec-h {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   color: @rd-muted;
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: .06em;
   text-align: left;
+  text-transform: uppercase;
 }
 
 // ---- create tiles --------------------------------------------------------
 #area-document-creation-grid {
   min-height: 0;
-  margin: 0 0 34px;
+  margin: 0 0 28px;
   padding: 0;
 }
 
+// Four tiles in a row, as designed; two by two when the window is too narrow
+// for four (a wrapping flex row left the fourth tile alone and full width).
 .ration-content .document-creation-grid {
   display: grid;
-  justify-content: stretch;
-  gap: 16px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   padding: 0;
+}
+
+@media (max-width: 1180px) {
+  .ration-content .document-creation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .ration-content .document-creation-item {
   display: flex;
   width: auto;
   height: auto;
-  align-items: flex-start;
-  flex-direction: column;
+  min-width: 0;
+  min-height: 76px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
   gap: 14px;
-  padding: 20px;
+  padding: 0 18px;
+  box-sizing: border-box;
   border: 1px solid @rd-line;
   border-radius: 0;
-  background: @rd-surface;
+  background: @rd-tile;
   box-shadow: none;
+  color: @rd-ink;
   cursor: pointer;
   text-align: left;
 
   &:hover {
-    border-color: @ration-petrol;
-    background: @rd-surface;
-    box-shadow: inset 0 1px 0 @ration-petrol;
+    border-color: @rd-accent;
+    background: @rd-tile;
   }
 
   .rd-glyph {
-    position: relative;
-    width: 44px;
-    height: 54px;
+    display: flex;
+    flex: none;
 
-    svg {
-      width: 44px;
-      height: 54px;
-      fill: none;
-      stroke-width: 1.6;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .rd-file-icon {
+      display: block;
+      width: 47.3px;
+      height: 44px;
     }
   }
 
-  .rd-chip {
-    position: absolute;
-    bottom: 8px;
-    left: 0;
-    padding: 3px 6px;
-    color: #fff;
-    font-size: 11.5px;
-    font-weight: 800;
-    letter-spacing: 0.03em;
+  .rd-tile-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
   }
 
   .title {
     padding: 0;
     color: @rd-ink;
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 600;
     text-align: left;
   }
 
   .rd-meta {
-    margin-top: -6px;
-    color: @rd-faint;
-    font-size: 13px;
+    margin: 0;
+    color: @rd-muted;
+    font-size: 12px;
   }
-
-  &[data-format="docx"] { .rd-glyph svg { stroke: @rd-blue; }   .rd-chip { background: @rd-blue; } }
-  &[data-format="xlsx"] { .rd-glyph svg { stroke: @rd-green; }  .rd-chip { background: @rd-green; } }
-  &[data-format="pptx"] { .rd-glyph svg { stroke: @rd-orange; } .rd-chip { background: @rd-orange; } }
-  &[data-format="pdf"]  { .rd-glyph svg { stroke: @rd-red; }    .rd-chip { background: @rd-red; } }
 }
 
 // ---- list header controls ------------------------------------------------
+// Left: the Recent / Recover pair as one segmented control, the pressed half
+// filled petrol. Right: the type filter as underlined text tabs. One hairline
+// under both, which the file list's own rows continue.
 .rd-rf-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  margin: 0 0 16px;
-  gap: 16px;
+  justify-content: space-between;
+  margin: 0;
+  gap: 12px 24px;
+  border-bottom: 1px solid @rd-line;
 }
 
 .rd-toggle {
   display: flex;
-  gap: 26px;
+  margin-bottom: 10px;
 
   button {
-    padding: 4px 0 12px;
-    border: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid @rd-line;
     border-radius: 0;
-    background: none;
-    box-shadow: inset 0 -2px 0 transparent;
-    color: @rd-muted;
+    background: transparent;
+    box-shadow: none;
+    color: @rd-ink;
     cursor: pointer;
-    font-size: 17px;
-    font-weight: 700;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+
+    & + button { border-left: 0; }
+
+    &:hover:not(.on) { background: @rd-row-hover; }
 
     &.on {
-      box-shadow: inset 0 -2px 0 @ration-petrol;
-      color: @rd-ink;
+      padding: 0 16px;
+      border-color: @ration-petrol;
+      background: @ration-petrol;
+      color: #fff;
+      font-weight: 600;
     }
   }
 }
 
+.rd-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  background: var(--rd-badge-bg);
+  color: var(--rd-badge-ink);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  &[hidden] { display: none; }
+}
+
 .rd-count {
   margin-left: auto;
-  color: @rd-faint;
-  font-size: 13.5px;
+  margin-bottom: 10px;
+  color: @rd-muted;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
 }
 
 .rd-seg {
   display: flex;
-  border: 1px solid @rd-line;
-  background: @rd-surface;
+  gap: 20px;
 
   button {
-    padding: 8px 14px;
+    height: 36px;
+    padding: 0 2px;
     border: 0;
-    border-right: 1px solid @rd-line;
+    border-bottom: 2px solid transparent;
     border-radius: 0;
-    background: none;
+    background: transparent;
     color: @rd-muted;
     cursor: pointer;
+    font: inherit;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
 
-    &:last-child { border-right: 0; }
-    &:hover { background: @rd-canvas; }
+    &:hover { color: @rd-ink; }
 
     &.on {
-      background: @ration-petrol;
-      color: #fff;
+      border-bottom-color: @rd-accent;
+      color: @rd-ink;
+      font-weight: 600;
     }
   }
 }
 
 // ---- file list -----------------------------------------------------------
-// Head and rows share one track definition so columns line up. The pin and
-// overflow columns are app functionality the static design omitted.
+// Head and rows share one track definition so the columns line up. The pin and
+// overflow buttons are absolutely-positioned hover overlays in the shipped
+// stylesheet, so they take no track of their own.
 #box-container {
   display: block;
   gap: 0;
@@ -1742,19 +1772,17 @@ li.menu-item {
 .rd-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid @rd-line;
-  background: @rd-surface;
+  border: 0;
+  background: transparent;
 
-  // Three tracks, as the design specifies. The pin and overflow buttons are
-  // absolutely-positioned hover overlays in the shipped stylesheet, so they
-  // deliberately take no track of their own.
-  --rd-cols: 1fr 260px 176px;
-  &.recover { --rd-cols: 1fr 210px 176px; }
+  --rd-cols: minmax(260px, 1fr) 240px 170px;
+  &.recover { --rd-cols: minmax(260px, 1fr) 210px 170px; }
 
   .file-list-head,
   .file-list-body .row {
     display: grid;
     align-items: center;
+    column-gap: 16px;
     border-radius: 0;
     grid-template-columns: var(--rd-cols);
 
@@ -1765,32 +1793,33 @@ li.menu-item {
 
   .file-list-head {
     top: 0;
-    padding: 11px 20px;
+    height: 36px;
+    padding: 0 12px;
+    box-sizing: border-box;
     border-bottom: 1px solid @rd-line;
-    background: @rd-surface;
-    color: @rd-faint;
-    font-size: 12.5px;
+    background: @rd-canvas;
+    color: @rd-muted;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.03em;
-
-    .col-date { text-align: right; }
+    letter-spacing: .06em;
+    text-transform: uppercase;
   }
 
   .file-list-body {
     overflow: auto;
 
     .row {
-      height: 56px;
-      padding: 0 20px;
-      border-bottom: 1px solid @rd-line-2;
+      height: 52px;
+      padding: 0 12px;
+      box-sizing: border-box;
+      border-bottom: 1px solid @rd-line;
       background: transparent;
+      color: @rd-ink;
       cursor: pointer;
-
-      &:last-child { border-bottom: 0; }
 
       // The design separates rows with a hairline, not with banding.
       &:nth-child(even) { background: transparent; }
-      &:hover { background: @rd-canvas; }
+      &:hover { background: @rd-row-hover; }
     }
 
     .row.hidden { display: none; }
@@ -1803,16 +1832,22 @@ li.menu-item {
     gap: 14px;
 
     > .icon {
-      display: grid;
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      background: @rd-canvas;
-      place-items: center;
+      display: flex;
+      flex: none;
+      align-items: center;
+      width: 32px;
+      height: 30px;
+      background: none;
+
+      .rd-file-icon {
+        display: block;
+        width: 32.2px;
+        height: 30px;
+      }
 
       svg.icon {
-        width: 19px;
-        height: 19px;
+        width: 20px;
+        height: 20px;
       }
     }
 
@@ -1820,7 +1855,7 @@ li.menu-item {
       overflow: hidden;
       margin: 0;
       color: @rd-ink;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1830,35 +1865,50 @@ li.menu-item {
   .col-location {
     overflow: hidden;
     color: @rd-muted;
-    font-size: 14px;
+    font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   .col-date {
     color: @rd-muted;
-    font-size: 14px;
+    font-size: 13px;
     font-variant-numeric: tabular-nums;
-    text-align: right;
+    text-align: left;
 
     p { margin: 0; }
+  }
+
+  .btn-quick {
+    color: @rd-muted;
+
+    svg.icon {
+      fill: none;
+      stroke: currentColor;
+      color: currentColor;
+    }
+
+    &:hover { background: @rd-hover; }
   }
 }
 
 .file-list-subhead {
-  padding: 11px 20px;
-  border-top: 1px solid @rd-line;
+  padding: 0 12px;
+  height: 36px;
+  display: flex;
+  align-items: center;
   border-bottom: 1px solid @rd-line;
   background: @rd-canvas;
-  color: @rd-faint;
-  font-size: 12.5px;
+  color: @rd-muted;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 mark.search-hit {
   padding: 0 1px;
-  background: @ration-petrol-ring;
+  background: @rd-ring;
   color: inherit;
 }
 
@@ -1871,7 +1921,7 @@ mark.search-hit {
     display: block;
     margin-bottom: 6px;
     color: @rd-ink;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
   }
 
@@ -1880,13 +1930,14 @@ mark.search-hit {
     padding: 9px 16px;
     border: 1px solid @rd-line;
     border-radius: 0;
-    background: @rd-surface;
-    color: @ration-petrol;
+    background: @rd-field;
+    color: @rd-accent;
     cursor: pointer;
-    font-size: 14px;
+    font: inherit;
+    font-size: 13px;
     font-weight: 600;
 
-    &:hover { background: @rd-canvas; }
+    &:hover { background: @rd-row-hover; }
   }
 }
 
@@ -1896,43 +1947,45 @@ mark.search-hit {
   .rd-list .file-list-body .row,
   .rd-seg button,
   .rd-toggle button,
-  .rd-search,
-  .rd-search-go {
+  .rd-search {
     transition: 0.14s ease;
   }
 }
 
-:focus-visible {
-  outline: 2px solid @ration-petrol;
-  outline-offset: 2px;
+.ration-sidebar,
+.ration-content {
+  :focus-visible {
+    outline: 2px solid @rd-accent;
+    outline-offset: 2px;
+  }
 }
 
-// Narrow window: the rail collapses to icons and the list sheds its middle
-// columns, matching the design's own breakpoint.
+// Narrow window: the menu collapses to icons and the list sheds its location
+// column.
 @media (max-width: 980px) {
   .ration-sidebar {
-    min-width: 74px;
-    max-width: 74px;
+    min-width: 64px;
+    max-width: 64px;
+    padding: 20px 8px 12px;
 
-    .ration-brand { padding: 20px 0; text-align: center; }
-    .ration-wordmark { height: 24px; margin: 0 auto; }
+    .ration-brand { align-items: center; padding: 0 0 20px; }
+    .ration-logo { width: 40px; height: 31px; overflow: hidden; }
+    .ration-brand-name { display: none; }
 
     > li.menu-item:not(.separator):not(.devider):not(.rd-spacer) {
-      margin: 0 8px;
-      a { justify-content: center; padding: 0; gap: 0; border-left: 0; }
+      a { justify-content: center; padding: 0; gap: 0; }
     }
 
     .text, .rd-cloud-empty, .rd-grp span { display: none; }
-    .rd-grp { justify-content: center; }
+    .rd-grp { justify-content: center; padding: 0; }
   }
 
-  .rd-topbar { padding: 0 20px; }
-  .rd-work { padding: 24px 20px 36px; }
-  .ration-content .document-creation-grid { grid-template-columns: repeat(2, 1fr); }
+  .rd-topbar { padding: 24px 20px 0; }
+  .rd-work { padding: 24px 20px 28px; }
 
   .rd-list {
-    --rd-cols: 1fr 0 150px;
-    &.recover { --rd-cols: 1fr 0 150px; }
+    --rd-cols: minmax(200px, 1fr) 0 150px;
+    &.recover { --rd-cols: minmax(200px, 1fr) 0 150px; }
 
     .col-location { display: none; }
   }

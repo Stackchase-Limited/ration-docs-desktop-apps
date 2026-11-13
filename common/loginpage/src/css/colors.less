@@ -131,44 +131,82 @@
 @chb-border-checked-hover: var(--chb-border-checked-hover);
 @chb-border-checked-focus: var(--chb-border-checked-focus);
 
-// Ration Docs brand palette (from the home design).
-// Petrol is the primary action colour; the ring is its 16% tint, used for the
-// search focus halo and for highlighting matched text in the file list.
+// Ration Docs home design (light and dark, from "rationDocs Desktop - Light &
+// Dark"). Every colour the home page and the left menu use is a custom property
+// here, so the dark theme is one block of values rather than a second
+// stylesheet. Light is the default; any theme whose type is dark (Dark,
+// Contrast dark, Night) takes the dark values, because htmlutils.js puts
+// `theme-type-dark` on <body> for all of them.
+//
+//   --rd-canvas       work area                --rd-rail        left menu, footer
+//   --rd-tile         Create tiles             --rd-field       search field
+//   --rd-ink          primary text             --rd-muted       secondary text
+//   --rd-line         every hairline           --rd-kbd         key-hint chip
+//   --rd-accent       links, underlines, selected menu text
+//   --rd-sel          selected menu item background
+//   --rd-hover        hover wash (not in the design; one step from the rail)
+//   --rd-badge-*      the amber "files to recover" count
+//
+// The petrol fill of the pressed "Recent files" button and the format colours
+// on the file icons are the same in both themes, as the design has them.
+:root {
+    --rd-canvas: #FFFFFF;
+    --rd-rail: #F4F6F7;
+    --rd-tile: #F4F6F7;
+    --rd-field: #FFFFFF;
+    --rd-ink: #131A1F;
+    --rd-muted: #55636D;
+    --rd-line: #D5DCE1;
+    --rd-kbd: #EEF1F3;
+    --rd-accent: #006699;
+    --rd-sel: #DCEAF1;
+    --rd-hover: #E9EEF1;
+    --rd-row-hover: #F4F6F7;
+    --rd-ring: rgba(0, 102, 153, 0.16);
+    --rd-badge-bg: #FFEFCF;
+    --rd-badge-ink: #6B4200;
+    --rd-logo-ink: #000000;
+    --rd-logo-mark: #006699;
+}
+
+.theme-type-dark {
+    --rd-canvas: #0B1721;
+    --rd-rail: #08121B;
+    --rd-tile: #122230;
+    --rd-field: #0F1E2B;
+    --rd-ink: #E8EEF2;
+    --rd-muted: #9FB1BD;
+    --rd-line: #213747;
+    --rd-kbd: #1A2D3D;
+    --rd-accent: #5BB8E0;
+    --rd-sel: #0F2C3D;
+    --rd-hover: #10202D;
+    --rd-row-hover: #0F1E2B;
+    --rd-ring: rgba(91, 184, 224, 0.22);
+    --rd-badge-bg: #3A2A0A;
+    --rd-badge-ink: #F2C46B;
+    --rd-logo-ink: #FFFFFF;
+    --rd-logo-mark: #FFFFFF;
+}
+
+@rd-canvas:    var(--rd-canvas);
+@rd-rail:      var(--rd-rail);
+@rd-tile:      var(--rd-tile);
+@rd-field:     var(--rd-field);
+@rd-ink:       var(--rd-ink);
+@rd-muted:     var(--rd-muted);
+@rd-line:      var(--rd-line);
+@rd-kbd:       var(--rd-kbd);
+@rd-accent:    var(--rd-accent);
+@rd-sel:       var(--rd-sel);
+@rd-hover:     var(--rd-hover);
+@rd-row-hover: var(--rd-row-hover);
+@rd-ring:      var(--rd-ring);
+
+// Fixed in both themes.
 @ration-petrol: #006699;
 @ration-petrol-dark: #0A587D;
-@ration-petrol-ring: rgba(0, 102, 153, 0.16);
-
-// Remaining tokens from the Ration Docs home design. The rail is near-black
-// navy; the work area sits on a light canvas with white surfaces. Format
-// colours identify document kinds in the Create tiles and the file list.
-@rd-navy:       #0B1B2A;
-@rd-canvas:     #F5F7F9;
-@rd-surface:    #FFFFFF;
-@rd-ink:        #0B1B2A;
-@rd-muted:      #5C7382;
-@rd-faint:      #8496A3;
-@rd-line:       #E4E9ED;
-@rd-line-2:     #EEF1F4;
-
-@rd-violet:     #6C4BD6;
-@rd-amber:      #B57A16;
-@rd-blue:       #2A7DD1;
-@rd-green:      #1E7A46;
-@rd-orange:     #C7642B;
-@rd-red:        #C0392B;
-
-@rd-side-ink:    #E9EFF3;
-@rd-side-mut:    #8CA0AE;
-// Sidebar hover and selected are solid navy steps, not white washes. A white
-// overlay on the navy rail reads as grey haze, and at the strength hover has to
-// reach to be noticeable it reads as a pale box rather than as the rail lighting
-// up. Both of these are the rail's own hue, one step apart:
-//   @rd-navy        #0B1B2A   the rail
-//   @rd-side-active #1E2D3B   exactly what rgba(255,255,255,.08) resolved to over it
-//   @rd-side-hover  #25384A   one step lighter again
-// Hover is the lighter of the two deliberately: the item under the pointer should
-// be distinct from the item you are already on, and the selected item carries the
-// petrol left accent to mark it besides.
-@rd-side-hover:  #25384A;
-@rd-side-active: #1E2D3B;
-@rd-side-edge:   #10263A;
+@rd-docx: #006699;
+@rd-xlsx: #217346;
+@rd-pptx: #B7472A;
+@rd-pdf:  #E8262A;

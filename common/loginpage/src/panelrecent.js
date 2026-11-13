@@ -83,6 +83,7 @@
         args.tplPage = `
             <div class="action-panel ${args.action}">
               <header class="rd-topbar">
+                <h1 class="rd-title" l10n>${utils.Lang.actHome}</h1>
                 <div class="rd-search" role="search">
                   <div class="rd-search-lead">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -104,7 +105,7 @@
               </header>
 
               <div class="rd-work">
-                <h1 class="rd-sec-h" l10n>${_lang.searchCreate}</h1>
+                <h2 class="rd-sec-h" l10n>${_lang.searchCreate}</h2>
                 <section id="area-document-creation-grid"></section>
                 ${welcomeBannerTemplate}
                 <section id="area-dnd-file"></section>
@@ -112,7 +113,7 @@
                 <div class="rd-rf-head">
                   <div class="rd-toggle" id="idx-list-toggle" role="tablist">
                     <button type="button" class="on" data-m="recent" role="tab" l10n>${_lang.listRecentFileTitle}</button>
-                    <button type="button" data-m="recover" role="tab" l10n>${_lang.listRecoveryTitle}</button>
+                    <button type="button" data-m="recover" role="tab"><span l10n>${_lang.listRecoveryTitle}</span><span class="rd-badge" id="idx-recover-count" hidden></span></button>
                   </div>
                   <span class="rd-count" id="idx-recent-count"></span>
                   <div class="rd-seg" id="idx-type-seg">
@@ -212,14 +213,14 @@
                 <div ${id} class="row text-normal">
                     <div class="col-name" title="${escFullPath}">
                         <div class="icon">
-                            <svg class="icon" data-iconname="${info.type === 'folder' ? 'folder' : `${info.format}`}"
+                            ${info.type !== 'folder' ? utils.rdFileIcon(info.format || escExt, 32) : `<svg class="icon" data-iconname="folder"
                                  data-precls="tool-icon">
-                                <use xlink:href="#${info.type === 'folder' ? 'folder-small' : info.format}"></use>
-                            </svg>
+                                <use xlink:href="#folder-small"></use>
+                            </svg>`}
                             ${info.crypted ? `<svg class="icon shield" data-iconname="shield" data-precls="tool-icon">
                                                 <use xlink:href="#shield"></use>
                                               </svg>` : ''}
-                            ${!isSvgIcons ? `<i class="icon ${info.type === 'folder' ? 'img-el folder' : `img-format ${info.format}`}"></i>` : ''}
+                            ${!isSvgIcons && info.type === 'folder' ? `<i class="icon img-el folder"></i>` : ''}
                             ${info.crypted && !isSvgIcons ? `<i class="icon img-el shield"></i>` : ''}
                         </div>
                         <p class="name">
@@ -892,11 +893,15 @@
             function paint(historyCount) {
                 const total = matched + historyCount;
 
-                // The design shows the count at all times, not only while searching.
+                // The result count is shown while a search narrows the list; the
+                // design's resting page has none. The Recover button carries the
+                // number of recoverable files, like the design's amber badge.
                 $('#idx-recent-count', $panel).text(
                     (total === 1 ? utils.Lang.searchCountOne : utils.Lang.searchCountMany)
                         .replace('$1', total)
-                );
+                ).toggle(searching);
+                const recoverable = collectionRecovers.size();
+                $('#idx-recover-count', $panel).text(recoverable).prop('hidden', recoverable === 0);
 
                 if (_activeMode === 'recover') {
                     $('#idx-recent-no-results', $panel).hide();
@@ -1073,8 +1078,7 @@
                 // The design shows a Cmd-K hint; Cmd is only correct on macOS.
                 const _isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
                 $('#idx-search-kbd', this.view.$panel)
-                    .html(_isMac ? '<span>⌘</span><span>K</span>'
-                                 : '<span>Ctrl</span><span>K</span>');
+                    .html(_isMac ? '<span>⌘K</span>' : '<span>Ctrl K</span>');
 
                 // 120ms: below the ~150ms that reads as lag, high enough that a fast
                 // typist filters the collection once per word rather than per keystroke.

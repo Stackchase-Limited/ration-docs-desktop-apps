@@ -373,6 +373,46 @@ utils.fileExtensionToFileFormat = function(extension) {
 };
 
 utils.fn = {};
+
+// Ration Docs file icon, as drawn in the home design: a page with a folded
+// corner and a coloured format label across its lower left. The page and its
+// inner strokes are the same in light and dark themes; only the label colour
+// carries meaning (petrol: documents, green: spreadsheets, rust: slides, red: PDF).
+// `width` is the drawn width in px; the height follows the 43x40 artwork.
+utils.rdFileIcon = (function () {
+    const kinds = {
+        docx: { color: '#006699', label: 'DOCX', exts: ['docx','doc','odt','rtf','txt','docm','dotx','dotm','fodt','ott','docxf','oform','html','mht','epub','fb2','xml','pages','hwp','hwpx','md'],
+                inner: '<line x1="13" y1="14.5" x2="31" y2="14.5" stroke="#DAE2E8" stroke-width="1.2"/><line x1="13" y1="18" x2="31" y2="18" stroke="#DAE2E8" stroke-width="1.2"/><line x1="13" y1="21.5" x2="25" y2="21.5" stroke="#DAE2E8" stroke-width="1.2"/>' },
+        xlsx: { color: '#217346', label: 'XLSX', exts: ['xlsx','xls','ods','csv','xlsm','xlsb','xltx','xltm','fods','ots','numbers'],
+                inner: '<rect x="13" y="12" width="18" height="10" fill="none" stroke="#DAE2E8"/><line x1="19.3" y1="12" x2="19.3" y2="22" stroke="#DAE2E8"/><line x1="25.6" y1="12" x2="25.6" y2="22" stroke="#DAE2E8"/><line x1="13" y1="17" x2="31" y2="17" stroke="#DAE2E8"/>' },
+        pptx: { color: '#B7472A', label: 'PPTX', exts: ['pptx','ppt','odp','ppsx','pps','pptm','ppsm','potx','potm','fodp','otp','key'],
+                inner: '<circle cx="22" cy="17" r="7" fill="none" stroke="#DAE2E8"/><circle cx="22" cy="17" r="4" fill="none" stroke="#DAE2E8"/>' },
+        pdf:  { color: '#E8262A', label: 'PDF', exts: ['pdf','djvu','xps','oxps','pdfa'],
+                inner: '<rect x="13" y="12" width="6" height="6" fill="none" stroke="#DAE2E8"/><line x1="21" y1="14" x2="31" y2="14" stroke="#DAE2E8" stroke-width="1.2"/><line x1="21" y1="17" x2="31" y2="17" stroke="#DAE2E8" stroke-width="1.2"/><line x1="13" y1="21.5" x2="29" y2="21.5" stroke="#DAE2E8" stroke-width="1.2"/>' },
+    };
+    const other = { color: '#6B7A85', label: '', inner: kinds.docx.inner };
+
+    return function (format, width) {
+        const ext = String(format || '').toLowerCase().replace(/^\./, '');
+        let kind = other;
+        for (const k in kinds) if (kinds[k].exts.indexOf(ext) !== -1) { kind = kinds[k]; break; }
+
+        // The label names the real extension when it fits (ODT, CSV), so the
+        // icon still tells formats apart within a kind; longer ones use the kind's.
+        const label = (ext && ext.length <= 4 ? ext : (kind.label || ext.substring(0, 4))).toUpperCase()
+                        .replace(/[^A-Z0-9]/g, '');
+        const lw = label.length <= 3 ? 21 : 24;
+        const w = width || 32;
+        const h = Math.round(w * 40 / 43 * 10) / 10;
+
+        return `<svg class="rd-file-icon" width="${w}" height="${h}" viewBox="0 0 43 40" aria-hidden="true" focusable="false">` +
+            '<path d="M9 2 H27 L35 10 V37 C35 37.6 34.6 38 34 38 H9 C8.4 38 8 37.6 8 37 V3 C8 2.4 8.4 2 9 2 Z" fill="#FFFFFF" stroke="#DAE2E8"/>' +
+            '<path d="M27 2 L35 10 H27 Z" fill="#EDF1F4" stroke="#DAE2E8"/>' + kind.inner +
+            (label ? `<rect x="0" y="23" width="${lw}" height="12" fill="${kind.color}"/>` +
+                `<text x="${lw / 2}" y="29.5" font-family="Inter, -apple-system, 'Segoe UI', sans-serif" font-weight="700" font-size="6.5" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">${label}</text>` : '') +
+            '</svg>';
+    };
+})();
 utils.fn.extend = function(dest, src) {
     for (var prop in src) {
         if (src.hasOwnProperty(prop)) {
