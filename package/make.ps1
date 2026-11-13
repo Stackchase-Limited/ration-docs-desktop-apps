@@ -87,11 +87,10 @@ Write-Host "`n[ Sign files ]"
 if ($Sign) {
     Set-Location "$BuildDir\desktop"
 
-    # Sign
-    Get-ChildItem *.exe, *.dll -Recurse | ForEach-Object {
-        & "$env:WORKSPACE\documents-pipeline\scripts\Sign.ps1" -File $_
-        if ($LastExitCode -ne 0) { throw }
-    }
+    # Sign (#2372): every .exe/.dll in one call; provider and credentials come from the
+    # environment, see sign\Sign.ps1 and SIGNING.md
+    & "$PSScriptRoot\sign\Sign.ps1" -Path .
+    if ($LastExitCode -ne 0) { throw }
 
     # Verify
     Get-ChildItem *.exe, *.dll -Recurse | % { Get-AuthenticodeSignature $_ }

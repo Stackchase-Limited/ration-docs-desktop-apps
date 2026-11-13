@@ -124,7 +124,7 @@ switch ($Target) {
 }
 if ($Sign) {
     $InnoArgs += "/DSIGN",
-        "/Sbyparam=powershell -ExecutionPolicy Bypass -File `$q$env:WORKSPACE\documents-pipeline\scripts\Sign.ps1`$q -File `$f"
+        "/Sbyparam=powershell -ExecutionPolicy Bypass -File `$q$PSScriptRoot\sign\Sign.ps1`$q -File `$f"
 }
 if ($Debug) {
     $InnoArgs += "/DPREPROCSAVE"

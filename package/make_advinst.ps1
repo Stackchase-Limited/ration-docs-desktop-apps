@@ -199,7 +199,7 @@ Write-Host "MsiInfo $MsiFile /p $Template"
 if ($LastExitCode -ne 0) { throw }
 
 if ($Sign) {
-    & "$env:WORKSPACE\documents-pipeline\scripts\Sign.ps1" -File $MsiFile
+    & "$PSScriptRoot\sign\Sign.ps1" -File $MsiFile
     if ($LastExitCode -ne 0) { throw }
 }
 
