@@ -1969,7 +1969,8 @@ mark.search-hit {
     padding: 20px 8px 12px;
 
     .ration-brand { align-items: center; padding: 0 0 20px; }
-    .ration-logo { width: 40px; height: 31px; overflow: hidden; }
+    .ration-logo { width: 32px; height: 31px; overflow: hidden; }
+    .ration-logo .rl-text { display: none; }
     .ration-brand-name { display: none; }
 
     > li.menu-item:not(.separator):not(.devider):not(.rd-spacer) {
@@ -3705,4 +3706,63 @@ mark.search-hit {
 
 .theme-type-dark .ration-about-logo {
   filter: none;
+}
+
+// First-run state (no recent or recoverable files): the welcome line and the
+// drop zone, in the home design's terms - left-aligned heading, square
+// corners, design lines and colours, and a petrol primary button.
+.rd-work {
+  #area-welcome {
+    margin: 28px 0 0;
+    max-width: none;
+    text-align: left;
+    font-family: @rd-font;
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      line-height: 22px;
+      font-weight: 600;
+      color: @rd-ink;
+    }
+    p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 20px;
+      color: @rd-muted;
+    }
+  }
+
+  #area-dnd-file {
+    margin-block: 16px 28px;
+  }
+
+  .dnd-zone {
+    padding: 40px 0;
+    border-radius: 0;
+    border: 1px dashed @rd-line;
+    background: @rd-canvas;
+    font-family: @rd-font;
+    text-align: center;
+
+    .content p {
+      font-size: 13px;
+      color: @rd-muted;
+    }
+    .content button {
+      margin-top: 12px;
+      height: 36px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 0;
+      background: @ration-petrol;
+      color: #fff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover { background: @ration-petrol-dark; }
+    }
+  }
 }
