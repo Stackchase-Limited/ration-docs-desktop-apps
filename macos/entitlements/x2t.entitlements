@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Resources/converter/x2t - the converter. doctrenderer runs the sdkjs editors in JavaScriptCore
+  for every save, print and PDF/image conversion. Without allow-jit JSC is interpreted: saves
+  were 6-9x slower (agent ec, 2026-11-12); with it the process maps a "JS JIT Generated Code"
+  region (vmmap, 2026-11-13). The older x2t set (.rd-work/x2t-entitlements.plist) also had
+  allow-unsigned-executable-memory, allow-dyld-environment-variables and
+  disable-library-validation; none is needed: JSC uses MAP_JIT, nothing sets DYLD_* for x2t,
+  and its frameworks carry our Team ID.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+</dict>
+</plist>

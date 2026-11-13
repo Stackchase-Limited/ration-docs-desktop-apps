@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  editors_helper (Renderer).app - Chromium renderer processes (V8, WebAssembly for the
+  drawingfile/fonts modules). As in Chromium's helper-renderer-entitlements.plist since V8
+  moved to MAP_JIT. PROVEN NECESSARY: without it every renderer dies at start with
+  EXC_BREAKPOINT in V8 (2026-11-13, ad-hoc hardened-runtime test).
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+</dict>
+</plist>

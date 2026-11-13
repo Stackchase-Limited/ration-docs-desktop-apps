@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  editors_helper (GPU).app - Chromium GPU process. SwiftShader (software GL/Vulkan, used when
+  the GPU is blocklisted or unusable, e.g. in VMs) JIT-compiles shaders. PROVEN NECESSARY:
+  with --use-angle=swiftshader and no allow-jit the GPU helper crashes (2026-11-13); on the
+  normal Metal path it is unused.
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+</dict>
+</plist>
