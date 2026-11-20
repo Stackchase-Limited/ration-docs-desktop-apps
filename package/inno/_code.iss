@@ -1008,10 +1008,11 @@ begin
     GetWindowsVersionEx(version);
     if (version.Major > 6) or ((version.Major = 6) and (version.Minor >= 1)) then begin
       Exec(ExpandConstant('{app}\{#iconsExe}'), '--create-jump-list', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ErrorCode);
-      if CheckCommandlineParam('/noupdates') then begin
-        RegWriteDWordValue(HKEY_LOCAL_MACHINE, ExpandConstant('{#APP_REG_PATH}'), 'CheckForUpdates', 0);
-      end else
-        Exec(ExpandConstant('{app}\updatesvc.exe'), '--install "' + ExpandConstant('{cm:UpdateService}') + '."', '', SW_HIDE, ewWaitUntilTerminated, ErrorCode);
+      // Ration Docs has no update module, so ONLYOFFICE's update service
+      // (updatesvc.exe) is no longer installed. PrepareToInstall still runs the
+      // previous install's `updatesvc.exe --delete`, and [InstallDelete] removes
+      // the file, so upgrading takes an existing service away.
+      RegWriteDWordValue(HKEY_LOCAL_MACHINE, ExpandConstant('{#APP_REG_PATH}'), 'CheckForUpdates', 0);
     end;
 
     paramStore := GetCommandlineParam('/store');

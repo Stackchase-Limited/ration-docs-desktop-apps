@@ -194,11 +194,11 @@ Source: "vc_redist.{#ARCH}.exe"; DestDir: {app}; Flags: deleteafterinstall; \
   AfterInstall: installVCRedist(ExpandConstant('{app}\vc_redist.{#ARCH}.exe'), ExpandConstant('{cm:InstallAdditionalComponents}')); \
   Check: not CheckVCRedist;
 
-Source: "{#BUILD_DIR}\desktop\*"; DestDir: {app}; Flags: ignoreversion recursesubdirs;
+Source: "{#BUILD_DIR}\desktop\*"; DestDir: {app}; Excludes: "\updatesvc.exe"; Flags: ignoreversion recursesubdirs;
 #if defined(_WIN_XP) | defined(EMBED_HELP)
 Source: "{#BUILD_DIR}\help\*"; DestDir: {app}; Flags: ignoreversion recursesubdirs;
 #endif
-Source: "{#BUILD_DIR}\desktop\*.exe"; DestDir: {app}; Flags: recursesubdirs signonce;
+Source: "{#BUILD_DIR}\desktop\*.exe"; DestDir: {app}; Excludes: "\updatesvc.exe"; Flags: recursesubdirs signonce;
 Source: "{#BUILD_DIR}\desktop\*.dll"; DestDir: {app}; Flags: recursesubdirs signonce;
 Source: "package.config"; DestDir: {app}\converter;
 #if PACKAGE_EDITION == "Enterprise"
@@ -210,6 +210,7 @@ Source: "{#BRANDING_DIR}\..\common\license\3dparty\3DPARTYLICENSE"; DestDir: {ap
 
 [InstallDelete]
 Type: filesandordirs; Name: {app}\editors\sdkjs-plugins
+Type: files; Name: {app}\updatesvc.exe
 Type: files; Name: "{commondesktop}\{#sOldAppIconName}.lnk"; Tasks: desktopicon;
 Type: files; Name: "{group}\{#sOldAppIconName}.lnk";
 
