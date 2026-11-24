@@ -99,7 +99,7 @@ function Fail([string]$Message) {
 
 function Redact([string]$Text) {
     foreach ($name in @("AZURE_CLIENT_SECRET", "SM_API_KEY", "SM_CLIENT_CERT_PASSWORD",
-                        "ES_PASSWORD", "ES_TOTP_SECRET")) {
+                        "ES_PASSWORD", "ES_TOTP_SECRET", "ES_USERNAME", "ES_CREDENTIAL_ID")) {
         $value = [Environment]::GetEnvironmentVariable($name)
         if ($value) { $Text = $Text.Replace($value, "<$name>") }
     }
@@ -240,7 +240,8 @@ if ($DryRun) {
     if ($ToSign.Count -gt 0) {
         $example = Get-ProviderCommand @($ToSign[0]) "<temp>\metadata.json"
         Write-Host ""
-        Write-Host "Command shape : $(Redact (($example | ForEach-Object { if ($_ -match ' ') { "`"$_`"" } else { $_ } }) -join ' '))"
+        $shape = ($example | ForEach-Object { if ($_ -match ' ') { '"' + $_ + '"' } else { $_ } }) -join ' '
+        Write-Host "Command shape : $(Redact $shape)"
         if ($Provider -eq "SSLcomESigner") { Write-Host "                (one CodeSignTool call, i.e. one eSigner signature, per file)" }
     }
     exit 0
@@ -324,7 +325,20 @@ try {
         $attempt = 0
         do {
             $attempt++
-            & $program @arguments 2>&1 | ForEach-Object { Write-Host (Redact "$_") }
+            # CodeSignTool decides the file type by extension and refuses Inno Setup's uninst.e32.tmp:
+            # sign a .exe-named copy and move it back.
+            $alias = $null; $callArgs = $arguments
+            if ($Provider -eq "SSLcomESigner" -and $batch.Count -eq 1 -and
+                @('.exe', '.dll', '.msi', '.sys', '.ocx', '.cab', '.cat', '.appx', '.msix') -notcontains [IO.Path]::GetExtension($batch[0]).ToLower()) {
+                $alias = $batch[0] + '.rdsign.exe'
+                Copy-Item -LiteralPath $batch[0] -Destination $alias -Force
+                $callArgs = @($arguments | ForEach-Object { $_.Replace($batch[0], $alias) })
+            }
+            & $program @callArgs 2>&1 | ForEach-Object { Write-Host (Redact "$_") }
+            if ($alias) {
+                if ((Get-AuthenticodeSignature -LiteralPath $alias).Status -eq 'Valid') { Move-Item -LiteralPath $alias -Destination $batch[0] -Force }
+                else { Remove-Item -LiteralPath $alias -Force -ErrorAction SilentlyContinue }
+            }
             $rc = $LastExitCode
             if ($rc -ne 0 -and $attempt -lt 3) {
                 Write-Host "  failed ($rc), retrying in $(10 * $attempt)s (timestamp/HSM services are flaky)"
