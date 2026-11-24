@@ -95,10 +95,13 @@ if ($Sign) {
     # Verify
     Get-ChildItem *.exe, *.dll -Recurse | % { Get-AuthenticodeSignature $_ }
 
-    # VLC plugin cache
+    # VLC plugin cache. Only a libvlc build ships vlc-cache-gen.exe; ours plays media through
+    # Qt Multimedia, so without this check -Sign stopped here after signing the payload.
     if (
+        (Test-Path -LiteralPath ".\vlc-cache-gen.exe") -and (
             (($Arch -like "x??") -and ($env:PROCESSOR_ARCHITECTURE -eq "AMD64")) -or
             (($Arch -eq "arm64") -and ($env:PROCESSOR_ARCHITECTURE -eq "ARM64"))
+        )
     )
     {
         Write-Host ".\vlc-cache-gen $PWD\plugins"
